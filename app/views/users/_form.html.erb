@@ -1,23 +1,33 @@
 
 <%= render "shared/error_messages", :target => @user %>
 
-<p>
-<%= form.label :name %><br />
-<%= form.text_field :name %>
-</p>
-<p>
-<%= form.label :email %><br />
-<%= form.text_field :email %>
-</p>
-<p>
-<%= form.label :password, form.object.new_record? ? nil : "Change password" %><br />
-<%= form.password_field :password %>
-</p>
-<p>
-<%= form.label :password_confirmation %><br />
-<%= form.password_field :password_confirmation %>
-</p>
-<p>
-<%= form.label :login %><br />
-<%= form.text_field :login %>
-</p>
+<div class="form-group">
+<%= form.label "Nombre" , :class => "col-lg-3 control-label"%>
+<div class="col-lg-8">
+<%= form.text_field :name , :class =>  "form-control" , :placeholder => "Nombre"%>
+ </div>
+  </div>
+<div class="form-group">
+<%= form.label "Email" , :class => "col-lg-3 control-label" %>
+<div class="col-lg-8">
+<%= form.text_field :email , :class =>  "form-control" , :placeholder => "Email"%>
+ </div>
+  </div>
+<div class="form-group">
+<%= form.label "Contraseña", form.object.new_record? ? nil : "Change password" , :class => "col-lg-3 control-label" %>
+<div class="col-lg-8">
+<%= form.password_field :password , :class =>  "form-control" , :placeholder => "Contraseña"%>
+ </div>
+  </div>
+<div class="form-group">
+<%= form.label "Confirmación Contraseña" , :class => "col-lg-3 control-label" %>
+<div class="col-lg-8">
+<%= form.password_field :password_confirmation , :class =>  "form-control" , :placeholder => "Confirmación Contraseña"%>
+ </div>
+  </div>
+<div class="form-group">
+<%= form.label "Nombre de Usuario" , :class => "col-lg-3 control-label" %>
+<div class="col-lg-8">
+<%= form.text_field :login , :class =>  "form-control"  , :placeholder => "Nombre de Usuario"%>
+ </div>
+  </div>

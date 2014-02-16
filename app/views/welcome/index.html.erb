@@ -26,26 +26,11 @@
         <div class="row">
           <div class="col-lg-6">
             <div class="well">
-              <form class="bs-example form-horizontal">
-                <fieldset>
-                  <div class="form-group">
-                    <label for="inputEmail" class="col-lg-2 control-label">Email</label>
-                    <div class="col-lg-10">
-                      <input type="text" class="form-control" id="inputEmail" placeholder="Email">
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="inputPassword" class="col-lg-2 control-label">Password</label>
-                    <div class="col-lg-10">
-                      <input type="password" class="form-control" id="inputPassword" placeholder="Password">
-                      
-                    </div>
-                  </div>
-                  <div class="form-group">
-                     <button type="button" class="btn btn-primary pull-right" style="margin-right: 18PX;">ENTRAR</button>
-                  </div>
-                </fieldset>
-              </form>
+              
+
+              <%= render "user_sessions/new_login", :target => @user_session %>
+
+
             </div>
           </div>
 
@@ -55,7 +40,7 @@
             <div class="bs-example">
               <div class="jumbotron">
                 <h2>¿Aun no te registras?</h2>
-                <p><a class="btn btn-warning btn-lg">¡Registrarme!</a></p>
+                <p><a href="/signup" class="btn btn-warning btn-lg">¡REGISTRARME!</a></p>
               </div>
             </div>
           </div>
