@@ -1,6 +1,5 @@
 class UsersController < ApplicationController
   def index 
-      render :text => "Rails Bitch"
   end
   def new
     @user = User.new
@@ -8,15 +7,16 @@ class UsersController < ApplicationController
 
   def create
     @user = User.new(params[:user])
+    @user.login = params[:user][:email]
 
     # Saving without session maintenance to skip
     # auto-login which can't happen here because
     # the User has not yet been activated
     if @user.save
-      flash[:notice] = "Your account has been created."
-      redirect_to signup_url
+      flash[:success] = "¡Has creado tu cuenta con exito!"
+      @user_session = UserSession.create(:email => @user.email, :password => @user.password)
+      redirect_to root_path
     else
-      flash[:notice] = "There was a problem creating you."
       render :action => :new
     end
 

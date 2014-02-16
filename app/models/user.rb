@@ -5,5 +5,5 @@ class User < ActiveRecord::Base
 
   end # block optional
 
-  attr_accessible :name, :email, :password, :password_confirmation, :login
+  attr_accessible :name, :email, :password, :password_confirmation
 end

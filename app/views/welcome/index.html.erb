@@ -1,10 +1,28 @@
 
 <div class="separator-top"></div>
+
+<% if flash[:success] %>
+<div class="container">
+  <div class="row">
+          <div class="col-lg-12">
+            <div class="bs-example">
+              <div class="alert alert-dismissable alert-success">
+                <button type="button" class="close" data-dismiss="alert">×</button>
+                <p><strong><%=flash[:success]%></strong></p>
+              </div>
+            </div>
+          </div>
+        </div>
+  </div>
+<% end %>
+
 <div class="container logo-fifa">
 
 <div class="row">
 <div class="col-lg-12">
-<h1>Bienvenido</h1>
+<h1>Bienvenido<% if @session %>, <%= @session.name %>
+<% end %>
+</h1>
 <p class="lead">¿Aun no comienzas? Crea tu primera quiniela haciendo click <a href="/">AQUÍ</a></p>
 </div>
 </div>
@@ -12,7 +30,45 @@
 
 </div>
 
+
 <div class="container">
+<% if @session %>
+<div class="bs-docs-section">
+
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="page-header">
+              <h1 id="tables">Mis Quinielas</h1>
+            </div>
+
+            <div class="bs-example table-responsive">
+              <table class="table table-striped table-hover ">
+                <tbody><tr>
+                  <th>#</th>
+                  <th>Column heading</th>
+                  <th>Column heading</th>
+                  <th>Column heading</th>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>Column content</td>
+                  <td>Column content</td>
+                  <td>Column content</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>Column content</td>
+                  <td>Column content</td>
+                  <td>Column content</td>
+                </tr>
+                
+              </tbody></table>
+            </div><!-- /example -->
+          </div>
+        </div>
+      </div>
+<% else %>
+
 
 <div class="bs-docs-section">
         <div class="row">
@@ -48,6 +104,9 @@
         </div>
       </div>
 
+
+
+<% end %>
 
 </div>
 
