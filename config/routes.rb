@@ -1,6 +1,8 @@
 Demoapp::Application.routes.draw do
 
 
+  get "welcome/index"
+
   #config/routes.rb
   resources :user_sessions
 
@@ -12,7 +14,7 @@ Demoapp::Application.routes.draw do
 
   match 'signup' => 'users#new', :as => :signup
 
-  root :to => 'user_sessions#new'
+  root :to => 'welcome#index'
   
   # The priority is based upon order of creation:
   # first created -> highest priority.

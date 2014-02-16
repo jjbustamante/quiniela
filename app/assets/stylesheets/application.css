@@ -11,3 +11,22 @@
  *= require_self
  *= require_tree .
  */
+ .separator-top {
+ 	margin-top: 80px;
+
+ }
+footer{
+	margin-top: 30px;
+	border-top: solid 3px #2c3e50;
+padding-top: 20px;
+}
+.logo-fifa{
+background: url(/assets/logo.png) no-repeat 0px 0px white;
+height: 200px;
+padding-left: 200px !important;
+padding-top: 42px;
+}
+.container .jumbotron{
+	padding: 10px;
+	text-align: center;
+}
