@@ -6,7 +6,7 @@
 development:
   adapter: postgresql
   encoding: unicode
-  database: dev_blog
+  database: dev_quiniela
   pool: 5
   username: postgres
   password: 0123456789
@@ -17,7 +17,7 @@ development:
 test:
   adapter: postgresql
   encoding: unicode
-  database: test_blog
+  database: test_quiniela
   pool: 5
   username: postgres
   password: 0123456789
@@ -25,7 +25,7 @@ test:
 production:
   adapter: postgresql
   encoding: unicode
-  database: prod_blog
+  database: quiniela
   pool: 5
   username: postgres
   password: 0123456789
