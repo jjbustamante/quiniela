@@ -11,7 +11,50 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140216193113) do
+ActiveRecord::Schema.define(:version => 20140517164743) do
+
+  create_table "bets", :force => true do |t|
+    t.integer  "score_t1"
+    t.integer  "score_t2"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+    t.integer  "winner_id"
+    t.integer  "match_id"
+  end
+
+  create_table "matches", :force => true do |t|
+    t.string   "winner_name"
+    t.integer  "score_t1"
+    t.integer  "score_t2"
+    t.date     "match_date"
+    t.integer  "round_type"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+    t.integer  "team1_id"
+    t.integer  "team2_id"
+    t.integer  "winner_id"
+    t.integer  "round_id"
+  end
+
+  create_table "quinielas", :force => true do |t|
+    t.integer  "points"
+    t.date     "last_update"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+    t.integer  "user_id"
+  end
+
+  add_index "quinielas", ["user_id"], :name => "index_quinielas_on_user_id"
+
+  create_table "rounds", :force => true do |t|
+    t.string   "name"
+    t.integer  "status"
+    t.date     "start_date"
+    t.date     "end_date"
+    t.integer  "round_type"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "teams", :force => true do |t|
     t.string   "name"

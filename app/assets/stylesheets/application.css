@@ -11,6 +11,9 @@
  *= require_self
  *= require_tree .
  */
+ *{
+ 	font-family: 'Signika', 'Open Sans', sans-serif;
+ }
  .separator-top {
  	margin-top: 80px;
 
@@ -251,3 +254,8 @@ border: 1px solid #CCC;
 .flagsp_yem {background-position:-133px -260px;}
 .flagsp_zam {background-position:-152px -260px;}
 .flagsp_zim {background-position:-171px -260px;}
+
+.jumbotron
+{
+	text-align: center;
+}
