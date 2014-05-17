@@ -18,6 +18,8 @@ ActiveRecord::Schema.define(:version => 20140517164743) do
     t.integer  "score_t2"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
+    t.integer  "team1_id"
+    t.integer  "team2_id"
     t.integer  "winner_id"
     t.integer  "match_id"
   end
@@ -27,7 +29,6 @@ ActiveRecord::Schema.define(:version => 20140517164743) do
     t.integer  "score_t1"
     t.integer  "score_t2"
     t.date     "match_date"
-    t.integer  "round_type"
     t.datetime "created_at",  :null => false
     t.datetime "updated_at",  :null => false
     t.integer  "team1_id"
