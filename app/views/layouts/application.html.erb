@@ -24,14 +24,14 @@
         <div class="navbar-collapse collapse" id="navbar-main">
           <ul class="nav navbar-nav">
             
-            <li class="active">
+            <li class="<% if @active_index %>, <%= @active_index %><% end %>">
               <a href="/">Mis Quinielas</a>
             </li>
             <li>
               <a href="/">Top Usuarios</a>
             </li>
-            <li>
-              <a href="/">Cronograma de Partidos</a>
+            <li class="<% if @active_matches %>, <%= @active_matches %><% end %>">
+              <a href="/matches">Cronograma de Partidos</a>
             </li>
             <li>
               <a href="/">Resultados</a>

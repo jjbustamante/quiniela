@@ -13,7 +13,7 @@ Demoapp::Application.routes.draw do
   resource :user, :as => 'account'  # a convenience route
 
   match 'signup' => 'users#new', :as => :signup
-
+  match 'matches' => 'matches#show_matches', :as => :matches
   root :to => 'welcome#index'
   
   # The priority is based upon order of creation:

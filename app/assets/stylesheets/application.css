@@ -259,3 +259,12 @@ border: 1px solid #CCC;
 {
 	text-align: center;
 }
+.centered{
+	text-align: center;
+}
+.rigth-align{
+	text-align: right;
+}
+.col-ajust{
+	width: 200px;
+}

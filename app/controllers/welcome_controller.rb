@@ -13,5 +13,7 @@ class WelcomeController < ApplicationController
 	@teamsG = Team.where(group: 'G')
 	@teamsH = Team.where(group: 'H')
 
+	@active_index = 'active'
+
   end
 end

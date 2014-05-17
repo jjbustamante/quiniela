@@ -28,13 +28,14 @@ ActiveRecord::Schema.define(:version => 20140517164743) do
     t.string   "winner_name"
     t.integer  "score_t1"
     t.integer  "score_t2"
-    t.date     "match_date"
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
-    t.integer  "team1_id"
-    t.integer  "team2_id"
+    t.datetime "match_date"
+    t.datetime "created_at",      :null => false
+    t.datetime "updated_at",      :null => false
     t.integer  "winner_id"
     t.integer  "round_id"
+    t.integer  "match_parent_id"
+    t.integer  "team1_id"
+    t.integer  "team2_id"
   end
 
   create_table "quinielas", :force => true do |t|
