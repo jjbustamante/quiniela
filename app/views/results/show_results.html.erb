@@ -1,0 +1,26 @@
+<div class="separator-top"></div>
+<div class="container">
+
+<div class="bs-docs-section">
+<div class="container">
+        <div class="row">
+
+                  <div class="col-lg-4">
+           <div class="fixed">
+		<%= render :partial => 'rounds_menu', :locals => { :match => @rounds} %>
+            </div>
+          </div>  
+          <div class="col-lg-8">
+           
+
+            <%= render :partial => 'results', :locals => { :match => @matches} %>
+            
+          </div>
+
+        </div>
+      </div>
+
+
+</div>
+
+</div>

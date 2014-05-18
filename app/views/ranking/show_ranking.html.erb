@@ -26,9 +26,9 @@
                 @quinielas.each do |quiniela| %>
              
                 <tr>
-                  <td><img style="width:60px" src="https://lh4.googleusercontent.com/-74gKp7bXczk/AAAAAAAAAAI/AAAAAAAAAAA/BH0lDPsKqMc/photo.jpg"></td>
+                  <td><img style="width:60px" src="/assets/photo.jpg"></td>
                   <td valign="middle"><span class="stuart-middle"><%= quiniela.user.name %></span></td>
-                  <td><span class="stuart-middle">La quiniela que mas mea</span></td>
+                  <td><span class="stuart-middle"><%= quiniela.name %></span></td>
                   <td><span class="stuart-middle"><%= quiniela.points %></span></td>
                 </tr> 
  <% end %>

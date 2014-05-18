@@ -11,6 +11,7 @@ class CreateMatches < ActiveRecord::Migration
       t.references :round
       t.references :team1
       t.references :team2
+      t.integer :played, :default => 0
     end
     Match.create :match_date => '2014-06-12 17:00:00', :team1_id => 1, :team2_id => 2,  :round_id => 1
     Match.create :match_date => '2014-06-13 13:00:00', :team1_id => 3, :team2_id => 4,  :round_id => 1    

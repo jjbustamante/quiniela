@@ -16,6 +16,7 @@ Demoapp::Application.routes.draw do
 
   match 'signup' => 'users#new', :as => :signup
   match 'matches' => 'matches#show_matches', :as => :matches
+  match 'results' => 'results#show_results', :as => :results
   match 'ranking' => 'ranking#show_ranking', :as => :ranking
   root :to => 'welcome#index'
   

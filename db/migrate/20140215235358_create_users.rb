@@ -19,6 +19,7 @@ class CreateUsers <ActiveRecord::Migration
       t.string    :last_login_ip                                           
 
       t.timestamps
+      t.string    :picture      
     end
   end
 end

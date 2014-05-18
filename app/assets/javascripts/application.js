@@ -13,3 +13,6 @@
 //= require jquery
 //= require jquery_ujs
 //= require_tree .
+openMenu = function(e){
+	$(e).parent().addClass("open");
+};

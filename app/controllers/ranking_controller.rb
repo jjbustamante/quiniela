@@ -4,7 +4,7 @@ class RankingController < ApplicationController
 		@active_ranking = 'active'
 		@session = current_user
   		if !@session
-  			redirect_to "/login"
+  			redirect_to "/"
   		end
 	end
 end

@@ -275,3 +275,15 @@ border: 1px solid #CCC;
 .stuart-middle{
  display:inline-block; vertical-align:middle;margin-top: 15px;
 }
+.table-striped.game-over>tbody>tr:nth-child(odd)>td{
+	background-color:rgb(132, 240, 132);
+}
+.col-ajust img{
+	margin-right: 5px;
+margin-top: -5px;
+}
+.fixed{
+	display: inline-block;
+width: 330px;
+position: fixed;
+}
