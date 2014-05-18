@@ -13,13 +13,13 @@ Demoapp::Application.routes.draw do
   resource :user, :as => 'account'  # a convenience route
 
   resources :quinielas
-
+  resources :matches
   match 'signup' => 'users#new', :as => :signup
   match 'matches' => 'matches#show_matches', :as => :matches
   match 'results' => 'results#show_results', :as => :results
   match 'ranking' => 'ranking#show_ranking', :as => :ranking
   match 'update' => 'users#edit_info', :as => :update
-  
+   match 'edit_matches' => 'matches#edit', :as => :edit_matches 
   root :to => 'welcome#index'
   
   # The priority is based upon order of creation:

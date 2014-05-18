@@ -19,7 +19,7 @@
 
  }
  body{
- 	/*background: url(/assets/old_moon.png);*/
+ 	background: url(/assets/brushed.png);
  	 	font-family: 'Open Sans', sans-serif;
  }
 footer{
@@ -343,4 +343,16 @@ width: 100%;
 }
 .table>tbody>tr.bronze>td,.table>tbody>tr.bronze:hover>td{
 	background: #965A38;
+}
+.form-control.small-control{
+	width: 50px;
+	float: left;
+	height: 32px;
+}
+.form-separator{
+float: left;
+width: 10px;
+font-weight: bold;
+font-size: 17pt;
+margin: 0px 5px 0px 5px;
 }
