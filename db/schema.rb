@@ -16,12 +16,13 @@ ActiveRecord::Schema.define(:version => 20140517164743) do
   create_table "bets", :force => true do |t|
     t.integer  "score_t1"
     t.integer  "score_t2"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+    t.integer  "winner_id"
+    t.integer  "match_id_id"
+    t.integer  "quiniela_id"
     t.integer  "team1_id"
     t.integer  "team2_id"
-    t.integer  "winner_id"
-    t.integer  "match_id"
   end
 
   create_table "matches", :force => true do |t|
@@ -39,6 +40,7 @@ ActiveRecord::Schema.define(:version => 20140517164743) do
   end
 
   create_table "quinielas", :force => true do |t|
+    t.string   "name"
     t.integer  "points"
     t.date     "last_update"
     t.datetime "created_at",  :null => false
