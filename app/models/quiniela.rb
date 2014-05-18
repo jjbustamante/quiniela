@@ -4,5 +4,5 @@ class Quiniela < ActiveRecord::Base
   has_many :bets, dependent: :destroy
   accepts_nested_attributes_for :bets
   belongs_to :user
-  attr_accessible :name, :points, :user_id
+  attr_accessible :name, :points, :user_id, :bets_attributes
 end

@@ -3,7 +3,7 @@
             </div>
             <%= form_for :quiniela do |f| %>
               
-               <%
+               <% if false
                 @var1 =  ''
                 @matches.each do |match| %>
              
@@ -32,6 +32,11 @@
 
               </tbody>
             </table>
+              <% end %>
+              <% end %>
+
+              <%= f.fields_for :bets do |builder| %>
+                <%= render "bets_fields", :f => builder %>
               <% end %>
 <p>
     <%= f.submit %>
