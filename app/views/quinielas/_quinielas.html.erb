@@ -15,6 +15,7 @@
                  
                <% end 
                     @var1 = match.match_date.strftime("%m/%d")
+                    @count = 0
                  %> 
 
 <table class="table table-striped table-hover">
@@ -23,7 +24,7 @@
                 <tr>
                   <td><span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span></td>
                   <td class="col-ajust"><%= match.team1.name %></td>
-                  <td class="centered"><%= f.text_field :bet.score_t1 %>-<%= f.text_field :bet.score_t2 %></td>
+                  <td class="centered"><input type="text" name="score_t1[<%= @count %>]" id="score_t1_<%= @count %>"/>-<input type="text" name="score_t2[<%= @count %>]" id="score_t2_<%= @count %>"/></td>
                   <td class="rigth-align col-ajust"><%= match.team2.name %></td>
                    <td class="rigth-align"> <span class="flagsp flagsp_<%= match.team2.code %>" title=""> </span></td>
                   
