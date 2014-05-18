@@ -16,6 +16,7 @@
               
 <legend>Editar informacion</legend>
 <%= form_for @user, :html => {:class => "bs-example form-horizontal"} do |f| %>
+<%= image_tag @user.photo.url(:small) %>
 <%= render :partial => "form", :object => f, :locals => { :user => @user } %>
 <div class="form-group">
     <div class="col-lg-6">

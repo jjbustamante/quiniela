@@ -1,12 +1,13 @@
 <table class="table table-striped table-hover">
               <tbody>
               
+
                 <tr>
-                  <td><span class="flagsp flagsp_<%= f.match.team1.code %>" title=""> </span></td>
-                  <td class="col-ajust"><%= f.match.team1.name %></td>
+                  <td><span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span></td>
+                  <td class="col-ajust"><%= match.team1.name %></td>
                   <td class="centered"><%= f.text_field :score_t1 %>-<%= f.text_field :score_t2 %></td>
-                  <td class="rigth-align col-ajust"><%= f.match.team2.name %></td>
-                   <td class="rigth-align"> <span class="flagsp flagsp_<%= f.match.team2.code %>" title=""> </span></td>
+                  <td class="rigth-align col-ajust"><%= match.team2.name %></td>
+                   <td class="rigth-align"> <span class="flagsp flagsp_<%= match.team2.code %>" title=""> </span></td>
                   
                 </tr> 
 
