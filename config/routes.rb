@@ -12,6 +12,8 @@ Demoapp::Application.routes.draw do
   resources :users  # give us our some normal resource routes for users
   resource :user, :as => 'account'  # a convenience route
 
+  resources :quinielas
+
   match 'signup' => 'users#new', :as => :signup
   match 'matches' => 'matches#show_matches', :as => :matches
   match 'ranking' => 'ranking#show_ranking', :as => :ranking
