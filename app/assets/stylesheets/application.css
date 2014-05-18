@@ -268,3 +268,10 @@ border: 1px solid #CCC;
 .col-ajust{
 	width: 200px;
 }
+.ranking-table td{
+	text-align: center;
+	border: solid 1px #ccc;
+}
+.stuart-middle{
+ display:inline-block; vertical-align:middle;margin-top: 15px;
+}

@@ -1,0 +1,92 @@
+<div class="separator-top"></div>
+<div class="container">
+
+<% if @session %>
+
+
+<div class="bs-docs-section">
+
+        <div class="row">
+          <div class="col-lg-8">
+           
+
+             <div class="page-header">
+              <h1 id="tables">Ranking de usuarios</h1>
+            </div>
+            <table class="table table-striped table-hover ranking-table">
+            	<tr>
+                  
+                  <td colspan="2">Usuario</td>
+                  <td>Nombre de quiniela</td>
+                  <td>Puntos acumulados</td>
+                </tr> 
+           
+            <%
+                @var1 =  ''
+                @quinielas.each do |quiniela| %>
+             
+                <tr>
+                  <td><img style="width:60px" src="https://lh4.googleusercontent.com/-74gKp7bXczk/AAAAAAAAAAI/AAAAAAAAAAA/BH0lDPsKqMc/photo.jpg"></td>
+                  <td valign="middle"><span class="stuart-middle"><%= quiniela.user.name %></span></td>
+                  <td><span class="stuart-middle">La quiniela que mas mea</span></td>
+                  <td><span class="stuart-middle"><%= quiniela.points %></span></td>
+                </tr> 
+ <% end %>
+                           
+
+            </table>
+          </div>
+
+          
+        </div>
+      </div>
+
+
+
+<% else %>
+
+
+<div class="bs-docs-section">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="page-header">
+              <h1 id="forms">¡Entra ahora y danos tus predicciones!</h1>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="well">
+              
+
+              <%= render "user_sessions/new_login", :target => @user_session %>
+
+
+            </div>
+          </div>
+
+
+          <div class="col-lg-6">
+            
+            <div class="bs-example">
+              <div class="jumbotron">
+                <h2>¿Aun no te registras?</h2>
+                <p><a href="/signup" class="btn btn-warning btn-lg">¡REGISTRARME!</a></p>
+              </div>
+            </div>
+          </div>
+  
+        </div>
+      </div>
+
+
+
+<% end %>
+
+
+
+
+</div>
+
+

@@ -27,8 +27,8 @@
             <li class="<% if @active_index %>, <%= @active_index %><% end %>">
               <a href="/">Mis Quinielas</a>
             </li>
-            <li>
-              <a href="/">Top Usuarios</a>
+            <li class="<% if @active_ranking %>, <%= @active_ranking %><% end %>"> 
+              <a href="/ranking">Ranking de Usuarios</a>
             </li>
             <li class="<% if @active_matches %>, <%= @active_matches %><% end %>">
               <a href="/matches">Cronograma de Partidos</a>

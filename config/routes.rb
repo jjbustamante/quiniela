@@ -14,6 +14,7 @@ Demoapp::Application.routes.draw do
 
   match 'signup' => 'users#new', :as => :signup
   match 'matches' => 'matches#show_matches', :as => :matches
+  match 'ranking' => 'ranking#show_ranking', :as => :ranking
   root :to => 'welcome#index'
   
   # The priority is based upon order of creation:

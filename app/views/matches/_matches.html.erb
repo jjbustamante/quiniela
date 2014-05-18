@@ -11,7 +11,7 @@
               
                 if match.match_date.strftime("%m/%d") != @var1 %>
 
-                <h4>Fecha: <%= match.match_date.to_formatted_s(:short) %> - Grupo: <%= match.team1.group %></h4>
+                <h4>Fecha: <%= match.match_date.to_s(:pretty) %></h4>
                  
                <% end 
                     @var1 = match.match_date.strftime("%m/%d")
