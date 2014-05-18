@@ -12,19 +12,28 @@
  *= require_tree .
  */
  *{
- 	font-family: 'Signika', 'Open Sans', sans-serif;
+
  }
  .separator-top {
  	margin-top: 80px;
 
+ }
+ body{
+ 	/*background: url(/assets/old_moon.png);*/
+ 	 	font-family: 'Open Sans', sans-serif;
  }
 footer{
 	margin-top: 30px;
 	border-top: solid 3px #2c3e50;
 padding-top: 20px;
 }
+.navbar-default {
+background-color: #376088!important;
+border-color: #26496F!important;
+ 	font-family: 'Signika', 'Open Sans', sans-serif;
+}
 .logo-fifa{
-background: url(/assets/logo.png) no-repeat 0px 0px white;
+background: url(/assets/logo.png) no-repeat 0px 0px;
 height: 200px;
 padding-left: 200px !important;
 padding-top: 42px;
@@ -286,4 +295,18 @@ margin-top: -5px;
 	display: inline-block;
 width: 330px;
 position: fixed;
+}
+.nav>li>a.btn-menu,.nav>li>a.btn-menu:hover,.navbar-default .navbar-nav>li>a.btn-menu
+,.navbar-default .navbar-nav>li>a.btn-menu:hover{
+	padding: 0;
+color: #ffffff;
+background-color: #d2850b;
+border-color: #be780a;
+margin-top: 12px;
+padding: 7px 20px 7px 20px;
+border-radius: 5px;
+}
+.lead.welcome-message{
+	padding-top: 10px;
+text-align: center;
 }

@@ -24,20 +24,30 @@ class UsersController < ApplicationController
 
   def show
     @user = current_user
+        @session = current_user
+    if !@session
+        redirect_to "/"
+      end 
   end
 
   def edit
     @user = current_user
+        @session = current_user
+    if !@session
+        redirect_to "/"
+      end 
   end
 
   def update
     @user = current_user # makes our views "cleaner" and more consistent
+     @session = current_user
     if @user.update_attributes(params[:user])
-      flash[:notice] = "Account updated!"
-      redirect_to account_url
+      flash[:success] = "Datos actualizados con exito!"
+      redirect_to '/'
     else
       render :action => :edit
     end
+
   end
 
 end
