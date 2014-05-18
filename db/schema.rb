@@ -32,8 +32,8 @@ ActiveRecord::Schema.define(:version => 20140517164743) do
     t.datetime "created_at",      :null => false
     t.datetime "updated_at",      :null => false
     t.integer  "winner_id"
-    t.integer  "round_id"
     t.integer  "match_parent_id"
+    t.integer  "round_id"
     t.integer  "team1_id"
     t.integer  "team2_id"
   end
