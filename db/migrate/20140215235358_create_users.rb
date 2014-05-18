@@ -18,8 +18,7 @@ class CreateUsers <ActiveRecord::Migration
       t.string    :current_login_ip
       t.string    :last_login_ip                                           
 
-      t.timestamps
-      t.string    :picture      
+      t.timestamps    
     end
   end
 end

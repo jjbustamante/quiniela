@@ -16,7 +16,20 @@
               
 <legend>Editar informacion</legend>
 <%= form_for @user, :html => {:class => "bs-example form-horizontal"} do |f| %>
-<%= image_tag @user.photo.url(:small) %>
+
+
+
+ <div class="form-group">
+<%= f.label "Foto" , :class => "col-lg-3 control-label"%>
+<div class="col-lg-8">
+  <a href="" onclick = "$('#user_photo').trigger('click');">
+  <%= image_tag @user.photo.url(:small) %>
+  </a>
+ <%= f.file_field :photo, :style => "visibility:hidden;" %>
+ </div>
+  </div>
+
+
 <%= render :partial => "form", :object => f, :locals => { :user => @user } %>
 <div class="form-group">
     <div class="col-lg-6">
