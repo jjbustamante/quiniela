@@ -5,7 +5,7 @@
         <div class="row">
           <div class="col-lg-12">
             <div class="page-header">
-              <h1 id="forms">Registrate ahora y danos tus predicciones!</h1>
+              <h1 id="forms">Editar perfil</h1>
             </div>
           </div>
         </div>
@@ -14,12 +14,12 @@
           <div class="col-lg-7">
             <div class="well">
               
-<legend>Registrarme</legend>
+<legend>Editar informacion</legend>
 <%= form_for @user, :html => {:class => "bs-example form-horizontal"} do |f| %>
 <%= render :partial => "form", :object => f, :locals => { :user => @user } %>
 <div class="form-group">
     <div class="col-lg-6">
-<%= f.submit "REGISTRARME" ,:class => "btn btn-primary pull-right", :style => "margin-right: -8px;" %>
+<%= f.submit "GUARDAR" ,:class => "btn btn-primary pull-right", :style => "margin-right: -8px;" %>
  </div>
   </div>
 <% end %>

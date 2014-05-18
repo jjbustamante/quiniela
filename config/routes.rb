@@ -18,6 +18,8 @@ Demoapp::Application.routes.draw do
   match 'matches' => 'matches#show_matches', :as => :matches
   match 'results' => 'results#show_results', :as => :results
   match 'ranking' => 'ranking#show_ranking', :as => :ranking
+  match 'update' => 'users#edit_info', :as => :update
+  
   root :to => 'welcome#index'
   
   # The priority is based upon order of creation:

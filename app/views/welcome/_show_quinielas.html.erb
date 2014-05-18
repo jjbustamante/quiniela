@@ -2,6 +2,9 @@
               <h1 id="tables">Mis quinielas</h1>
             </div>
 
+
+
+<% if @quinielas.count > 0 %>
 <table class="table table-striped table-hover ranking-table">
               <tr>
                   
@@ -12,6 +15,7 @@
                 </tr> 
            
             <%
+     
                 @var1 =  ''
                 @quinielas.each do |quiniela| %>
              
@@ -23,9 +27,15 @@
                    <td width="88px"><a href="#" class="btn btn-danger">Eliminar</a></td>
                   
                 </tr> 
- <% end %>
-                           
+<% end 
 
+  %>
+                          
             </table>
 
-     
+      <% 
+else
+  %>
+<p class="lead welcome-message">¿Aun no comienzas? Crea tu primera quiniela haciendo click <a href="/quinielas/new">AQUÍ</a></p>
+  <%
+ end%>
