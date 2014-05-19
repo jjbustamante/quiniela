@@ -19,6 +19,7 @@ class CreateUsers <ActiveRecord::Migration
       t.string    :last_login_ip                                           
 
       t.timestamps    
+      t.integer   :is_admin,         :null => false, :default => 0
     end
   end
 end

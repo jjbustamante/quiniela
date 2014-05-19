@@ -45,12 +45,17 @@
 <% else %>
  <ul class="nav navbar-nav navbar-right">
             <li class="dropdown">
-              <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="openMenu(this);" id="themes">
-                <img style="width:20px;margin-right: 5px;" src="/assets/photo.jpg">
-                <%=@session.name %> 
+              <a class="dropdown-toggle holgado" data-toggle="dropdown" href="#" onclick="openMenu(this);" id="themes">
+                <div class="profile-picture">
+                  <img style="" src="<%= @session.photo.url(:small) %>">
+                </div><%=@session.name %> 
                 <span class="caret"></span>
               </a>
               <ul class="dropdown-menu" aria-labelledby="themes">
+<% if @session.is_admin == 1 %>
+   <li><a href="/edit_matches">Editar partidos</a></li>
+<% end %>
+
                  <li><a href="/user/edit">Editar mis datos</a></li>
                 <li><a href="/logout">Salir</a></li>
               </ul>

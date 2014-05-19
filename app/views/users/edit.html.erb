@@ -21,11 +21,14 @@
 
  <div class="form-group">
 <%= f.label "Foto" , :class => "col-lg-3 control-label"%>
-<div class="col-lg-8">
+
+<div class="col-lg-3">
   <a href="" onclick = "$('#user_photo').trigger('click');">
   <%= image_tag @user.photo.url(:small) %>
   </a>
- <%= f.file_field :photo, :style => "visibility:hidden;" %>
+ </div>
+ <div class="col-lg-3">
+    <%= f.file_field :photo %>
  </div>
   </div>
 

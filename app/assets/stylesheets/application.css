@@ -19,7 +19,7 @@
 
  }
  body{
- 	/*background: url(/assets/old_moon.png);*/
+ 	background: url(/assets/brushed.png);
  	 	font-family: 'Open Sans', sans-serif;
  }
 footer{
@@ -309,4 +309,50 @@ border-radius: 5px;
 .lead.welcome-message{
 	padding-top: 10px;
 text-align: center;
+}
+.profile-picture{
+background-color: transparent;
+height: 40px;
+width: 40px;
+text-align: center;
+color: white;
+line-height: 45px;
+font-weight: bold;
+font-size: 22px;
+font-family: sans-serif;
+overflow: hidden;
+float: left;
+position: absolute;
+top: 12px;
+left: 6px;
+}
+.profile-picture img{
+width: 100%;
+}
+.dropdown-toggle{
+	position: relative;
+}
+.navbar-nav>li>a.holgado{
+	padding-left:60px; 
+}
+.table>tbody>tr.gold>td,.table>tbody>tr.gold:hover>td{
+	background: #D9A441;
+}
+.table>tbody>tr.silver>td,.table>tbody>tr.silver:hover>td{
+	background: #CCC2C2;
+}
+.table>tbody>tr.bronze>td,.table>tbody>tr.bronze:hover>td{
+	background: #965A38;
+}
+.form-control.small-control{
+	width: 50px;
+	float: left;
+	height: 32px;
+}
+.form-separator{
+float: left;
+width: 10px;
+font-weight: bold;
+font-size: 17pt;
+margin: 0px 5px 0px 5px;
 }
