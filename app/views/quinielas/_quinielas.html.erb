@@ -3,17 +3,17 @@
             </div>
             <%= form_for :quiniela do |f| %>
                <% @var1 =  ''
-                  @matches.each do |match| %>
+                  @bets.each do |bet| %>
                   
-               <% if match.match_date.strftime("%m/%d") != @var1 %>
-                    <h4>Fecha: <%= match.match_date.to_formatted_s(:short) %> - Grupo: <%= match.team1.group %></h4>
+               <% if bet.match.match_date.strftime("%m/%d") != @var1 %>
+                    <h4>Fecha: <%= bet.match.match_date.to_formatted_s(:short) %> - Grupo: <%= bet.match.team1.group %></h4>
                <% end 
                     
-                  @var1 = match.match_date.strftime("%m/%d")
+                  @var1 = bet.match.match_date.strftime("%m/%d")
                   @count = 0
                %> 
                     <%= f.fields_for :bets do |builder| %>
-                      <%= render :partial => 'bets_fields', :locals => {:f => builder,:match => match} %>
+                      <%= render :partial => 'bets_fields', :locals => {:f => builder,:bet => bet} %>
                     <% end %>
 
                 <% end %> 

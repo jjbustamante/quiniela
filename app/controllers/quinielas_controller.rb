@@ -4,15 +4,23 @@ class QuinielasController < ApplicationController
 		@matches = Match.where('').order("id ASC")
 		@session = current_user
 		@active_matches = 'active'	
+		@bets = []
 		@matches.each do |m|
 			bet = @quiniela.bets.build
 			bet.match = m
+			@bets.push bet
 		end
 	end
 
 	def create
-			render plain: params[:quiniela].inspect
-	end
+	    @quiniela = Quiniela.new(params[:quiniela])
+	    if @quiniela.save
+	      flash[:success] = "¡Bienvenido de nuevo!"
+	      redirect_back_or_default root_url
+	    else
+	      render :action => :new
+	    end
+	  end
 
 	def show_quinielas
 		
