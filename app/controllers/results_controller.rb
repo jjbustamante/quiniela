@@ -1,6 +1,6 @@
 class ResultsController < ApplicationController
 	def show_results
-		@matches = Match.where('').order("id ASC")
+		@matches = Match.where(round_id: 1).order("id ASC")
 		@rounds = Round.all
 		@session = current_user
 		@active_results = 'active'

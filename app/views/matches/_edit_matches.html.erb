@@ -1,0 +1,126 @@
+              <div class="container">
+
+<div class="bs-docs-section">
+
+        <div class="row">
+          <div class="col-lg-12">
+ 
+ <div class="page-header">
+              <h1 id="tables"><%=title%></h1>
+            </div>
+               <%
+               if !matches.nil?
+                @var1 =  ''
+                matches.each do |match| %>
+                <% 
+              
+                if match.match_date.strftime("%m/%d") != @var1 %>
+<div class="col-lg-12">
+                <h4>Fecha: <%= match.match_date.to_formatted_s(:short) %></h4>
+                 </div>
+               <% end 
+                    @var1 = match.match_date.strftime("%m/%d")
+
+                 %> 
+         <%= form_for match, url: match_path(match), method: :put do |f| %>
+         <div class="col-lg-8">
+ <table id="<%= match.id %>" class="table table-striped table-hover">
+              <tbody>
+              
+                <tr>
+                  <td><span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span></td>
+                  <td class="col-ajust"><% 
+                    teams = @teamsA
+                    if match.team1.group == 'A'
+                        teams = @teamsA
+                    end
+                    if match.team1.group == 'B'
+                        teams = @teamsB
+                    end
+                    if match.team1.group == 'C'
+                        teams = @teamsC
+                    end
+                    if match.team1.group == 'D'
+                        teams = @teamsD
+                    end
+                    if match.team1.group == 'E'
+                        teams = @teamsE
+                    end
+                    if match.team1.group == 'F'
+                        teams = @teamsF
+                    end
+                    if match.team1.group == 'G'
+                        teams = @teamsG
+                    end
+                    if match.team1.group == 'H'
+                        teams = @teamsH
+                    end
+
+                    if round_id == 2 and match.editable == 1%>
+                     <%= match.team1.name %><%= f.select(:team1_id, teams.map { |value| [ value.name, value.id ] },{},:class => "form-control") %>
+                    <%else%>
+                    <%= match.team1.name %>
+                    <%= f.hidden_field :team1_id, :value => match.team1.id %>
+
+                    <%end%>
+                    
+                  </td>
+                  <td class="centered" style="width: 138px;">
+                    <%= f.text_field :score_t1, :class => "form-control small-control"%>
+                    <div class="form-separator">-</div>
+                    <%= f.text_field :score_t2, :class => "form-control small-control" %>
+                  </td>
+                  <td class="rigth-align col-ajust">
+                                        <% 
+                    teams = @teamsA
+                    if match.team2.group == 'A'
+                        teams = @teamsA
+                    end
+                    if match.team2.group == 'B'
+                        teams = @teamsB
+                    end
+                    if match.team2.group == 'C'
+                        teams = @teamsC
+                    end
+                    if match.team2.group == 'D'
+                        teams = @teamsD
+                    end
+                    if match.team2.group == 'E'
+                        teams = @teamsE
+                    end
+                    if match.team2.group == 'F'
+                        teams = @teamsF
+                    end
+                    if match.team2.group == 'G'
+                        teams = @teamsG
+                    end
+                    if match.team2.group == 'H'
+                        teams = @teamsH
+                    end
+
+                    if round_id == 2 and match.editable == 1 %>
+                     <%= match.team2.name %>
+                      <%= f.select(:team2_id, teams.map { |value| [ value.name, value.id ] },{}, :class => "form-control") %>
+
+                    <%else%>
+                    <%= match.team2.name %>
+                    <%= f.hidden_field :team2_id, :value => match.team2.id %>
+                    <%end%>
+                  </td>
+                   <td class="rigth-align"> <span class="flagsp flagsp_<%= match.team2.code %>" title=""> </span></td>
+                  
+                </tr> 
+
+              </tbody>
+            </table>
+         </div>
+         <div class="col-lg-4">
+ <%= f.submit "ACTUALIZAR", :class => "btn btn-success" %>
+         </div>
+         
+              <% end %>
+
+
+              <% end 
+            end%>
+                          </div></div></div></div>

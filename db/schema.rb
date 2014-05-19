@@ -30,14 +30,16 @@ ActiveRecord::Schema.define(:version => 20140518153545) do
     t.integer  "score_t1"
     t.integer  "score_t2"
     t.datetime "match_date"
-    t.datetime "created_at",                     :null => false
-    t.datetime "updated_at",                     :null => false
+    t.datetime "created_at",                      :null => false
+    t.datetime "updated_at",                      :null => false
     t.integer  "winner_id"
-    t.integer  "match_parent_id"
+    t.integer  "match_parent1_id"
+    t.integer  "match_parent2_id"
     t.integer  "round_id"
     t.integer  "team1_id"
     t.integer  "team2_id"
-    t.integer  "played",          :default => 0
+    t.integer  "played",           :default => 0
+    t.integer  "editable",         :default => 0
   end
 
   create_table "quinielas", :force => true do |t|
@@ -65,8 +67,9 @@ ActiveRecord::Schema.define(:version => 20140518153545) do
     t.string   "name"
     t.string   "code"
     t.string   "group"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",                :null => false
+    t.datetime "updated_at",                :null => false
+    t.integer  "status",     :default => 0
   end
 
   create_table "user_sessions", :force => true do |t|
