@@ -5,6 +5,7 @@ class CreateTeams < ActiveRecord::Migration
       t.string :code
       t.string :group
       t.timestamps
+      t.integer :status, :default => 0
     end
     Team.create :name => 'Brasil', :code => 'bra', :group => 'A'
     Team.create :name => 'Croacia', :code => 'cro', :group => 'A'
@@ -45,5 +46,41 @@ class CreateTeams < ActiveRecord::Migration
     Team.create :name => 'Argelia', :code => 'alg', :group => 'H'
     Team.create :name => 'Rusia', :code => 'rus', :group => 'H'
     Team.create :name => 'Corea del Sur', :code => 'kor', :group => 'H'
+
+    Team.create :name => '1A', :code => 'none', :group => 'A', :status => 1
+    Team.create :name => '2B', :code => 'none', :group => 'B', :status => 1
+    Team.create :name => '1C', :code => 'none', :group => 'C', :status => 1
+    Team.create :name => '2D', :code => 'none', :group => 'D', :status => 1
+    Team.create :name => '1E', :code => 'none', :group => 'E', :status => 1
+    Team.create :name => '2F', :code => 'none', :group => 'F', :status => 1
+    Team.create :name => '1G', :code => 'none', :group => 'G', :status => 1
+    Team.create :name => '2H', :code => 'none', :group => 'H', :status => 1
+
+    Team.create :name => '1B', :code => 'none', :group => 'B', :status => 1
+    Team.create :name => '2A', :code => 'none', :group => 'A', :status => 1
+    Team.create :name => '1D', :code => 'none', :group => 'D', :status => 1
+    Team.create :name => '2C', :code => 'none', :group => 'C', :status => 1
+    Team.create :name => '1F', :code => 'none', :group => 'F', :status => 1
+    Team.create :name => '2E', :code => 'none', :group => 'E', :status => 1
+    Team.create :name => '1H', :code => 'none', :group => 'H', :status => 1
+    Team.create :name => '2G', :code => 'none', :group => 'G', :status => 1
+
+    Team.create :name => 'W49', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W50', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W51', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W52', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W53', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W54', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W55', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W56', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W57', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W58', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W59', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W60', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'L61', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'L62', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W61', :code => 'none', :group => 'none', :status => 1
+    Team.create :name => 'W62', :code => 'none', :group => 'none', :status => 1
+
   end
 end

@@ -5,7 +5,11 @@
                 <tr>
                   <td><span class="flagsp flagsp_<%= bet.match.team1.code %>" title=""> </span></td>
                   <td class="col-ajust"><%= bet.match.team1.name %></td>
-                  <td class="centered"><%= f.text_field :score_t1 %>-<%= f.text_field :score_t2 %></td>
+                  <td class="centered" style="width: 138px;">
+                    <%= f.text_field :score_t1, :class => "form-control small-control" %>
+                    <div class="form-separator">-</div>
+                    <%= f.text_field :score_t2, :class => "form-control small-control" %>
+                  </td>
                   <td class="rigth-align col-ajust"><%= bet.match.team2.name %></td>
                    <td class="rigth-align"> <span class="flagsp flagsp_<%= bet.match.team2.code %>" title=""> </span></td>
                   
