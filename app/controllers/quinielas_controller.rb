@@ -5,6 +5,7 @@ class QuinielasController < ApplicationController
 		@session = current_user
 		@active_matches = 'active'	
 		@bets = []
+		@quiniela.user = @session
 		@matches.each do |m|
 			bet = @quiniela.bets.build
 			bet.match = m
