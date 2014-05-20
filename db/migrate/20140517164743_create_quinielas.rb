@@ -5,7 +5,7 @@ class CreateQuinielas < ActiveRecord::Migration
       t.integer :points
       t.date :last_update
       t.timestamps
-      t.integer :user_id
+      t.references :user
     end
     add_index :quinielas, :user_id
   end
