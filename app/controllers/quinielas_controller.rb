@@ -1,16 +1,21 @@
 class QuinielasController < ApplicationController
 	def new
-		@quiniela = Quiniela.new
-		@matches = Match.where(round_id: 1).order("id ASC")
-		@session = current_user
-		@active_matches = 'active'	
-		@bets = []
-		@quiniela.user = User.new
-		@quiniela.user.id = @session.id
-		@matches.each do |m|
-			bet = @quiniela.bets.build
-			bet.match = m
-			@bets.push bet
+		if DateTime.now < APP_CONFIG['deadline_fase_grupos'].to_datetime
+			@quiniela = Quiniela.new
+			@matches = Match.where(round_id: 1).order("id ASC")
+			@session = current_user
+			@active_matches = 'active'	
+			@bets = []
+			@quiniela.user = User.new
+			@quiniela.user.id = @session.id
+			@matches.each do |m|
+				bet = @quiniela.bets.build
+				bet.match = m
+				@bets.push bet
+			end
+		else
+			flash[:success] = "¡La creacion de quinielas ya ha cerrado!"
+			redirect_to '/'
 		end
 	end
 
@@ -30,6 +35,7 @@ class QuinielasController < ApplicationController
 	def show_quinielas
 		@quiniela = Quiniela.find(params[:id])
 	end
+<<<<<<< HEAD
 
 	def delete
 		@quiniela = Quiniela.find(params[:id])
@@ -57,4 +63,16 @@ class QuinielasController < ApplicationController
 		@quiniela = Quiniela.find(params[:id])
 	end
 
+=======
+	def show
+		@user_session = UserSession.new
+	  	@session = current_user
+	  	@active_index = 'active'
+	  	if @session
+	  		@quinielas = Quiniela.where(user_id: @session.id).order("points DESC")
+	  	else
+  			redirect_to "/"
+		end
+	end
+>>>>>>> 5fbb441140f45195020b3537f45b4e4546b7b10f
 end
