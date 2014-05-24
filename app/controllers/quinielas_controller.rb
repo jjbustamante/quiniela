@@ -35,7 +35,6 @@ class QuinielasController < ApplicationController
 	def show_quinielas
 		@quiniela = Quiniela.find(params[:id])
 	end
-<<<<<<< HEAD
 
 	def delete
 		@quiniela = Quiniela.find(params[:id])
@@ -60,11 +59,6 @@ class QuinielasController < ApplicationController
 	end
 
 	def show
-		@quiniela = Quiniela.find(params[:id])
-	end
-
-=======
-	def show
 		@user_session = UserSession.new
 	  	@session = current_user
 	  	@active_index = 'active'
@@ -74,5 +68,4 @@ class QuinielasController < ApplicationController
   			redirect_to "/"
 		end
 	end
->>>>>>> 5fbb441140f45195020b3537f45b4e4546b7b10f
 end
