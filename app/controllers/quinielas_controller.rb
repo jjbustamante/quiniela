@@ -28,6 +28,33 @@ class QuinielasController < ApplicationController
 	  end
 
 	def show_quinielas
-		
+		@quiniela = Quiniela.find(params[:id])
 	end
+
+	def delete
+		@quiniela = Quiniela.find(params[:id])
+		if @quiniela.user.id == current_user.id
+			@quiniela.destroy
+		end
+		redirect_back_or_default root_url
+	end
+
+	def edit
+		@quiniela = Quiniela.find(params[:id])
+	end
+
+	def update
+		@quiniela = Quiniela.find(params[:id])
+		if @quiniela.update_attributes(params[:quiniela])
+      		flash[:success] = "Quiniela modificada exitosamente."
+			redirect_back_or_default root_url
+		else
+		    render 'edit'
+		end
+	end
+
+	def show
+		@quiniela = Quiniela.find(params[:id])
+	end
+
 end
