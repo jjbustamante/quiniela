@@ -1,0 +1,74 @@
+
+
+<div class="row">
+<div class="col-lg-6">
+
+<div id="customHandlers">
+<div class="demo"></div>
+</div>
+</div>
+<div class="col-lg-6">
+
+<p class="lead">Fase de eliminacion,... explicacion</p>
+</div>
+</div>
+
+
+  <script type="text/javascript">
+
+
+function saveFn(data, userData) {
+
+}
+
+$(function() {
+
+var customData = {
+    teams : [ 
+       <% 
+        counter = 0
+       @oct_matches.each do |match| 
+        if counter > 0
+       %>
+          ,
+      <% 
+      
+       end %>
+        [{name: "<%=match.team1.name%>", flag: '<%=match.team1.code%>'}, {name: "<%=match.team2.name%>", flag: '<%=match.team2.code%>'}]
+       <% 
+        counter = counter + 1
+       end %>
+    ]
+  }
+ 
+/* Edit function is called when team label is clicked */
+function edit_fn(container, data, doneCb) {
+  var input = $('<input type="text">')
+  input.val(data.name)
+  container.html(input)
+  input.focus()
+  input.blur(function() { doneCb({flag: data.flag, name: input.val()}) })
+}
+ 
+/* Render function is called for each team label when data is changed, data
+ * contains the data object given in init and belonging to this slot. */
+function render_fn(container, data, score) {
+  if (!data.flag || !data.name)
+    return
+  container.append('<span class="flagsp flagsp_'+data.flag+'" title=""> </span>').append(data.name)
+}
+ 
+$(function() {
+  $('div#customHandlers .demo').bracket({
+    init: customData,
+    save: function(){}, /* without save() labels are disabled */
+    decorator: {edit: edit_fn,
+                render: render_fn}})
+  })
+  })
+
+
+
+
+</script>
+

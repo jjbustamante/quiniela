@@ -13,6 +13,7 @@ class QuinielasController < ApplicationController
 				bet.match = m
 				@bets.push bet
 			end
+			@oct_matches = Match.where(round_id: 2)
 		else
 			flash[:success] = "¡La creacion de quinielas ya ha cerrado!"
 			redirect_to '/'
@@ -46,4 +47,5 @@ class QuinielasController < ApplicationController
   			redirect_to "/"
 		end
 	end
+
 end

@@ -1,0 +1,23 @@
+---
+brushed.png: brushed.png
+brushed/index.png: brushed.png
+favicongrande.png: favicongrande.png
+favicongrande/index.png: favicongrande.png
+flagsp.png: flagsp.png
+flagsp/index.png: flagsp.png
+logo.png: logo.png
+logo/index.png: logo.png
+logo2.png: logo2.png
+logo2/index.png: logo2.png
+old_moon.png: old_moon.png
+old_moon/index.png: old_moon.png
+photo.jpg: photo.jpg
+photo/index.jpg: photo.jpg
+rails.png: rails.png
+rails/index.png: rails.png
+application.js: application.js
+application/index.js: application.js
+application.css: application.css
+application/index.css: application.css
+jquery.min.map: jquery.min.map
+jquery/index.min.map: jquery.min.map
