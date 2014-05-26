@@ -2,7 +2,7 @@ class QuinielasController < ApplicationController
 	def new
 		if DateTime.now < APP_CONFIG['deadline_fase_grupos'].to_datetime
 			@quiniela = Quiniela.new
-			@matches = Match.where(round_id: 1).order("id ASC")
+			@matches = Match.where("").order("id ASC")
 			@session = current_user
 			@active_matches = 'active'	
 			@bets = []
@@ -14,6 +14,7 @@ class QuinielasController < ApplicationController
 				@bets.push bet
 			end
 			@oct_matches = Match.where(round_id: 2)
+			@next_round_available = false
 		else
 			flash[:success] = "¡La creacion de quinielas ya ha cerrado!"
 			redirect_to '/'
@@ -26,9 +27,10 @@ class QuinielasController < ApplicationController
 			@session = current_user
 			@quiniela.user = User.new
 			@quiniela.user.id = @session.id
+			@active_index = 'active'
 		    if @quiniela.save
-		      flash[:success] = "¡Bienvenido de nuevo!"
-		      redirect_back_or_default root_url
+		      flash[:success] = "¡Quniela creada con exito!"
+		      redirect_to '/quinielas/show'
 		    else
 		      render :action => :new
 		    end
@@ -56,11 +58,26 @@ class QuinielasController < ApplicationController
 	end
 
 	def edit
+
 		if DateTime.now < APP_CONFIG['deadline_fase_grupos'].to_datetime
+			@session = current_user
+			@active_index = 'active'
 			@quiniela = Quiniela.find(params[:id])
 			if @quiniela.user.id != current_user.id
 				redirect_back_or_default root_url
 			end
+			@bets = []
+			if @quiniela.bets.size <= 48
+				@matches = Match.where(round_id: [2,3,4,5,6]).order("id ASC")
+				@matches.each do |m|
+					bet = @quiniela.bets.build
+					bet.match = m
+					@bets.push bet
+				end
+			end
+
+			@oct_matches = Match.where(round_id: 2)
+			@next_round_available = false
 		else
 			flash[:success] = "¡Ya ha iniciado el torneo, no puede modificar sus apuestas de la fase de grupos!"
 			redirect_to '/'
@@ -75,7 +92,7 @@ class QuinielasController < ApplicationController
 			end	
 			if @quiniela.update_attributes(params[:quiniela])
 	      		flash[:success] = "Quiniela modificada exitosamente."
-				redirect_back_or_default root_url
+				redirect_to '/quinielas/show'
 			else
 			    render 'edit'
 			end
@@ -90,10 +107,11 @@ class QuinielasController < ApplicationController
 	  	@session = current_user
 	  	@active_index = 'active'
 	  	if @session
-	  		@quinielas = Quiniela.where(user_id: @session.id).order("points DESC")
+	  		@quinielas = Quiniela.where(user_id: @session.id).order("id ASC")
 	  	else
   			redirect_to "/"
 		end
 	end
-
+	def brackets
+	end
 end

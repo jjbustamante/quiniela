@@ -1,74 +1,76 @@
 
 
 <div class="row">
-<div class="col-lg-6">
+<div class="col-lg-12">
 
+<div class="page-header">
+              <h1 id="tables">Fase eliminatoria</h1>
+            </div>
 <div id="customHandlers">
+  <table class="header-brackets">
+<tr>
+<td>
+Octavos de final
+</td>
+<td style="padding-left: 58px;">
+Cuartos de final
+</td>
+<td style="padding-left: 85px;">
+Semifinal
+</td>
+<td style="padding-left: 92px;">
+Gran final
+</td>
+
+</tr>
+  </table>
 <div class="demo"></div>
 </div>
+
+<% if !@next_round_available %>
+<div class="round-disabled">Esta fase estara disponible a partir del 12/07/2014 mientras puedes guardar tu quiniela.</div>
+<% end %>
+
+
 </div>
-<div class="col-lg-6">
 
-<p class="lead">Fase de eliminacion,... explicacion</p>
+<div class="col-lg-4 fuleco2" style="border-left:solid 1px #ecf0f1; height:500px;padding-top: 296px;display:none">
+  <h4>Ronda de Eliminatoria</h4>
+  <p>En esta ronda debes hacer click en los campos de resultados por partido! <br>recuerda que en esta fase no hay empates, para que se calcule el siguiente partido debes haber completado el resultado del partido que le antecede.</p>
+  </div>
 </div>
-</div>
 
 
-  <script type="text/javascript">
-
-
-function saveFn(data, userData) {
-
+ <script type="text/javascript">
+ $(function(){
+if(resultsData != null){
+  if(firstRoundData.length > 0)
+    resultsData.push(firstRoundData);
+  if(qRoundData.length > 0)
+    resultsData.push(qRoundData);
+  if(sRoundData.length > 0)
+    resultsData.push(sRoundData);
+  if(fRoundData.length > 0)
+    resultsData.push(fRoundData);
 }
+  if(resultsData.length > 0){
 
-$(function() {
-
-var customData = {
-    teams : [ 
-       <% 
-        counter = 0
-       @oct_matches.each do |match| 
-        if counter > 0
-       %>
-          ,
-      <% 
-      
-       end %>
-        [{name: "<%=match.team1.name%>", flag: '<%=match.team1.code%>'}, {name: "<%=match.team2.name%>", flag: '<%=match.team2.code%>'}]
-       <% 
-        counter = counter + 1
-       end %>
-    ]
+  //resultsData.push(cRoundData);
+    var customData = {
+        teams : teamsData,
+        results: resultsData
+      }
+  }else{
+      var customData = {
+        teams : teamsData
+      }
   }
- 
-/* Edit function is called when team label is clicked */
-function edit_fn(container, data, doneCb) {
-  var input = $('<input type="text">')
-  input.val(data.name)
-  container.html(input)
-  input.focus()
-  input.blur(function() { doneCb({flag: data.flag, name: input.val()}) })
-}
- 
-/* Render function is called for each team label when data is changed, data
- * contains the data object given in init and belonging to this slot. */
-function render_fn(container, data, score) {
-  if (!data.flag || !data.name)
-    return
-  container.append('<span class="flagsp flagsp_'+data.flag+'" title=""> </span>').append(data.name)
-}
- 
-$(function() {
-  $('div#customHandlers .demo').bracket({
-    init: customData,
-    save: function(){}, /* without save() labels are disabled */
-    decorator: {edit: edit_fn,
-                render: render_fn}})
-  })
-  })
+  
 
 
 
+  initializeBrackets(customData);
+
+ });
 
 </script>
-

@@ -1,0 +1,74 @@
+ <% if f.object.match.id==49 %>
+ <h2 id="tables">Fase eliminatoria</h2>
+ <% end %>
+<table class="table table-striped table-hover">
+              <tbody>
+              
+
+                <tr id="match_<%= f.object.match.id %>">
+                  <td><span id="t1_<%= f.object.match.id %>_flag" class="flagsp flagsp_<%= f.object.team1.code %>" title=""> </span></td>
+                  <td id="t1_<%= f.object.match.id %>_name" class="col-ajust"><%= f.object.team1.name %></td>
+                  <td class="centered" style="width: 138px;">
+                    <%= f.text_field :score_t1, :class => "form-control small-control score" %>
+                    <%= f.hidden_field :team1_id, :value => f.object.team1.id %>
+                    <div class="form-separator">-</div>
+                    <%= f.text_field :score_t2, :class => "form-control small-control score" %>
+                    <%= f.hidden_field :team2_id, :value => f.object.team2.id %>
+                    <%= f.hidden_field :match_id, :value => f.object.match.id %>
+                  </td>
+                  <td id="t2_<%= f.object.match.id %>_name" class="rigth-align col-ajust"><%= f.object.team2.name %></td>
+                   <td class="rigth-align"> <span id="t2_<%= f.object.match.id %>_flag" class="flagsp flagsp_<%= f.object.team2.code %>" title=""> </span></td>
+                  
+                </tr> 
+
+              </tbody>
+            </table>
+
+            <% if f.object.match.round.id == 2 %>
+                  <script type="text/javascript">
+                  var rowData1 = {name: "<%=f.object.team1.name%>", flag: '<%=f.object.team1.code%>', matchId: '<%=f.object.match.id%>',teamId: '<%=f.object.team1.id%>' , scoreT1: "<%=f.object.score_t1%>"};
+                  var rowData2 = {name: "<%=f.object.team2.name%>", flag: '<%=f.object.team2.code%>', matchId: '<%=f.object.match.id%>',teamId: '<%=f.object.team2.id%>' , scoreT2: "<%=f.object.score_t2%>"};
+                  var matchData = [rowData1,rowData2];
+                 
+                  teamsData.push(matchData);
+
+                  var matchScoreData = [<%=f.object.score_t1%>,<%=f.object.score_t2%>];
+                      firstRoundData.push(matchScoreData);
+                  
+            </script>
+            <% end %>
+            <% if f.object.match.round.id == 3 %>
+                  <script type="text/javascript">
+                  
+                  var matchScoreData = [<%=f.object.score_t1%>,<%=f.object.score_t2%>];
+                      qRoundData.push(matchScoreData);
+                  
+            </script>
+            <% end %>
+
+            <% if f.object.match.round.id == 4 %>
+                  <script type="text/javascript">
+                  
+                  var matchScoreData = [<%=f.object.score_t1%>,<%=f.object.score_t2%>];
+                      sRoundData.push(matchScoreData);
+                  
+            </script>
+            <% end %>
+
+                 <% if f.object.match.round.id == 5 %>
+                  <script type="text/javascript">
+                  
+                  var matchScoreData = [<%=f.object.score_t1%>,<%=f.object.score_t2%>];
+                      fRoundData.push(matchScoreData);
+                  
+            </script>
+            <% end %>
+
+                 <% if f.object.match.round.id == 6 %>
+                  <script type="text/javascript">
+                  
+                  var matchScoreData = [<%=f.object.score_t1%>,<%=f.object.score_t2%>];
+                      fRoundData.push(matchScoreData);
+                  
+            </script>
+            <% end %>

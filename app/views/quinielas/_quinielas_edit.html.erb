@@ -6,10 +6,40 @@
                <div class="page-header">
             <h2 id="tables">Fase de grupos</h2>
             </div>
-                    <%= f.fields_for :bets, @quiniela.bets.order("match_id asc") do |builder| %>
-                      <%= render :partial => 'bets_fields', :locals => {:f => builder} %>
-                    <% end %>
-              <p>
-                <%= f.submit %>
+<script type="text/javascript">
+ var teamsData = [];
+ var firstRoundData = [];
+  var qRoundData = [];
+   var sRoundData = [];
+    var fRoundData = [];
+     var cRoundData = [];
+ var resultsData  = [];
+                      
+
+</script>
+            <%= f.fields_for :bets, @quiniela.bets.order("match_id asc") do |builder| %>
+              <%= render :partial => 'bets_fields_edit', :locals => {:f => builder} %>
+
+            <% end %>
+
+
+            <% if @bets.size > 0 %>
+                <%= f.fields_for :bets, @bets do |builder| %>
+                  <%= render :partial => 'bets_fields', :locals => {:f => builder} %>
+                <% end %>
+
+            <% end %>
+
+
+
+<%= render :partial => 'brackets'%>
+
+
+
+
+
+              <p style="text-align:left;width:100%;margin-top:20px;">
+                <%= f.submit "GUARDAR QUINIELA" ,:class => "btn btn-primary" %>
+
               </p>
               <% end %>
