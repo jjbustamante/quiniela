@@ -8,7 +8,7 @@ development:
   encoding: unicode
   database: dev_quiniela
   pool: 5
-    username: quiniela_user
+  username: quiniela_user
   password: Venecos4000
 
 # Warning: The database defined as "test" will be erased and

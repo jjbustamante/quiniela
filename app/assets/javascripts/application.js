@@ -13,8 +13,9 @@
 //= require jquery
 //= require jquery_ujs
 //= require_tree .
+//= require_tree ../../../vendor/assets/javascripts
 openMenu = function(e){
-	//$(".dropdown").addClass("open");
+	$(".dropdown").addClass("open");
 };
  
 /* Edit function is called when team label is clicked */

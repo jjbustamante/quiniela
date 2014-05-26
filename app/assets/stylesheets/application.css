@@ -397,10 +397,9 @@ height: 740px;
 	color: #666;
 }
 .help-fixed{
-	border-left:solid 1px #ecf0f1; margin-top:105px;height:500px;padding-top: 296px;
-		position: fixed !important;
-right: 330px;
-width: 400px !important;
+	height: 300px;
+padding-top: 300px;
+margin-top: 100px;
 }
 
 .round-disabled{
@@ -446,4 +445,29 @@ font-style: italic;
 padding-bottom: 9.5px;
 margin: 42px 0 21px;
 border-bottom: 1px solid #ccc;
+}
+
+.container {
+max-width: 1024px !important;
+}
+.h1 {
+font-size: 30px !important;
+}
+h1, .h1 {
+font-size: 30px !important;
+}
+.lead {
+font-size: 18.5px;
+}
+.lead.game-rule {
+font-size: 14pt;
+font-style: italic;
+}
+.fuleco3 {
+background: white;
+height: 740px;
+}
+.round-disabled {
+
+width: 111%;
 }
