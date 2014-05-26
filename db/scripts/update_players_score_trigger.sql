@@ -1,56 +1,92 @@
-CREATE TRIGGER update_players_score_trigger
-AFTER UPDATE OF resultado_columna ON partidos_reales_tabla
-FOR EACH ROW
-EXECUTE PROCEDURE p_update_players_score(new.partido_id);
+CREATE OR REPLACE FUNCTION increment(i integer) RETURNS integer AS $$
+        BEGIN
+                RETURN i + 1;
+        END;
+$$ LANGUAGE plpgsql;
 
-
-CREATE OR REPLACE FUNCTION p_update_players_score(partido_id partidos_reales_tabla.partido_id%TYPE)
-RETURNS VOID AS $$
+CREATE OR REPLACE FUNCTION update_players_score() RETURNS TRIGGER AS $$
 DECLARE
-	ref refcursor;
-	row_data BET%ROWTYPE;
+	row_data bets%ROWTYPE;
 	score integer;
-	match MATCH%ROWTYPE;
 BEGIN
-	SELECT * into match 
-	FROM MATCH
-	WHERE MATCH.partido_id = partido_id;
-	BEGIN
-	FOR row_data IN SELECT * FROM BET
-	WHERE BET.partido_id = partido_id LOOP
-		score := 0;
-		IF match.ronda_id = '2' THEN
-			IF row_data.EQUIPO1 = match.equipo1 or row_data.EQUIPO1 = match.equipo2 THEN
-				score := score + 1;
+		FOR row_data IN SELECT * FROM bets
+		WHERE bets.match_id = new.id LOOP
+			score := 0;
+			IF new.round_id <> 1 THEN
+				IF row_data.team1_id = new.team1_id or row_data.team1_id = new.team2_id THEN
+					score := score + 1;
+				END IF;
+				IF row_data.team2_id = new.team1_id or row_data.team2_id = new.team2_id THEN
+					score := score + 1;
+				END IF;
+				IF (row_data.team1_id = new.team1_id AND row_data.score_t1 = new.score_t1) or (row_data.team1_id = new.team2_id and row_data.score_t1 = new.score_t2) THEN
+					score := score + 1;
+				END IF;
+				IF (row_data.team2_id = new.team1_id AND row_data.score_t2 = new.score_t1) or (row_data.team2_id = new.team2_id and row_data.score_t2 = new.score_t2) THEN
+					score := score + 1;
+				END IF;
+				IF ((row_data.team2_id = new.team1_id AND row_data.score_t2 = new.score_t1) or (row_data.team2_id = new.team2_id and row_data.score_t2 = new.score_t2)) and
+				 ((row_data.team1_id = new.team1_id AND row_data.score_t1 = new.score_t1) or (row_data.team1_id = new.team2_id and row_data.score_t1 = new.score_t2)) THEN
+					score := score + 2;
+				END IF;
+				IF old.score_t1 <> null or old.score_t2 <> null THEN
+					IF row_data.team1_id = old.team1_id or row_data.team1_id = old.team2_id THEN
+						score := score - 1;
+					END IF;
+					IF row_data.team2_id = old.team1_id or row_data.team2_id = old.team2_id THEN
+						score := score - 1;
+					END IF;
+					IF (row_data.team1_id = old.team1_id AND row_data.score_t1 = old.score_t1) or (row_data.team1_id = old.team2_id and row_data.score_t1 = old.score_t2) THEN
+						score := score - 1;
+					END IF;
+					IF (row_data.team2_id = old.team1_id AND row_data.score_t2 = old.score_t1) or (row_data.team2_id = old.team2_id and row_data.score_t2 = old.score_t2) THEN
+						score := score - 1;
+					END IF;
+					IF ((row_data.team2_id = old.team1_id AND row_data.score_t2 = old.score_t1) or (row_data.team2_id = old.team2_id and row_data.score_t2 = old.score_t2)) and
+					 ((row_data.team1_id = old.team1_id AND row_data.score_t1 = old.score_t1) or (row_data.team1_id = old.team2_id and row_data.score_t1 = old.score_t2)) THEN
+						score := score - 2;
+					END IF;
+				END IF;
+			ELSE
+				IF (row_data.team1_id = new.team1_id AND row_data.score_t1 = new.score_t1) or (row_data.team1_id = new.team2_id and row_data.score_t1 = new.score_t2) THEN
+					score := score + 1;
+				END IF;
+				IF (row_data.team2_id = new.team1_id AND row_data.score_t2 = new.score_t1) or (row_data.team2_id = new.team2_id and row_data.score_t2 = new.score_t2) THEN
+					score := score + 1;
+				END IF;
+				IF ((row_data.team2_id = new.team1_id AND row_data.score_t2 = new.score_t1) or (row_data.team2_id = new.team2_id and row_data.score_t2 = new.score_t2)) and
+				 ((row_data.team1_id = new.team1_id AND row_data.score_t1 = new.score_t1) or (row_data.team1_id = new.team2_id and row_data.score_t1 = new.score_t2)) THEN
+					score := score + 2;
+				END IF;
+				IF old.score_t1 IS NOT NULL or old.score_t2 IS NOT NULL THEN
+					IF (row_data.team1_id = old.team1_id AND row_data.score_t1 = old.score_t1) or (row_data.team1_id = old.team2_id and row_data.score_t1 = old.score_t2) THEN
+						score := score - 1;
+					END IF;
+					IF (row_data.team2_id = old.team1_id AND row_data.score_t2 = old.score_t1) or (row_data.team2_id = old.team2_id and row_data.score_t2 = old.score_t2) THEN
+						score := score - 1;
+					END IF;
+					IF ((row_data.team2_id = old.team1_id AND row_data.score_t2 = old.score_t1) or (row_data.team2_id = old.team2_id and row_data.score_t2 = old.score_t2)) and
+					 ((row_data.team1_id = old.team1_id AND row_data.score_t1 = old.score_t1) or (row_data.team1_id = old.team2_id and row_data.score_t1 = old.score_t2)) THEN
+						score := score - 2;
+					END IF;
+				END IF;
 			END IF;
-			IF row_data.EQUIPO2 = match.equipo1 or row_data.EQUIPO2 = match.equipo2 THEN
-				score := score + 1;
-			END IF;
-			IF (row_data.EQUIPO1 = match.equipo1 AND row_data.resultado1 = match.resultado1) or (row_data.EQUIPO1 = match.equipo2 and row_data.resultado1 = match.resultado2) THEN
-				score := score + 1;
-			END IF;
-			IF (row_data.EQUIPO2 = match.equipo1 AND row_data.resultado2 = match.resultado1) or (row_data.EQUIPO2 = match.equipo2 and row_data.resultado2 = match.resultado2) THEN
-				score := score + 1;
-			END IF;
-			IF ((row_data.EQUIPO2 = match.equipo1 AND row_data.resultado2 = match.resultado1) or (row_data.EQUIPO2 = match.equipo2 and row_data.resultado2 = match.resultado2)) and
-			 ((row_data.EQUIPO1 = match.equipo1 AND row_data.resultado1 = match.resultado1) or (row_data.EQUIPO1 = match.equipo2 and row_data.resultado1 = match.resultado2)) THEN
-				score := score + 2;
-			END IF;
-		ELSE
-			IF (row_data.EQUIPO1 = match.equipo1 AND row_data.resultado1 = match.resultado1) or (row_data.EQUIPO1 = match.equipo2 and row_data.resultado1 = match.resultado2) THEN
-				score := score + 1;
-			END IF;
-			IF (row_data.EQUIPO2 = match.equipo1 AND row_data.resultado2 = match.resultado1) or (row_data.EQUIPO2 = match.equipo2 and row_data.resultado2 = match.resultado2) THEN
-				score := score + 1;
-			END IF;
-			IF ((row_data.EQUIPO2 = match.equipo1 AND row_data.resultado2 = match.resultado1) or (row_data.EQUIPO2 = match.equipo2 and row_data.resultado2 = match.resultado2)) and
-			 ((row_data.EQUIPO1 = match.equipo1 AND row_data.resultado1 = match.resultado1) or (row_data.EQUIPO1 = match.equipo2 and row_data.resultado1 = match.resultado2)) THEN
-				score := score + 2;
-			END IF;
-		END IF;
-		UPDATE quiniela as q set q.score = q.score + score where q.quiniela_id = row_data.quiniela_id;
-	END LOOP;
-	COMMIT;
-	RETURN;
+
+			UPDATE quinielas set points = coalesce(points,0) + score where id = row_data.quiniela_id;
+		END LOOP;
+	RETURN new;
+EXCEPTION WHEN others THEN 
+
+    raise notice 'The transaction is in an uncommittable state. Transaction was rolled back';
+
+    raise notice '% %', SQLERRM, SQLSTATE;
+    RETURN old;
 END;
-$$ language 'plpgsql';
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER update_players_score
+BEFORE UPDATE ON matches
+FOR EACH ROW
+EXECUTE PROCEDURE update_players_score();
+

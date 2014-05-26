@@ -367,6 +367,7 @@ height: 260px;
 }
 .fuleco2{
 	background: url(/assets/fuleco2.jpg) no-repeat;
+	min-height: 300px;
 }
 .fuleco3{
 background: url(/assets/fuleco3.jpg) no-repeat 0px 395px;
@@ -428,4 +429,21 @@ div.jQBracket .team.highlight div.label{
 }
 .label .flagsp{
 	margin-right: 5px;
+}
+.lead.game-rule{
+font-size: 14pt;
+font-style: italic;
+
+}
+.lead.game-rule.blaki{
+	font-size: 15pt;
+	font-weight: bold;
+}
+.lead.game-rule.sub-rule{
+	padding-left: 30px;
+}
+.page-header {
+padding-bottom: 9.5px;
+margin: 42px 0 21px;
+border-bottom: 1px solid #ccc;
 }

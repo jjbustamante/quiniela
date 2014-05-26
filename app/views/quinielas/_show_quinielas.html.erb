@@ -12,7 +12,7 @@
                   <td colspan="1">Numero de quiniela</td>
                   <td>Nombre de quiniela</td>
                   <td>Puntos acumulados</td>
-                  <td colspan="2">Accion</td>
+                  <td colspan="2"></td>
                 </tr> 
            
             <%
@@ -25,7 +25,7 @@
                   <td valign="middle"><span class="stuart-middle"><%= quiniela.name %></span></td>
                   <td><span class="stuart-middle"><%= quiniela.points ? quiniela.points : 0 %></span></td>
                   <td width="88px"><a href="/quinielas/<%= quiniela.id %>/edit" class="btn btn-primary">Editar</a></td>
-                   <td width="88px"><a href="#" class="btn btn-danger">Eliminar</a></td>
+                   <td width="88px"><a href="#" class="btn btn-danger" style="display:none;">Eliminar</a></td>
                   
                 </tr> 
 <% end 

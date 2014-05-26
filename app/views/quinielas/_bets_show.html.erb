@@ -3,15 +3,17 @@
               
 
                 <tr>
-                  <td><span class="flagsp flagsp_<%= f.object.match.team1.code %>" title=""> </span></td>
+                  <td><span class="flagsp flagsp_<%= f.match.team1.code %>" title=""> </span></td>
                   <td class="col-ajust"><%= f.match.team1.name %></td>
                   <td class="centered" style="width: 138px;">
-                    <%= f.score_t1 %>
-                    <div class="form-separator">-</div>
-                    <%= f.score_t2 %>
+                    <table>
+                      <tr><td><%= f.score_t1 %></td>
+                      <td><div class="form-separator">-</div></td>
+                      <td><%= f.score_t2 %></td></tr>
+                    </table>
                   </td>
                   <td class="rigth-align col-ajust"><%= f.match.team2.name %></td>
-                   <td class="rigth-align"> <span class="flagsp flagsp_<%= f.object.match.team2.code %>" title=""> </span></td>
+                   <td class="rigth-align"> <span class="flagsp flagsp_<%= f.match.team2.code %>" title=""> </span></td>
                   
                 </tr> 
 
