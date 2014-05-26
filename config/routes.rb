@@ -16,6 +16,7 @@ Demoapp::Application.routes.draw do
   resources :matches
   match 'signup' => 'users#new', :as => :signup
   match 'matches' => 'matches#show_matches', :as => :matches
+  match 'quinielas/showro/:id' => 'quinielas#showro', :as => :showro
   match 'results' => 'results#show_results', :as => :results
   match 'ranking' => 'ranking#show_ranking', :as => :ranking
   match 'update' => 'users#edit_info', :as => :update

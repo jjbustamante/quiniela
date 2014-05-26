@@ -8,6 +8,6 @@
                <div class="page-header">
             <h2 id="tables">Fase de grupos</h2>
             </div>
-                <% @quiniela.bets.order("match_id asc").each do |bet| %>
+                <% @quiniela.bets.where("match_id < 49").order("match_id asc").each do |bet| %>
                       <%= render :partial => 'bets_show', :locals => {:f => bet} %>
                 <% end %>

@@ -41,6 +41,10 @@ class QuinielasController < ApplicationController
 		@quiniela = Quiniela.find(params[:id])
 	end
 
+	def showro
+		@quiniela = Quiniela.find(params[:id])
+	end
+
 	def delete
 		if DateTime.now < APP_CONFIG['deadline_fase_grupos'].to_datetime
 			@quiniela = Quiniela.find(params[:id])
