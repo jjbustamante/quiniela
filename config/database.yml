@@ -8,8 +8,8 @@ development:
   encoding: unicode
   database: dev_quiniela
   pool: 5
-  username: postgres
-  password: 0123456789
+    username: quiniela_user
+  password: Venecos4000
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
@@ -19,13 +19,13 @@ test:
   encoding: unicode
   database: test_quiniela
   pool: 5
-  username: postgres
-  password: 0123456789
+  username: quiniela_user
+  password: Venecos4000
 
 production:
   adapter: postgresql
   encoding: unicode
   database: quiniela
   pool: 5
-  username: postgres
-  password: 0123456789
+  username: quiniela_user
+  password: Venecos4000
