@@ -1,8 +1,3 @@
-CREATE OR REPLACE FUNCTION increment(i integer) RETURNS integer AS $$
-        BEGIN
-                RETURN i + 1;
-        END;
-$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION update_players_score() RETURNS TRIGGER AS $$
 DECLARE
@@ -165,9 +160,10 @@ EXCEPTION WHEN others THEN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER update_players_score ON matches;
 
 CREATE TRIGGER update_players_score
-BEFORE UPDATE ON matches
+BEFORE UPDATE OF score_t1, score_t2 ON matches
 FOR EACH ROW
 EXECUTE PROCEDURE update_players_score();
 
