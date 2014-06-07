@@ -27,9 +27,7 @@ class QuinielasController < ApplicationController
 	def create
 		if DateTime.now < APP_CONFIG['deadline_fase_grupos'].to_datetime
 		    @quiniela = Quiniela.new(params[:quiniela])
-			@session = current_user
-			@quiniela.user = User.new
-			@quiniela.user.id = @session.id
+			@quiniela.user_id = current_user.id
 			@active_index = 'active'
 		    if @quiniela.save
 		      flash[:success] = "¡Quniela creada con exito!"
@@ -144,8 +142,7 @@ class QuinielasController < ApplicationController
 	end
 
 	def show
-		@user_session = UserSession.new
-	  	@session = current_user
+		@session = current_user
 	  	@active_index = 'active'
 	  	@can_create_quiniela = DateTime.now < APP_CONFIG['deadline_fase_grupos'].to_datetime
 	  	if @session

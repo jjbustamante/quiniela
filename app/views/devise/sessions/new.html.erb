@@ -1,0 +1,13 @@
+
+
+<div class="container" style="text-align: center;">
+      	<%= form_for(resource, as: resource_name, :html => {:class => "form-signin", :style=> "display: inline-block;"}, url: session_path(resource_name)) do |f| %>
+        <h2 class="form-signin-heading" style="text-align: left;">Entrar</h2>
+        <%= f.email_field :email, autofocus: true, :class=> "form-control",:placeholder => "Email", :required => "" %>
+        <%= f.password_field :password, autocomplete: "off", :class=> "form-control",:placeholder => "Contrasena", :style => "margin-top: 5px;",:required => "" %>
+        <div style="height:10px;"></div>
+        <%= f.submit "Entrar", :class=>"btn btn-lg btn-primary btn-block" %>
+      <% end %>
+
+    </div>
+<%= render "devise/shared/links" %>

@@ -1,16 +1,21 @@
 Demoapp::Application.routes.draw do
 
 
+  devise_for :users
+ resources :users   
+
+  #devise_for :users
+
   get "welcome/index"
 
   #config/routes.rb
-  resources :user_sessions
+  #resources :user_sessions
 
-  match 'login' => "user_sessions#new",      :as => :login
-  match 'logout' => "user_sessions#destroy", :as => :logout
+  #match 'login' => "user_sessions#new",      :as => :login
+  #match 'logout' => " sessions#destroy", :as => :logout
 
-  resources :users  # give us our some normal resource routes for users
-  resource :user, :as => 'account'  # a convenience route
+  #resources :users  # give us our some normal resource routes for users
+  #resource :user, :as => 'account'  # a convenience route
 
   resources :quinielas
   resources :matches
@@ -24,6 +29,7 @@ Demoapp::Application.routes.draw do
   match 'update' => 'users#edit_info', :as => :update
   match 'edit_matches' => 'matches#edit', :as => :edit_matches 
   match 'brackets' => 'quinielas#brackets', :as => :brackets 
+  match 'edit' => 'users#edit', :as => :edit 
   match 'showcount' => 'users#show_count', :as => :showcount
   match 'sudocool' => 'users#sudocool'
   

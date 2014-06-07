@@ -43,18 +43,20 @@
             </li>
           </ul>
 
-<% if !@session %>
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="/login" class="">Entrar</a></li>
-            <li><a href="/signup" class="btn-menu">Registrarse</a></li>
-          </ul>
-<% else %>
+<% if @session %>
+
  <ul class="nav navbar-nav navbar-right">
             <li class="dropdown">
               <a class="dropdown-toggle holgado" data-toggle="dropdown" href="#" onclick="openMenu(this);" id="themes">
                 <div class="profile-picture">
                   <img style="" src="<%= @session.photo.url(:small) %>">
-                </div><%=@session.name %> 
+                </div>
+<% if @session.name.empty? %>
+                <%=@session.email.split(/@/)[0] %> 
+ <% else %>
+            <%=@session.name %> 
+ <% end %>               
+
                 <span class="caret"></span>
               </a>
               <ul class="dropdown-menu" aria-labelledby="themes">
@@ -63,8 +65,16 @@
    <li><a href="/showcount">Ver quinielas por usuario</a></li>
 <% end %>
 
-                 <li><a href="/user/edit">Editar mis datos</a></li>
-                <li><a href="/logout">Salir</a></li>
+                 <li>
+
+                  <a href="/edit">Editar mis datos</a>
+
+                </li>
+                <li>
+
+                 <%= link_to "Salir", destroy_user_session_path %>
+                
+                </li>
               </ul>
             </li>
            

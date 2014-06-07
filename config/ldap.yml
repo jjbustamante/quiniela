@@ -1,0 +1,20 @@
+development:
+  host: apolo.dbaccess.com
+  port: 389
+  attribute: cn#sAMAccountName
+  base: OU=Users DBAccess,DC=dbaccess,DC=com
+  admin_user: serviceslayer@dbaccess.com,DC=dbaccess,DC=com
+  admin_password: serviceslayer
+  ssl: false
+  # <<: *AUTHORIZATIONS
+
+
+production:
+  host: apolo.dbaccess.com
+  port: 389
+  attribute: cn#sAMAccountName
+  base: OU=Users DBAccess,DC=dbaccess,DC=com
+  admin_user: serviceslayer@dbaccess.com,DC=dbaccess,DC=com
+  admin_password: serviceslayer
+  ssl: false
+  # <<: *AUTHORIZATIONS
