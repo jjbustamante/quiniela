@@ -5,6 +5,23 @@
 <div id="16stage" class="row" style="margin-left: 0px;">
 <div class="col-lg-12">
 
+ <%
+                @oct_matches.each do |match| 
+                  %>
+            <script type="text/javascript">
+                  var rowData1 = {name: "<%=match.team1.name%>", flag: '<%=match.team1.code%>', matchId: '<%=match.id%>',teamId: '<%=match.team1.id%>' };
+                  var rowData2 = {name: "<%=match.team2.name%>", flag: '<%=match.team2.code%>', matchId: '<%=match.id%>',teamId: '<%=match.team2.id%>' };
+                  var matchData = [rowData1,rowData2];
+                 
+                  teamsData.push(matchData);
+            </script>
+                  <%
+                   
+                end
+                  %>
+
+
+
 
 <div id="customHandlers">
   <table class="header-brackets">

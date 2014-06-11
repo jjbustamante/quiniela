@@ -1,8 +1,10 @@
 <%= form_for @quiniela, :url => {:action => "update", :id => @quiniela}, :html => {:id => "quinielaForm"}  do |f| %>
+
+
             <div class="page-header">
-            <h1 id="tables">Edita tu Quiniela</h1>
+            <h1 id="tables">Edita tu Quiniela </h1>
             </div>
-               <h3 id="tables">Nombre:</h3><%= f.text_field :name, :class => "form-control", :maxlength => "35" %>
+               <h3 id="tables">Nombre:</h3><%= f.text_field :name, :class => "form-control required", :maxlength => "35" %>
                <div class="page-header">
             <h2 id="tables">Fase de grupos</h2>
             </div>
@@ -17,19 +19,35 @@
                       
 
 </script>
+
+<div class="form-tournament-wrapper">
             <%= f.fields_for :bets, @quiniela.bets.order("match_id asc") do |builder| %>
               <%= render :partial => 'bets_fields_edit', :locals => {:f => builder} %>
 
             <% end %>
 
 
-            <% if @bets.size > 0 %>
+  
                 <%= f.fields_for :bets, @bets do |builder| %>
-                  <%= render :partial => 'bets_fields', :locals => {:f => builder} %>
-                <% end %>
+                  <%= render :partial => 'bets_fields_hidden', :locals => {:f => builder} %>
+              
 
             <% end %>
 
+
+<% if !@group_stage_open %>
+<div class="round-disabled">
+<div class="disabled-text alert alert-warning">
+  Esta fase está bloqueada.<a href="#" data-toggle="tooltip" title="<%= @bloq_message2%>" class="link-small">¿Por que?</a>
+</div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){
+    $(".link-small").tooltip({placement: 'top'});
+});
+</script>
+<% end %>
+</div>
 
 
 <%= render :partial => 'brackets'%>
@@ -41,5 +59,15 @@
               <p style="text-align:left;width:100%;margin-top:20px;">
                 <%= f.submit "GUARDAR QUINIELA" ,:class => "btn btn-primary" %>
 
+
               </p>
+
               <% end %>
+              <script type="text/javascript">
+jQuery.extend(jQuery.validator.messages, {
+    required: "",
+    digits: ""
+    
+});
+  $( "#quinielaForm" ).validate();
+</script>

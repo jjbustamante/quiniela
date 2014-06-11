@@ -1,52 +1,11 @@
-<!--<script>
-$(document).ready(function(){
-
-$.validator.addMethod("isNum", function(value, element) {
-    if (isNaN(value)) {
-        return false;
-    }
-    else {
-        return true;
-    }
-}, "Debe ser un valor numerico");
-
- $(".score").rules("add", { 
-    required:true,  
-    isNum:true
-  });
-
-$.validator.addClassRules({
-    score: {
-        required:true,
-        isNum:true
-    }
-});
-
- $("#quinielaForm").validate({
-
-   rules: {
-       quiniela_name: {
-        required:true,
-        minlenght:4,
-       }
-   },
-   messages:{
-    quiniela_name:{
-      required:"Se requiere un nombre para la quiniela",
-      minlenght:"Debe tener al menos 4 caracteres"
-    }
-   }
- });
 
 
-});
-</script>
--->
+
 <%= form_for @quiniela, url: '/quinielas', :html => {:id => "quinielaForm"}  do |f| %>
             <div class="page-header">
-            <h1 id="tables">Crea tu Quiniela</h1>
+            <h1 id="tables">Crea tu Quiniela </h1>
             </div>
-               <h3 id="tables">Nombre:</h3><%= f.text_field :name, :class => "form-control", :maxlength => "35" %>
+               <h3 id="tables">Nombre:</h3><%= f.text_field :name, :class => "form-control required", :maxlength => "35" %>
                <div class="page-header">
             <h2 id="tables">Fase de grupos</h2>
             </div>
@@ -68,12 +27,20 @@ $.validator.addClassRules({
 
                      
 
-           <%= render :partial => 'brackets'%>
+                 <%= render :partial => 'brackets_new' %>
 
 
 
               <p style="text-align:left;width:100%;margin-top:20px;">
-                <%= f.submit "GUARDAR QUINIELA" ,:class => "btn btn-primary" %>
+                <%= f.submit "GUARDAR QUINIELA" ,:class => "btn btn-primary", :id => "saveQuinela"  %>
 
               </p>
               <% end %>
+<script type="text/javascript">
+jQuery.extend(jQuery.validator.messages, {
+    required: "",
+    digits: ""
+    
+});
+  $( "#quinielaForm" ).validate();
+</script>

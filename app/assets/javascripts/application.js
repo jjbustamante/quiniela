@@ -14,6 +14,8 @@
 //= require jquery_ujs
 //= require_tree .
 //= require_tree ../../../vendor/assets/javascripts
+
+var customData = {};
 openMenu = function(e){
 	$(".dropdown").addClass("open");
 };
@@ -296,4 +298,11 @@ initializeBrackets = function(customData){
 	    decorator: {edit: edit_fn,
 	                render: render_fn}});
 	  $(".jQBracket").css("width","762px");
+};
+submitQuinielaForm = function(){
+	if($("#quinielaForm").valid()){
+        alert("valido");
+    }else{
+      	alert("no valido");
+    }
 };

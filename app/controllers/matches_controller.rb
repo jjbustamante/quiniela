@@ -3,21 +3,14 @@ class MatchesController < ApplicationController
 	end
 
 	def edit
-		  @matches = Match.where(round_id: 1).order("id ASC")
-		  @matches_round_oct = Match.where(round_id: 2).order("id ASC")
-		  @matches_round_cua = Match.where(round_id: 3).order("id ASC")
-		  @matches_round_sem = Match.where(round_id: 4).order("id ASC")
-		  @matches_round_3er = Match.where(round_id: 5).order("id ASC")
-		  @matches_round_fin = Match.where(round_id: 6).order("id ASC")
-	  	@teamsA = Team.where(group: 'A',status: 0).order("id desc")
-	  	@teamsB = Team.where(group: 'B',status: 0).order("id desc")
-		@teamsC = Team.where(group: 'C',status: 0).order("id desc")
-		@teamsD = Team.where(group: 'D',status: 0).order("id desc")
-		@teamsE = Team.where(group: 'E',status: 0).order("id desc")
-		@teamsF = Team.where(group: 'F',status: 0).order("id desc")
-		@teamsG = Team.where(group: 'G',status: 0).order("id desc")
-		@teamsH = Team.where(group: 'H',status: 0).order("id desc")
-	  @session = current_user
+		@matches = Match.where(round_id: 1).order("id ASC")
+		@matches_round_oct = Match.where(round_id: 2).order("id ASC")
+		@matches_round_cua = Match.where(round_id: 3).order("id ASC")
+	    @matches_round_sem = Match.where(round_id: 4).order("id ASC")
+		@matches_round_3er = Match.where(round_id: 5).order("id ASC")
+		@matches_round_fin = Match.where(round_id: 6).order("id ASC")
+	  	@allTeams = Team.where(status: 0).order("id desc")
+	  	@session = current_user
 	end
 
 	def update

@@ -1,7 +1,9 @@
- <% if f.object.match.id==49 %>
- <h2 id="tables">Fase eliminatoria</h2>
- <% end %>
-<table class="table table-striped table-hover">
+
+<table class="table table-striped table-hover"
+ <% if f.object.match.id>=49 %>
+ style="display:none;"
+  <% end %>
+>
               <tbody>
               
 
@@ -9,10 +11,10 @@
                   <td><span id="t1_<%= f.object.match.id %>_flag" class="flagsp flagsp_<%= f.object.team1.code %>" title=""> </span></td>
                   <td id="t1_<%= f.object.match.id %>_name" class="col-ajust"><%= f.object.team1.name %></td>
                   <td class="centered" style="width: 138px;">
-                    <%= f.text_field :score_t1, :class => "form-control small-control score" %>
+                    <%= f.text_field :score_t1, :class => "form-control small-control score required digits" %>
                     <%= f.hidden_field :team1_id, :value => f.object.team1.id %>
                     <div class="form-separator">-</div>
-                    <%= f.text_field :score_t2, :class => "form-control small-control score" %>
+                    <%= f.text_field :score_t2, :class => "form-control small-control score required digits" %>
                     <%= f.hidden_field :team2_id, :value => f.object.team2.id %>
                     <%= f.hidden_field :match_id, :value => f.object.match.id %>
                   </td>

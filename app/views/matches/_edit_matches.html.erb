@@ -30,33 +30,10 @@
                 <tr>
                   <td><span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span></td>
                   <td class="col-ajust"><% 
-                    teams = @teamsA
-                    if match.team1.group == 'A'
-                        teams = @teamsA
-                    end
-                    if match.team1.group == 'B'
-                        teams = @teamsB
-                    end
-                    if match.team1.group == 'C'
-                        teams = @teamsC
-                    end
-                    if match.team1.group == 'D'
-                        teams = @teamsD
-                    end
-                    if match.team1.group == 'E'
-                        teams = @teamsE
-                    end
-                    if match.team1.group == 'F'
-                        teams = @teamsF
-                    end
-                    if match.team1.group == 'G'
-                        teams = @teamsG
-                    end
-                    if match.team1.group == 'H'
-                        teams = @teamsH
-                    end
+                    teams = @allTeams
+                    
 
-                    if round_id == 2 and match.editable == 1%>
+                    if match.editable == 1%>
                      <%= match.team1.name %><%= f.select(:team1_id, teams.map { |value| [ value.name, value.id ] },{},:class => "form-control") %>
                     <%else%>
                     <%= match.team1.name %>
@@ -72,33 +49,9 @@
                   </td>
                   <td class="rigth-align col-ajust">
                                         <% 
-                    teams = @teamsA
-                    if match.team2.group == 'A'
-                        teams = @teamsA
-                    end
-                    if match.team2.group == 'B'
-                        teams = @teamsB
-                    end
-                    if match.team2.group == 'C'
-                        teams = @teamsC
-                    end
-                    if match.team2.group == 'D'
-                        teams = @teamsD
-                    end
-                    if match.team2.group == 'E'
-                        teams = @teamsE
-                    end
-                    if match.team2.group == 'F'
-                        teams = @teamsF
-                    end
-                    if match.team2.group == 'G'
-                        teams = @teamsG
-                    end
-                    if match.team2.group == 'H'
-                        teams = @teamsH
-                    end
-
-                    if round_id == 2 and match.editable == 1 %>
+                  
+                    
+                    if match.editable == 1 %>
                      <%= match.team2.name %>
                       <%= f.select(:team2_id, teams.map { |value| [ value.name, value.id ] },{}, :class => "form-control") %>
 
