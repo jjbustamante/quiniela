@@ -1,0 +1,24 @@
+{
+  "name": "quiniela",
+  "version": "0.0.0",
+  "description": "Sistema de Quiniela version Europa",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://jjbustamante@bitbucket.org/manu120189/quiniela.git"
+  },
+  "author": "",
+  "license": "ISC"
+  
+  "engines": {
+    "node": "0.10.x"
+  }
+  
+}
