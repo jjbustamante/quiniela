@@ -62,6 +62,7 @@ class UsersController < ApplicationController
     end
     redirect_to "/"
   end
+  
 
   def show_count
     @user = current_user # makes our views "cleaner" and more consistent
