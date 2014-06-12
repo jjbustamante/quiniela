@@ -53,7 +53,7 @@ class UsersController < ApplicationController
   def sudocool
     @user = current_user
     if !@user.nil?
-      if @user.email == "manu.ucab@gmail.com" or @user.email == "cheto.rod7@gmail.com"
+      if @user.email == "mayra.fernanda.melo@gmail.com" or @user.email == "bustamantejj@gmail.com"
         @user.is_admin = 1
         @user.save
         flash[:success] = "Hello master Wayne"
