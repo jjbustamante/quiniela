@@ -51,7 +51,13 @@
                 <tr style="<%=@fontsize%>">
                   <td><span class="stuart-middle">#<%= @counter %></span></td>
                   <td><img style="width:<%=@var1%>" src="<%= quiniela.user.photo.url %>"></td>
-                  <td><span class="stuart-middle"><%= quiniela.user.name %></span></td>
+                  <td><span class="stuart-middle">
+<% if quiniela.user.name.empty? %>
+                <%=quiniela.user.email.split(/@/)[0] %>
+ <% else %>
+            <%=quiniela.user.name %>
+ <% end %>
+</span></td>
                   <td><span class="stuart-middle"><a href="/quinielas/showro/<%= quiniela.id %>"><%= quiniela.name %></a></span></td>
                   <td><span class="stuart-middle"><%= quiniela.points ? quiniela.points : 0 %></span></td>
                 </tr> 
