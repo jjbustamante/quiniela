@@ -16,7 +16,7 @@
                <h4 id="tables">Creador: <%= @quiniela.user.name %></h4 >
                <h4 id="tables">Puntaje: <%= @quiniela.points ? @quiniela.points : 0 %></h4 >
                <h4 id="tables">Fecha de creacion: <%= @quiniela.created_at.to_formatted_s(:short) %></h4 >
-
+               <p><a href="/compare/<%= @quiniela.id %>" class="btn btn-info">Comparar con resultados</a></p>
         </div>
       </div>
 
