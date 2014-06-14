@@ -4,15 +4,19 @@
 <div class="bs-docs-section">
 
         <div class="row">
-          <div class="col-sm-6 col-lg-6">
+          <div class="col-sm-5 col-lg-5">
            
 
             <%= render :partial => 'show_quinielas'%>
             
           </div>
 
-          
- <div class="col-sm-6 col-lg-6">
+     <div class="col-sm-2 col-lg-2">  
+     	<div class="page-header">
+            <h1 id="tables">Puntos</h1>
+            </div>
+     </div>    
+ <div class="col-sm-5 col-lg-5">
            
 
             <%= render :partial => 'show_results'%>
@@ -25,3 +29,46 @@
 
 
 </div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	for(i=1;i<=64;i++){
+		var betMatchScore1 = $("#bet_"+i+"_score_1").html();
+		var betMatchScore2 = $("#bet_"+i+"_score_2").html();
+		var matchScore1 = $("#match_"+i+"_score_1").html();
+		var matchScore2 = $("#match_"+i+"_score_2").html();
+		var points = 0;
+
+		if(betMatchScore1 == matchScore1){
+			points=points+1;
+		}
+		if(betMatchScore2 == matchScore2){
+			points=points+1;
+		}
+		if(betMatchScore1 > betMatchScore2 && matchScore1 > matchScore2){
+			points=points+2; 
+		}
+		if(betMatchScore2 > betMatchScore1 && matchScore2 > matchScore1){
+			points=points+2; 
+		}
+		if(betMatchScore1 == betMatchScore2 && matchScore1 == matchScore2){
+			points=points+2; 
+		}
+
+		//alert(points);
+		if($("#match_"+i+"_score_1").hasClass("played")){
+			if(points>0){
+				$("#earned_"+i).html("+"+points);
+
+			}else{
+				$("#earned_"+i).html(points);
+				$("#earned_"+i).css("color","rgb(233, 102, 102)");
+			}
+				
+		
+				
+		}
+			
+	}
+});
+</script>

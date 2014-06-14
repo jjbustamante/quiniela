@@ -1,7 +1,7 @@
 
  <% if  f.match.round.id == 1 and  f.match.id==1 %>             
  
-<h3 id="tables">Fase de grupos</h3>
+
  
 <% end  %>
 
@@ -43,9 +43,9 @@
                   <td class="col-ajust"><%= f.team1.name %></td>
                   <td class="centered" style="width: 138px;">
                     <table>
-                      <tr><td><%= f.score_t1 %></td>
+                      <tr><td id="bet_<%= f.match.id %>_score_1"><%= f.score_t1 %></td>
                       <td><div class="form-separator">-</div></td>
-                      <td><%= f.score_t2 %></td></tr>
+                      <td id="bet_<%= f.match.id %>_score_2"><%= f.score_t2 %></td></tr>
                     </table>
                   </td>
                   <td class="rigth-align col-ajust"><%= f.team2.name %></td>

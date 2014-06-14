@@ -42,7 +42,7 @@ id="round2"
 
  <% if  match.round.id == 1 and  match.id==1 %>             
  
-<h2 id="tables" class="niveler"></h2>
+
  
 <% end  %>
 
@@ -87,7 +87,7 @@ game-over
               
 
                 <tr>
-                  <td><span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span></td>
+                  <td style="position:relative;"><div id="earned_<%= match.id %>" class="points"></div><span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span></td>
                   <td class="col-ajust">
                     <% if @winner_id == match.team1_id%>
                     <img width="20px" src="https://cdn4.iconfinder.com/data/icons/48x48-free-object-icons/48/Entertainment.png">
@@ -99,9 +99,11 @@ game-over
 
 <% if @played %>
                     <table style="height: 32px;">
-                      <tbody><tr><td><%= match.score_t1 %></td>
-                      <td><div class="form-separator">-</div></td>
-                      <td><%= match.score_t2 %></td></tr>
+                      <tbody>
+                        <tr>
+                          <td id="match_<%= match.id %>_score_1" class="played" ><%= match.score_t1 %></td>
+                          <td><div class="form-separator">-</div></td>
+                          <td id="match_<%= match.id %>_score_2"><%= match.score_t2 %></td></tr>
                     </tbody></table>
 <% else%>
 <div style="height: 32px;">
@@ -120,7 +122,11 @@ game-over
                     <% end %>
                     <%= match.team2.name %>
                   </td>
-                   <td class="rigth-align"> <span class="flagsp flagsp_<%= match.team2.code %>" title=""> </span></td>
+                   <td class="rigth-align" > 
+
+                    <span class="flagsp flagsp_<%= match.team2.code %>" title=""> </span>
+                    
+                   </td>
                   
                 </tr> 
 

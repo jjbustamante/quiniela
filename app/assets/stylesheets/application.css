@@ -542,16 +542,19 @@ color: rgb(103, 103, 253);
 	height:28px;
 }
 .points{
-	width: 100px;
+width: 100px;
 height: 50px;
 position: absolute;
-top: 0px;
-right: -137px;
+top: -4px;
+left: -155px;
 text-align: center;
-font-size: 30pt;
-color: rgb(57, 206, 29);
+font-size: 28pt;
+color: #39ce1d;
 font-style: italic;
 font-weight: bold;
+}
+.points.red-points{
+	color: red;
 }
 h1#tables{
 	color: #18bc9c !important;
