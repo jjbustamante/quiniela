@@ -37,7 +37,11 @@
 <% end  %>
                 <tr>
                   <td><span class="flagsp flagsp_<%= f.team1.code %>" title=""> </span></td>
-                  <td class="col-ajust"><%= f.team1.name %></td>
+                  <td class="col-ajust">
+                    <a href="/compare/compare_by_bet/<%= f.match.id%>">
+                    <%= f.team1.name %>
+                  </a>
+                </td>
                   <td class="centered" style="width: 138px;">
                     <table>
                       <tr><td><%= f.score_t1 %></td>
@@ -45,7 +49,12 @@
                       <td><%= f.score_t2 %></td></tr>
                     </table>
                   </td>
-                  <td class="rigth-align col-ajust"><%= f.team2.name %></td>
+                  <td class="rigth-align col-ajust">
+<a href="/compare/compare_by_bet/<%= f.match.id%>">
+                  
+                    <%= f.team2.name %>
+                  </a>
+                  </td>
                    <td class="rigth-align"> <span class="flagsp flagsp_<%= f.team2.code %>" title=""> </span></td>
                   
                 </tr> 

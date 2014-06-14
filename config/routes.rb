@@ -23,6 +23,8 @@ Demoapp::Application.routes.draw do
   match 'signup' => 'users#new', :as => :signup
   match 'matches' => 'matches#show_matches', :as => :matches
   match 'quinielas/showro/:id' => 'quinielas#showro', :as => :showro
+  match 'compare/compare_by_bet/:id' => 'compare#compare_by_bet', :as => :compare_by_bet
+
   match 'quinielas/:id/delete' => 'quinielas#delete', :as => :delete
   
   match 'results' => 'results#show_results', :as => :results
