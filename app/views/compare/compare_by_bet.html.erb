@@ -79,7 +79,18 @@ end
 
   
  <div class="col-sm-5 col-lg-5" style="">
-           
+           <div style="
+    float: right;
+    margin-top: -73px;
+">
+ <% if @match.id > 1  %>
+<a href="/compare/compare_by_bet/<%=@match.id - 1%>" class="btn btn-info">Anterior</a>
+ <% end %>           
+
+ <% if @match.id < 48%>
+<a href="/compare/compare_by_bet/<%=@match.id + 1%>" class="btn btn-info">Siguiente</a>
+ <% end %>  
+           </div>
 
             <h4>Resultado real</h4>
             <table class="table table-striped table-hover 
@@ -187,8 +198,6 @@ game-over
     <!--Div that will hold the pie chart-->
     <div id="chart_div">Cargando gráfica...</div>
                     </div>
-
-            
 
 
 
