@@ -28,7 +28,7 @@
                     @winners1_count = @winners1_count + 1
                   end
                   if bet.score_t1 < bet.score_t2
-                    @winners2_count = @winners1_count + 1
+                    @winners2_count = @winners2_count + 1
 end
                   
                   if  bet.score_t1 == bet.score_t2
@@ -183,7 +183,7 @@ game-over
       }
     </script>
 
-    <h4>Porcentajes segun apuestas.</h4>
+    <h4>Porcentajes segun apuestas.<%=@bets.size%></h4>
     <!--Div that will hold the pie chart-->
     <div id="chart_div">Cargando gráfica...</div>
                     </div>
