@@ -171,6 +171,7 @@ BEGIN
 			END IF;
 
 			UPDATE quinielas set points = coalesce(points,0) + score where id = row_data.quiniela_id;
+			
 		END LOOP;
 	RETURN new;
 EXCEPTION WHEN others THEN 

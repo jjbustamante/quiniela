@@ -19,6 +19,7 @@ Demoapp::Application.routes.draw do
 
   resources :quinielas
   resources :matches
+  resources :compare
   match 'signup' => 'users#new', :as => :signup
   match 'matches' => 'matches#show_matches', :as => :matches
   match 'quinielas/showro/:id' => 'quinielas#showro', :as => :showro

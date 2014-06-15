@@ -32,8 +32,14 @@
                   <td valign="middle"><span class="stuart-middle"><%= quiniela.name %></span></td>
                   <td><span class="stuart-middle"><%= quiniela.points ? quiniela.points : 0 %></span></td>
                   <td width="80px"><a href="/quinielas/showro/<%= quiniela.id %>" class="btn btn-success">Ver</a></td>
+                  <td width="80px"><a href="/compare/<%= quiniela.id %>" class="btn btn-info">Comparar</a></td>
+
+
                   <td width="88px"><a href="/quinielas/<%= quiniela.id %>/edit" class="btn btn-primary">Editar</a></td>
+
+                  <% if @can_create_quiniela %>
                    <td width="88px"><a href="/quinielas/<%= quiniela.id %>/delete" class="btn btn-danger">Eliminar</a></td>
+                   <% end %>
                   
                 </tr> 
 <% end 

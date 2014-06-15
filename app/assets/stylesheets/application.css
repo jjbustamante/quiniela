@@ -533,3 +533,27 @@ hr.separator {
 .hidden-radio{
 	display: none;
 }
+h2, .h2 {
+font-size: 29px;
+font-style: italic;
+color: rgb(103, 103, 253);
+}
+.niveler{
+	height:28px;
+}
+.points{
+	width: 100px;
+height: 50px;
+position: absolute;
+top: 0px;
+right: -137px;
+text-align: center;
+font-size: 30pt;
+color: rgb(57, 206, 29);
+font-style: italic;
+font-weight: bold;
+}
+h1#tables{
+	color: #18bc9c !important;
+	font-style: italic;
+}
