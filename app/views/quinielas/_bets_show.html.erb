@@ -1,46 +1,58 @@
-<table class="table table-striped table-hover">
-              <tbody>
- <% if f.match.round.id == 1 and f.match.id==1 %>             
-<tr><td colspan="5">
+<% if f.match.round.id == 1 and f.match.id==1 %>             
+
 <h2 id="tables">Fase de grupos</h2>
-</td></tr>
+
 <% end  %>
 
  <% if f.match.round.id == 2 and f.match.id==49 %>             
-<tr><td colspan="5">
+
 <h2 id="tables">Octavos de final</h2>
-</td></tr>
+
 <% end  %>
 
  <% if f.match.round.id == 3 and f.match.id==57 %>             
-<tr><td colspan="5">
+
 <h2 id="tables">Cuartos de final</h2>
-</td></tr>
+
 <% end  %>
 
  <% if f.match.round.id == 4 and f.match.id==61 %>             
-<tr><td colspan="5">
+
 <h2 id="tables">Semifinales</h2>
-</td></tr>
+
 <% end  %>
 
  <% if f.match.round.id == 5 and f.match.id==63 %>             
-<tr><td colspan="5">
+
 <h2 id="tables">3er Lugar</h2>
-</td></tr>
+
 <% end  %>
 
  <% if f.match.round.id == 6 and f.match.id==64 %>             
-<tr><td colspan="5">
+
 <h2 id="tables">Final</h2>
-</td></tr>
+
 <% end  %>
+
+<table class="table table-striped table-hover
+<% if f.match.played==1 %>
+	game-over
+<% end %>
+">
+              <tbody>
+
                 <tr>
-                  <td><span class="flagsp flagsp_<%= f.team1.code %>" title=""> </span></td>
+                  <td style="position:relative;">
+<a href="/compare/compare_by_bet/<%= f.match.id%>" style="
+    position: absolute;
+    left: -30px;
+    top: 11px;
+" title="Predicciones de los usuarios"><img src="https://cdn0.iconfinder.com/data/icons/16x16-free-toolbar-icons/16/11.png"></a>
+<span class="flagsp flagsp_<%= f.team1.code %>" title=""> </span></td>
                   <td class="col-ajust">
-                    <a href="/compare/compare_by_bet/<%= f.match.id%>">
+             
                     <%= f.team1.name %>
-                  </a>
+                 
                 </td>
                   <td class="centered" style="width: 138px;">
                     <table>
@@ -50,10 +62,9 @@
                     </table>
                   </td>
                   <td class="rigth-align col-ajust">
-<a href="/compare/compare_by_bet/<%= f.match.id%>">
                   
                     <%= f.team2.name %>
-                  </a>
+                  
                   </td>
                    <td class="rigth-align"> <span class="flagsp flagsp_<%= f.team2.code %>" title=""> </span></td>
                   

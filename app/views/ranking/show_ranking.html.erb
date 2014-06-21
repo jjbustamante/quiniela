@@ -19,6 +19,7 @@
                   <td colspan="2">Usuario</td>
                   <td>Nombre de quiniela</td>
                   <td>Puntos acumulados</td>
+<td>Diferencia</td>
                 </tr> 
            
             <%
@@ -28,11 +29,12 @@
                 @tercero = '60px'
                 @left = '40px'
                 @counter = 1
-
+		@first_count = 0;
                 @quinielas.each do |quiniela| 
                     if @counter == 1
                       @var1 = @primero
                       @fontsize = 'font-size: 20pt;'
+			@first_count = quiniela.points
                     end
                     if @counter == 2
                        @var1 = @segundo
@@ -48,7 +50,14 @@
                     end
                   %>
              
-                <tr style="<%=@fontsize%>">
+                <tr style="<%=@fontsize%>
+
+<% if quiniela.user.id == current_user.id %>
+border: solid 3px #18bc9c;
+border-radius: 5px;
+background: white;
+<%end%>
+">
                   <td><span class="stuart-middle">#<%= @counter %></span></td>
                   <td><img style="width:<%=@var1%>" src="<%= quiniela.user.photo.url %>"></td>
                   <td><span class="stuart-middle">
@@ -60,6 +69,17 @@
 </span></td>
                   <td><span class="stuart-middle"><a href="/quinielas/showro/<%= quiniela.id %>"><%= quiniela.name %></a></span></td>
                   <td><span class="stuart-middle"><%= quiniela.points ? quiniela.points : 0 %></span></td>
+			<td style="text-align:center;color:rgb(213, 94, 94);">
+
+			<span class="stuart-middle">
+<% if @first_count == quiniela.points %>
+<span style="color:#666;">-</span>
+<% else %>			
+	-<%= @first_count - quiniela.points %>
+<%end%>
+</span>
+
+			</td>
                 </tr> 
 
                

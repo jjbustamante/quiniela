@@ -43,7 +43,13 @@ game-over
               <tbody>
               
                 <tr>
-                  <td><span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span></td>
+                  <td style="position:relative;">
+<a href="/compare/compare_by_bet/<%= match.id %>" style="
+    position: absolute;
+    left: -30px;
+    top: 6px;
+" title="Predicciones de los usuarios"><img src="https://cdn0.iconfinder.com/data/icons/16x16-free-toolbar-icons/16/11.png"></a>
+<span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span></td>
                   <td class="col-ajust">
                     <% if @winner_id == match.team1_id%>
                     <img width="20px" src="https://cdn4.iconfinder.com/data/icons/48x48-free-object-icons/48/Entertainment.png">

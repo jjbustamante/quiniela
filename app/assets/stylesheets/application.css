@@ -281,7 +281,7 @@ border: 1px solid #CCC;
 	border: solid 1px #ccc;
 }
 .stuart-middle{
- display:inline-block; vertical-align:middle;margin-top: 15px;
+ display:inline-block; vertical-align:middle;margin-top: 7px;
 }
 .table-striped.game-over>tbody>tr:nth-child(odd)>td{
 	background-color:rgb(160, 204, 160);
@@ -559,3 +559,7 @@ h1#tables{
 	font-style: italic;
 }
 .col-ajust img{display:none;}
+
+.game-over tbody td.col-ajust a{
+    color:#333;
+}
