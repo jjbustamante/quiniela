@@ -563,3 +563,12 @@ h1#tables{
 .game-over tbody td.col-ajust a{
     color:#333;
 }
+
+@media (max-width: 767px) {
+.table {
+width: 94% !important;
+}
+.table-hover{
+	margin-left: 6%;
+}
+}
