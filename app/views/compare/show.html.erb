@@ -67,7 +67,7 @@ $(document).ready(function(){
 		var t2nameFlag = '<span class="flagsp flagsp_'+$("#bet_"+i+"_score_2").attr("flag_code")+'" title=""> </span> '+$("#bet_"+i+"_score_2").attr("country_name")+'';
 		var drawPoints = 0;
 		var crucePoints = 0;
-		var cruce = "";
+		var cruceHTML = "";
 		
 		var betTeam1Id = $(".bett1id_"+i).attr("t1");
 		var betTeam2Id = $(".bett2id_"+i).attr("t2");
@@ -80,51 +80,83 @@ $(document).ready(function(){
 		if(i>48){
 			var t1Cruce = 0;
 			var t2Cruce = 0;
+			var hasCruce1 = false;
+			var hasCruce2 = false;
 			
-			if(betTeam1Id!=null && (betTeam1Id==matchTeam1Id || betTeam1Id==matchTeam2Id)){
+			//adivina cruce 1
+			if(betTeam1Id!=null && (betTeam1Id==matchTeam1Id /*|| betTeam1Id==matchTeam2Id*/)){
 				points=points+1;
 				t1Cruce = 1;
-				cruce = '<p><strong>Por predecir equipo de cruce '+t1nameFlag+':</strong> '+t1Cruce+' punto(s)</p>';
+				cruceHTML = '<p><strong>Por predecir equipo de cruce '+t1nameFlag+':</strong> '+t1Cruce+' punto(s)</p>';
+				hasCruce1 = true;
 			}
-			if(betTeam2Id!=null && (betTeam2Id==matchTeam2Id || betTeam2Id==matchTeam1Id)){
+			//adivina cruce 2
+			if(betTeam2Id!=null && (betTeam2Id==matchTeam2Id /*|| betTeam2Id==matchTeam1Id*/)){
 				points=points+1;
 				t2Cruce = 1;
-				cruce += '<p><strong>Por predecir equipo de cruce '+t2nameFlag+':</strong> '+t2Cruce+' punto(s)</p>';
-			}	
-			
-			
+				cruceHTML += '<p><strong>Por predecir equipo de cruce '+t2nameFlag+':</strong> '+t2Cruce+' punto(s)</p>';
+				hasCruce2 = true;
+			}
+			//adivina score t1 solo si tiene cruce
+			if(hasCruce1 && betMatchScore1==matchScore1){
+				points=points+1;
+				t1points = 1; 
+			}
+			//adivina score t2	solo si tiene cruce
+			if(hasCruce2 && betMatchScore2==matchScore2){
+				points=points+1;
+				t2points = 1; 
+			}
+			//adivina si es ganador solo si tiene ambos cruces
+			if(matchWinnerId==betWinnerId){
+				if((hasCruce1 && hasCruce2)){
+					points=points+2;
+					winnerpoints = 2;
+				}
+			}else{
+				//adivina si es empate
+				/*if((matchScore1 == matchScore2 && betMatchScore1==betMatchScore2)){
+					if((hasCruce1 && hasCruce2)){
+						points=points+2;
+						drawPoints = 2;
+					}
+				}*/
+			}
+				
 
-			if((matchScore1 == matchScore2 || betMatchScore1==betMatchScore2) && matchWinnerId==betWinnerId){
+			
+			
+		}else{
+			//resultado de primera fase
+			//adivina ganador
+			if((betMatchScore1 > betMatchScore2 && matchScore1 > matchScore2)){
 				points=points+2;
 				winnerpoints = 2;
 			}
-			
-		}
-
-		if((betTeam1Id==matchTeam1Id) && (betMatchScore1 == matchScore1)){
-			points=points+1;
-			t1points = 1; 
-		}
-		if((betTeam2Id==matchTeam2Id) && (betMatchScore2 == matchScore2)){
-			points=points+1;
-			t2points = 1; 
-		}
-
-		if((betTeam1Id==matchTeam1Id) && (betMatchScore1 > betMatchScore2 && matchScore1 > matchScore2)){
-			points=points+2;
-			winnerpoints = 2;
-		}
-
-		if((betTeam1Id==matchTeam1Id) && (betMatchScore2 > betMatchScore1 && matchScore2 > matchScore1)){
-			points=points+2;
-			winnerpoints = 2;
-		}
-		if(i<48){
-			if((betTeam1Id==matchTeam1Id && betTeam2Id==matchTeam2Id) && (betMatchScore1 == betMatchScore2 && matchScore1 == matchScore2)){
+			//adivina ganador
+			if((betMatchScore2 > betMatchScore1 && matchScore2 > matchScore1)){
+				points=points+2;
+				winnerpoints = 2;
+			}
+			//si es empate
+			if(betMatchScore1 == betMatchScore2 && matchScore1 == matchScore2){
 				points=points+2;
 				drawPoints = 2;
 			}
+			//adivina score t1
+			if((betTeam1Id==matchTeam1Id) && (betMatchScore1 == matchScore1)){
+				points=points+1;
+				t1points = 1; 
+			}
+			//adivina score t2
+			if((betTeam2Id==matchTeam2Id) && (betMatchScore2 == matchScore2)){
+				points=points+1;
+				t2points = 1; 
+			}
 		}
+		
+
+
 
 		//alert(points);
 		if($("#match_"+i+"_score_1").hasClass("played")){
@@ -139,7 +171,7 @@ $(document).ready(function(){
 			$("#earned_"+i).after('<div class="lastPoints"></div>');
 
 			var modal = getModal(i,
-				cruce + 
+				cruceHTML + 
 			'<p><strong>Por goles del equipo '+t1nameFlag+' ('+matchScore1+'):</strong> '+t1points+' punto(s)</p>'+
 		    '<p><strong>Por goles del equipo '+t2nameFlag+' ('+matchScore2+'):</strong> '+t2points+' punto(s)</p>'+
 			'<p><strong>Por equipo ganador:</strong> '+winnerpoints+' punto(s)</p>'+
