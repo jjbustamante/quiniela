@@ -49,11 +49,9 @@
 <%end%>
 <span class="flagsp flagsp_<%= f.team1.code %>" title=""> </span></td>
                   <td class="col-ajust">
-                  <%if f.winner_id==f.team1.id %>
-                  *
-                  <%end%>
-                  
+                  <div class="name-wrapper left">
                     <%= f.team1.name %>
+                  </div>
                   </td>
                   <td class="centered" style="width: 105px;">
                     <table>
@@ -63,10 +61,8 @@
                     </table>
                   </td>
                   <td class="rigth-align col-ajust">
-                    <%if f.winner_id==f.team2.id %>
-                    *
-                    <%end%>
-                    <%= f.team2.name %></td>
+                   <div class="name-wrapper right">
+                    <%= f.team2.name %></div></td>
                    <td class="rigth-align"> <span class="flagsp flagsp_<%= f.team2.code %>" title=""> </span></td>
                   
                 </tr> 

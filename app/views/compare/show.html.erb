@@ -164,8 +164,7 @@ $(document).ready(function(){
 				$("#earned_"+i).html("<a href='#' data-toggle='modal' data-target='#modal"+i+"'>+"+points+"</a>");
 
 			}else{
-				$("#earned_"+i).html("<a href='#' data-toggle='modal' data-target='#modal"+i+"'>"+points+"</a>");
-				$("#earned_"+i).css("color","rgb(233, 102, 102)");
+				$("#earned_"+i).html("<a href='#' style='color:rgb(233, 102, 102)' data-toggle='modal' data-target='#modal"+i+"'>"+points+"</a>");
 			}
 			$(".lastPoints").remove();
 			$("#earned_"+i).after('<div class="lastPoints"></div>');

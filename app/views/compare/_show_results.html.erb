@@ -58,11 +58,13 @@ game-over
 
                   </td>
                   <td class="col-ajust">
-                    <% if @winner_id == match.team1_id%>
-                    <strong>*</strong>
+                   
+                    <div class="name-wrapper left">
+                       <% if @winner_id == match.team1_id%>
+                    <img width="20"src="https://cdn4.iconfinder.com/data/icons/48x48-free-object-icons/48/Entertainment.png">
                     <% end %>
-                    
                     <%= match.team1.name %>
+                    </div>
                   </td>
                   <td class="centered">
 
@@ -86,10 +88,12 @@ game-over
 
                   </td>
                   <td class="rigth-align col-ajust">
-                     <% if @winner_id == match.team2_id%>
-                    <strong>*</strong>
-                    <% end %>
-                    <%= match.team2.name %>
+                     <div class="name-wrapper right">
+                       <% if @winner_id == match.team2_id%>
+                        <img width="20"src="https://cdn4.iconfinder.com/data/icons/48x48-free-object-icons/48/Entertainment.png">
+                        <% end %>
+                        <%= match.team2.name %>
+                      </div>
                   </td>
                    <td class="rigth-align" > 
 

@@ -30,7 +30,7 @@
                  %>
                   <tr>
                   <td>#<%=@counter%></td>
-                  <td><a href="/quinielas/showro/<%= quiniela.id %>"><%=quiniela.name%></a></td>
+                  <td><a href="/compare/<%= quiniela.id %>"><%=quiniela.name%></a></td>
                   <td><%=quiniela.points%></td>
                   <td style="color:rgb(213, 94, 94);">
                     <% if @first_count == quiniela.points %>
@@ -101,7 +101,7 @@ background: white;
             <%=quiniela.user.name %>
  <% end %>
 </span></td>
-                  <td><span class="stuart-middle"><a href="/quinielas/showro/<%= quiniela.id %>"><%= quiniela.name %></a></span></td>
+                  <td><span class="stuart-middle"><a href="/compare/<%= quiniela.id %>"><%= quiniela.name %></a></span></td>
                   <td><span class="stuart-middle"><%= quiniela.points ? quiniela.points : 0 %></span></td>
 			<td style="text-align:center;color:rgb(213, 94, 94);">
 

@@ -4,7 +4,7 @@
 <% if flash[:success] %>
 <div class="container">
   <div class="row">
-          <div class="col-lg-12">
+          <div class="col-sm-12 col-lg-12">
             <div class="bs-example">
               <div class="alert alert-dismissable alert-success" style="text-align: center;">
                 <button type="button" class="close" data-dismiss="alert">×<%=@user_is_admin%></button>
@@ -19,14 +19,19 @@
   </div>
 <% end %>
 
-<div class="container logo-fifa">
+<div class="container ">
 
 <div class="row">
-<div class="col-lg-12">
+<div class="col-sm-2  col-lg-2" style="text-align: center;">
+  <img src="/assets/logo.png">
+</div>
+  
+<div class="col-sm-10  col-lg-10" style="padding-top:30px;">
 <h1>Bienvenido<% if @session %>, <%= @session.name %>
 <% end %>
 </h1>
-<p class="lead">¡Ésta es la quiniela para el mundial de la FIFA 2014, comenzar a jugar es muy sencillo: Regístrate, crea las quinielas que quieras y diviértete!</p>
+<p class="lead">¡Y comenzó el Mundial! mucha suerte para todos los participantes.</p>
+
 </div>
 </div>
 
@@ -40,7 +45,7 @@
 
 <div class="bs-docs-section">
         <div class="row">
-          <div class="col-lg-12">
+          <div class="col-sm-12  col-lg-12">
             <div class="page-header">
               <h1 id="forms">¡Entra ahora y danos tus predicciones!</h1>
             </div>
@@ -48,7 +53,7 @@
         </div>
 
         <div class="row">
-          <div class="col-lg-6">
+          <div class="col-sm-6 col-lg-6">
             <div class="well">
               
 
@@ -59,7 +64,7 @@
           </div>
 
 
-          <div class="col-lg-6">
+          <div class="col-sm-6  col-lg-6">
             
             <div class="bs-example">
               <div class="jumbotron">
@@ -78,39 +83,90 @@
 
 
  <div class="page-header">
+              <h1 id="tables"><span style="color: rgb(245, 167, 28);">¡ATENCIÓN!</span> Edición de la segunda fase.</h1>
+            </div>
+
+<div class="container">
+
+<div class="row">
+
+<div class="col-sm-12  col-lg-12">
+  <p class="lead game-rule blaki" style="font-weight: normal;"><strong>¡Remonta esa quiniela!</strong> desde el <strong>26 de Junio a las 6:00 pm</strong> hasta el <strong>28 de Junio a las 11:30 am</strong> estará disponible para su edición la segunda fase de la quiniela DBAccess 2014, no dejes de hacerlo, luego de esta fecha <span style="color:red;">¡NO HABRÁ PRORROGA!</span><span style="color:white;">   ES CONTIGO ISAAC >:(</span></p>
+
+</div>
+
+</div>
+
+</div>
+
+
+ <div class="page-header">
+              <h1 id="tables">¡Lo último!</h1>
+            </div>
+
+<div class="container">
+
+<div class="row">
+
+<div class="col-sm-12  col-lg-12">
+<<<<<<< HEAD
+  <p class="lead game-rule blaki" style="font-weight: normal;"> Ahora puedes ver los puntos desglosados según las reglas de la quiniela, para esto debes ir a la opción <strong>"Comparar con resultados"</strong> de una quiniela y hacer clic en los links de puntos ganados.</p>
+
+<p class="lead game-rule blaki" style="font-weight: normal;"> <strong>¡Mejoradas las vistas de la quiniela en teléfonos y tablets!</strong> desde ya puedes disfrutar de lo mejor de la quiniela desde tu celular.</p>
+=======
+  
+<p class="lead game-rule blaki" style="font-weight: normal;"> <strong>¡Mejoradas las vistas de la quiniela en telefonos y tablets!</strong> desde ya puedes disfrutar de lo mejor de la quiniela desde tu telefono.</p>
+>>>>>>> 26033fbde2f1e8ca0503c5b3c466066ba7fb868d
+
+  <p class="lead game-rule blaki" style="font-weight: normal;"> Ahora puedes comparar tu quiniela con los resultados reales del mundial, solo tienes que ir a la opción <a href="/quinielas/show"><strong>"Mis Quinielas"</strong></a> en el menú principal y luego hacer click en la opción <strong>"Comparar con resultados"</strong>.</p>
+
+<p class="lead game-rule blaki" style="font-weight: normal;"> Ahora puedes ver las predicciones de todos los usuarios para un mismo partido cuando veas este icono. <img src="https://cdn0.iconfinder.com/data/icons/16x16-free-toolbar-icons/16/11.png"></p>
+
+</div>
+
+</div>
+
+</div>
+
+
+ <div class="page-header" style="margin-top: 0;">
               <h1 id="tables">¡Premios!</h1>
             </div>
 
 <div class="container">
 
 <div class="row">
-
-<div class="col-lg-7">
+<% @acumulado = 2100 %>
+<div class="col-sm-8  col-lg-8">
   <table>
     <tr><td><p class="lead game-rule blaki">Los premios que serán entregados al final del torneo.</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">1ER premio: 60% del acumulado.</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">2DO premio: 30% del acumulado.</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">3ER premio: 10% del acumulado.</p></td></tr>
-    <tr><td><h3 class="sub-rule alert alert-info" style="text-align:center;">Total acumulado: 0,00 Bs</h3></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">1er premio: 60% del acumulado. <span style="font-weight:bold;"><%= (60*@acumulado)/100%> Bs</span></p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">2do premio: 30% del acumulado. <span style="font-weight:bold;"><%= (30*@acumulado)/100%> Bs</span></p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">3er premio: 10% del acumulado. <span style="font-weight:bold;"><%= (10*@acumulado)/100%> Bs</span></p></td></tr>
+    <tr><td><h3 class="sub-rule alert alert-info" style="text-align:center;">Total acumulado: <%=@acumulado%>,00 Bs</h3></td></tr>
     
   </table>
 </div>
-  <div class="col-lg-5 fuleco2" style="height:300px;"></div>
+  <div class="col-sm-4  col-lg-4 fuleco2" style="height:266px;"></div>
 
 </div>
 
 
 </div>
+
+
+
+
 
  <div class="page-header">
-              <h1 id="tables">Reglas del juego!</h1>
+              <h1 id="tables">¡Reglas del juego!</h1>
             </div>
 
 <div class="container">
 
 <div class="row">
-  <div class="col-lg-3 fuleco"></div>
-<div class="col-lg-9">
+  <div class="col-sm-3  col-lg-3 fuleco"></div>
+<div class="col-sm-9  col-lg-9">
   <table>
     <tr><td><p class="lead game-rule">El juego consta de dos fases (Fase de Grupo y Segunda Fase) en cada una se debera intentar adivinar la puntuación final del juego.</p></td></tr>
     <tr><td><p class="lead game-rule">Las quinielas se deben crear antes del primer día del mundial. Puedes tener tantas quinielas como quieras.</p></td></tr>
@@ -122,19 +178,35 @@
     <tr><td><p class="lead game-rule sub-rule">1) 2 puntos por adivinar el ganador o el empate.</p></td></tr>
     <tr><td><p class="lead game-rule sub-rule">2) 1 punto si adivinas el score de un equipo (2 si adivinas ambos).</p></td></tr>
     <tr><td><p class="lead game-rule blaki">Segunda Fase:</p></td></tr>
-<<<<<<< HEAD
     <tr><td><p class="lead game-rule sub-rule">1) 2 puntos por adivinar el ganador o el empate (en este caso debes tener ambos equipos).</p></td></tr>
-=======
-    <tr><td><p class="lead game-rule sub-rule">1) 2 punto por adivinar el ganador (en caso de empate el que avance de ronda).</p></td></tr>
->>>>>>> 6fb1fcd4bf4dd6bf9facaefbc3564fc1486ca43a
     <tr><td><p class="lead game-rule sub-rule">2) 1 punto si adivinas uno de los equipos (2 puntos en caso de adivinar ambos).</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">3) 1 punto si adivinas el score de un solo equipo (solo si adivinaste el equipo participante, 2 puntos si adivinas ambos). </p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">3) 1 punto si adivinas el score de un solo equipo (solo si adivinaste el equipo participante). </p></td></tr>
     <tr><td><p class="lead game-rule"><strong>OJO:</strong> Contará solamente el resultado en los 90 minutos de juego, no contara extra-tiempo ni penales. También significa que puede haber empate en los resultados.</p></td></tr>
   </table>
 </div>
 
 </div>
 
+
+</div>
+
+
+ <div class="page-header">
+              <h1 id="tables">Información de pago</h1>
+            </div>
+
+<div class="container">
+
+<div class="row">
+
+<div class="col-sm-12  col-lg-12">
+  <p class="lead game-rule blaki" style="font-weight: normal;">Hacer un depósito o transferencia por el monto 100 Bs, a nombre de Emmanuel Pérez, C.I. 17.975.090 a la cuenta Provincial Nro. 0108-0035-81-0100292514.</p>
+  <p class="lead game-rule blaki" style="font-weight: normal;">Una vez que hagas el pago debes enviar un correo a emmanuel.perez@dbaccess.com con el número de transferencia o depósito.</p>
+
+
+</div>
+  
+</div>
 
 </div>
 
