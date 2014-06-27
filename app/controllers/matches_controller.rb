@@ -27,8 +27,14 @@ class MatchesController < ApplicationController
 			@team2_score_int = Integer(params[:match]['score_t2'])
 	  	end
 
-	  	
-	  		if @match.update_attributes(:team1_id=>params[:match]['team1_id'],:team2_id=>params[:match]['team2_id'],:winner_id=>params[:match]['winner_id'])
+	  		@winner_id = params[:match]['winner_id']
+	  		
+	  		if @winner_id.nil?
+	  			@updated = @match.update_attributes(:team1_id=>params[:match]['team1_id'],:team2_id=>params[:match]['team2_id'])	
+	  		else
+	  			@updated = @match.update_attributes(:team1_id=>params[:match]['team1_id'],:team2_id=>params[:match]['team2_id'],:winner_id=>@winner_id)
+	  		end
+	  		if @updated
 	  			if @team1_score_int > @team2_score_int
 	  				@match.update_attributes(:score_t1 => @team1_score_int,:score_t2 => @team2_score_int,:winner_id => @match.team1.id,:winner_name => @match.team1.name,:played => 1)
 	  			end

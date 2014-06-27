@@ -280,8 +280,14 @@ function getMatchesChildrenId(matchIndex){
  		}
 
  	});
+	//ajustamos el orden de final y 3er ligar
 
 	//se actualizan los inputs
+	var aux1 = allMatches[14];
+		allMatches[14] = allMatches[15];
+		allMatches[15] = aux1;
+
+
 	var matchId = 49;
 	$.each(allMatches,function(matchIndex,match){
 		updateMatchRow(matchId,match[0].teamId,match[1].teamId,match[0].team1Score,match[1].team2Score);
@@ -398,5 +404,6 @@ checkForDraw = function(e){
 	}else{
 		$("#"+matchId).children("tbody").children("tr").children("td").children(".hidden-radio").hide();
 	}
+
 
 };

@@ -12287,8 +12287,14 @@ function getMatchesChildrenId(matchIndex){
  		}
 
  	});
+	//ajustamos el orden de final y 3er ligar
 
 	//se actualizan los inputs
+	var aux1 = allMatches[14];
+		allMatches[14] = allMatches[15];
+		allMatches[15] = aux1;
+
+
 	var matchId = 49;
 	$.each(allMatches,function(matchIndex,match){
 		updateMatchRow(matchId,match[0].teamId,match[1].teamId,match[0].team1Score,match[1].team2Score);
@@ -12343,8 +12349,12 @@ checkDraws = function(){
 			}
 			if((val1.html()!="--" && val2.html()!="--") && val1.html()==val2.html()){
 				if(addRadios){
-					val1.prev(".label.editable").prepend('<input style="float: left;width: 15px;margin-top: 2px;" type="radio" onclick="updateScore(this,'+(index)+')" name="asd">');
+					val1.prev(".label.editable").prepend('<input data-container="body" data-toggle="popover" data-content="Debes elegir el ganador en caso de empates" class="radio-pop"  style="float: left;width: 15px;margin-top: 2px;" type="radio" onclick="updateScore(this,'+(index)+')" name="asd">');
 					val2.prev(".label.editable").prepend('<input style="float: left;width: 15px;margin-top: 2px;" type="radio" onclick="updateScore(this,'+(index+1)+')" name="asd">');
+					$('.radio-pop').popover({
+					    trigger: 'focus',
+					        'placement': 'left'
+					}).focus();
 				}
 			}else if(val1.html()=="--" || val2.html()=="--"){
 				//alert("Por favor completa todos los resultados.");
@@ -12353,6 +12363,11 @@ checkDraws = function(){
 		}
 	});
 };
+
+
+
+
+
 updateScore = function(e,teamId){
 	var val1 = $("[data-resultid=result-"+teamId+"]");
 	var scoreElement = $(e).parent(".label.editable").next(".score.editable");
@@ -12363,10 +12378,39 @@ updateScore = function(e,teamId){
 }
 
 showNotification = function(message,type){
+	if(!($(".bootstrap-growl").length > 0))
 	$.bootstrapGrowl(message, {
                         type: type,
                         align: 'center',
                         stackup_spacing: 30,
                         width: "100%"
                     });
+};
+
+function readURL(input) {
+
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            $('#user_preview').attr('src', e.target.result);
+        }
+
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+setWinnerId = function(e,teamId,matchId){
+	$("#"+matchId).children("tbody").children("tr").children("td").children("#match_winner_id").val(teamId);
+};
+checkForDraw = function(e){
+	var matchId = $(e).attr("match_id");
+	var valt1 = $("#"+matchId).children("tbody").children("tr").children("td").children("#match_score_t1").val();
+	var valt2 = $("#"+matchId).children("tbody").children("tr").children("td").children("#match_score_t2").val();
+	if(valt1==valt2){
+		$("#"+matchId).children("tbody").children("tr").children("td").children(".hidden-radio").show();
+	}else{
+		$("#"+matchId).children("tbody").children("tr").children("td").children(".hidden-radio").hide();
+	}
+
+
 };
