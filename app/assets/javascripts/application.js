@@ -280,6 +280,8 @@ function getMatchesChildrenId(matchIndex){
  		}
 
  	});
+
+
 	//ajustamos el orden de final y 3er ligar
 
 	//se actualizan los inputs

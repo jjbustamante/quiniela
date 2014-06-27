@@ -502,10 +502,7 @@ label.error{
 .round-disabled.widhter{
 	width: 117%;
 }
-.2da_radio{
-	float: left;width: 15px;margin-top: 2px;
-	cursor: pointer;
-}
+
 .alert-growl {
   border-radius: 10px;
   background-color: rgb(25, 25, 25);
