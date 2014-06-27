@@ -61,7 +61,12 @@ game-over
                   </td>
                   <td class="centered">
 <% if @played %>
-   <%= match.score_t1 %> - <%= match.score_t2 %> 
+                    <table>
+                      <tbody><tr><td><%= match.score_t1 %></td>
+                      <td><div class="form-separator">-</div></td>
+                      <td><%= match.score_t2 %></td></tr>
+                    </tbody></table>
+ 
 <% else%>
 <%= match.match_date.to_formatted_s(:time) %>
 <% end%>

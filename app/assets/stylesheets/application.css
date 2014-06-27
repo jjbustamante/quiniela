@@ -562,7 +562,12 @@ h1#tables{
 .game-over tbody td.col-ajust a{
     color:#333;
 }
-
+.respon{
+	display: block;
+}
+.respon2{
+	display: none;
+}
 @media (max-width: 767px) {
 .table {
 width: 94% !important;
@@ -570,7 +575,20 @@ width: 94% !important;
 .table-hover{
 	margin-left: 6%;
 }
+.respon{
+	display: none;
 }
+.respon2{
+	display: block;
+}
+.fuleco2 {
+	display: none;
+}
+.profile-picture img{
+	display: none;
+}
+}
+
 
 .lastPoints{
 	width: 100px;
@@ -585,4 +603,8 @@ font-style: italic;
 font-weight: bold;
 border-top: solid 3px #333;
 padding-top: 10px;
+}
+.quini-class{
+	width: 190px;
+	margin-bottom:5px !important;
 }

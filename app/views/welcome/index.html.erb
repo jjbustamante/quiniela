@@ -22,7 +22,8 @@
 <div class="container ">
 
 <div class="row">
-<div class="col-sm-2  col-lg-2 logo-fifa">
+<div class="col-sm-2  col-lg-2" style="text-align: center;">
+  <img src="/assets/logo.png">
 </div>
   
 <div class="col-sm-10  col-lg-10" style="padding-top:30px;">
@@ -90,7 +91,7 @@
 <div class="row">
 
 <div class="col-sm-12  col-lg-12">
-  <p class="lead game-rule blaki" style="font-weight: normal;"><strong>¡Remonta esa quiniela!</strong> desde el <strong>26 de Junio a las 6:00 pm</strong> hasta el <strong>28 de Junio a las 11:30 am</strong> estará disponible para su edición la segunda fase de la quiniela DBAccess 2014, no dejes de hacerlo, luego de esta fecha <span style="color:red;">¡NO HABRÁ PRORROGA!</span></p>
+  <p class="lead game-rule blaki" style="font-weight: normal;"><strong>¡Remonta esa quiniela!</strong> desde el <strong>26 de Junio a las 6:00 pm</strong> hasta el <strong>28 de Junio a las 11:30 am</strong> estará disponible para su edición la segunda fase de la quiniela DBAccess 2014, no dejes de hacerlo, luego de esta fecha <span style="color:red;">¡NO HABRÁ PRORROGA!</span><span style="color:white;">   ES CONTIGO ISAAC >:(</span></p>
 
 </div>
 
@@ -110,6 +111,7 @@
 <div class="col-sm-12  col-lg-12">
   <p class="lead game-rule blaki" style="font-weight: normal;"> Ahora puedes ver los puntos desglosados según las reglas de la quiniela, para esto debes ir a la opción <strong>"Comparar con resultados"</strong> de una quiniela y hacer clic en los links de puntos ganados.</p>
 
+<p class="lead game-rule blaki" style="font-weight: normal;"> <strong>¡Mejoradas las vistas de la quiniela en telefonos y tablets!</strong> desde ya puedes disfrutar de lo mejor de la quiniela desde tu telefono.</p>
 
   <p class="lead game-rule blaki" style="font-weight: normal;"> Ahora puedes comparar tu quiniela con los resultados reales del mundial, solo tienes que ir a la opción <a href="/quinielas/show"><strong>"Mis Quinielas"</strong></a> en el menú principal y luego hacer click en la opción <strong>"Comparar con resultados"</strong>.</p>
 
@@ -129,14 +131,14 @@
 <div class="container">
 
 <div class="row">
-
+<% @acumulado = 2100 %>
 <div class="col-sm-8  col-lg-8">
   <table>
     <tr><td><p class="lead game-rule blaki">Los premios que serán entregados al final del torneo.</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">1ER premio: 60% del acumulado.</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">2DO premio: 30% del acumulado.</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">3ER premio: 10% del acumulado.</p></td></tr>
-    <tr><td><h3 class="sub-rule alert alert-info" style="text-align:center;">Total acumulado: 2100,00 Bs</h3></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">1er premio: 60% del acumulado. <span style="font-weight:bold;"><%= (60*@acumulado)/100%> Bs</span></p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">2do premio: 30% del acumulado. <span style="font-weight:bold;"><%= (30*@acumulado)/100%> Bs</span></p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">3er premio: 10% del acumulado. <span style="font-weight:bold;"><%= (10*@acumulado)/100%> Bs</span></p></td></tr>
+    <tr><td><h3 class="sub-rule alert alert-info" style="text-align:center;">Total acumulado: <%=@acumulado%>,00 Bs</h3></td></tr>
     
   </table>
 </div>
