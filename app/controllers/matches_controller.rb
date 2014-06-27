@@ -28,7 +28,7 @@ class MatchesController < ApplicationController
 	  	end
 
 	  	
-	  		if @match.update_attributes(:team1_id=>params[:match]['team1_id'],:team2_id=>params[:match]['team2_id'],:editable => 0)
+	  		if @match.update_attributes(:team1_id=>params[:match]['team1_id'],:team2_id=>params[:match]['team2_id'])
 	  			if @team1_score_int > @team2_score_int
 	  				@match.update_attributes(:score_t1 => @team1_score_int,:score_t2 => @team2_score_int,:winner_id => @match.team1.id,:winner_name => @match.team1.name,:played => 1)
 	  			end
