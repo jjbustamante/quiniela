@@ -3,7 +3,7 @@
 
 <div class="bs-docs-section">
         <div class="row">
-          <div class="col-lg-12">
+          <div class="col-sm-12 col-lg-12">
             <div class="page-header">
               <h1 id="forms">Quinielas por usuario</h1>
             </div>
@@ -13,17 +13,17 @@
         
                 <% @users.each do |user|%>
 <div class="row">
-          <div class="col-lg-7">
+          <div class="col-sm-7 col-lg-7">
             <div class="well">
                 <table>
                   <tr>
-                    <td><label class="col-lg-3 control-label">Nombre:</label></td><td><label class="col-lg-3 control-label"><%= user.name %></label></td>
+                    <td><label class="col-sm-3 col-lg-3 control-label">Nombre:</label></td><td><label class="col-sm-3 col-lg-3 control-label"><%= user.name %></label></td>
                   </tr>
                   <tr>
-                    <td><label class="col-lg-3 control-label">Email:</label></td><td><label class="col-lg-3 control-label"><%= user.email %></label></td>
+                    <td><label class="col-sm-3 col-lg-3 control-label">Email:</label></td><td><label class="col-sm-3 col-lg-3 control-label"><%= user.email %></label></td>
                   </tr>
                   <tr>
-                    <td><label class="col-lg-3 control-label">#Quinielas:</label></td><td><label class="col-lg-3 control-label"><%= user.quinielas_count %></label></td>
+                    <td><label class="col-sm-3 col-lg-3 control-label">#Quinielas:</label></td><td><label class="col-sm-3 col-lg-3 control-label"><%= user.quinielas_count %></label></td>
                   </tr>
                 </table>
             </div>
