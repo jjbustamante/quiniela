@@ -59,8 +59,15 @@ if(resultsData != null){
     resultsData.push(qRoundData);
   if(sRoundData.length > 0)
     resultsData.push(sRoundData);
-  if(fRoundData.length > 0)
-    resultsData.push(fRoundData);
+  if(fRoundData.length > 0){
+
+    //cambia el orden de los resultados
+    var aux1 = fRoundData[0];
+    fRoundData[0] =  fRoundData[1];
+    fRoundData[1] = aux1;
+        resultsData.push(fRoundData);
+  }
+
 }
   if(resultsData.length > 0){
 
