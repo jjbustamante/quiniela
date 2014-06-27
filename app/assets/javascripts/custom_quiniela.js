@@ -2,7 +2,7 @@
 var customData = {};
 var DRAW_VALUE = 1000000;
 openMenu = function(e){
-	$(".dropdown").addClass("open");
+//	$(".dropdown").addClass("open");
 };
  
 /* Edit function is called when team label is clicked */
