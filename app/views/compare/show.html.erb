@@ -1,0 +1,194 @@
+<div class="separator-top"></div>
+<div class="container">
+
+<div class="bs-docs-section">
+
+        <div class="row">
+          <div class="col-sm-5 col-lg-5">
+           
+
+            <%= render :partial => 'show_quinielas'%>
+            
+          </div>
+
+     <div class="col-sm-2 col-lg-2">  
+     	<div class="page-header">
+            <h1 id="tables">Puntos</h1>
+            </div>
+     </div>    
+ <div class="col-sm-5 col-lg-5">
+           
+
+            <%= render :partial => 'show_results'%>
+            
+          </div>
+
+     
+               
+      </div>
+
+
+</div>
+
+
+
+<script type="text/javascript">
+function getModal(id,body){
+	return '<div class="modal fade" id="modal'+id+'" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'+
+		   '<div class="modal-dialog">'+
+		   '<div class="modal-content">'+
+		   '<div class="modal-header">'+
+		   '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>'+
+		   '<h3 class="modal-title" id="myModalLabel">Puntos repartidos</h3>'+
+		   '</div>'+
+		   '<div class="modal-body">'+
+		   	body +
+		   '</div>'+
+			'<div class="modal-footer">'+
+			'<button type="button" class="btn btn-success" data-dismiss="modal">Cerrar</button>'+
+			'</div></div></div></div>';
+			
+
+}
+$(document).ready(function(){
+	var totalPoints = 0;
+	for(i=1;i<=64;i++){
+		var betMatchScore1 = parseInt($("#bet_"+i+"_score_1").html());
+		var betMatchScore2 = parseInt($("#bet_"+i+"_score_2").html());
+		var matchScore1 = parseInt($("#match_"+i+"_score_1").html());
+		var matchScore2 = parseInt($("#match_"+i+"_score_2").html());
+		
+		
+		var points = 0;
+		var t1points = 0;
+		var t2points = 0;
+		var winnerpoints = 0;
+		var t1nameFlag = '<span class="flagsp flagsp_'+$("#bet_"+i+"_score_1").attr("flag_code")+'" title=""> </span> '+$("#bet_"+i+"_score_1").attr("country_name")+'';
+		var t2nameFlag = '<span class="flagsp flagsp_'+$("#bet_"+i+"_score_2").attr("flag_code")+'" title=""> </span> '+$("#bet_"+i+"_score_2").attr("country_name")+'';
+		var drawPoints = 0;
+		var crucePoints = 0;
+		var cruceHTML = "";
+		
+		var betTeam1Id = $(".bett1id_"+i).attr("t1");
+		var betTeam2Id = $(".bett2id_"+i).attr("t2");
+		var matchTeam1Id = $(".matcht1id_"+i).attr("t1");
+		var matchTeam2Id = $(".matcht2id_"+i).attr("t2");
+		
+		var matchWinnerId = $(".matcht2id_"+i).attr("winner_id");
+		var betWinnerId = $(".bett2id_"+i).attr("winner_id");
+
+		if(i>48){
+			var t1Cruce = 0;
+			var t2Cruce = 0;
+			var hasCruce1 = false;
+			var hasCruce2 = false;
+			
+			//adivina cruce 1
+			if(betTeam1Id!=null && (betTeam1Id==matchTeam1Id /*|| betTeam1Id==matchTeam2Id*/)){
+				points=points+1;
+				t1Cruce = 1;
+				cruceHTML = '<p><strong>Por predecir equipo de cruce '+t1nameFlag+':</strong> '+t1Cruce+' punto(s)</p>';
+				hasCruce1 = true;
+			}
+			//adivina cruce 2
+			if(betTeam2Id!=null && (betTeam2Id==matchTeam2Id /*|| betTeam2Id==matchTeam1Id*/)){
+				points=points+1;
+				t2Cruce = 1;
+				cruceHTML += '<p><strong>Por predecir equipo de cruce '+t2nameFlag+':</strong> '+t2Cruce+' punto(s)</p>';
+				hasCruce2 = true;
+			}
+			//adivina score t1 solo si tiene cruce
+			if(hasCruce1 && betMatchScore1==matchScore1){
+				points=points+1;
+				t1points = 1; 
+			}
+			//adivina score t2	solo si tiene cruce
+			if(hasCruce2 && betMatchScore2==matchScore2){
+				points=points+1;
+				t2points = 1; 
+			}
+			//adivina si es ganador solo si tiene ambos cruces
+			if(matchWinnerId==betWinnerId){
+				//if((hasCruce1 && hasCruce2)){
+					points=points+2;
+					winnerpoints = 2;
+				//}
+			}else{
+				//adivina si es empate
+				/*if((matchScore1 == matchScore2 && betMatchScore1==betMatchScore2)){
+					if((hasCruce1 && hasCruce2)){
+						points=points+2;
+						drawPoints = 2;
+					}
+				}*/
+			}
+				
+
+			
+			
+		}else{
+			//resultado de primera fase
+			//adivina ganador
+			if((betMatchScore1 > betMatchScore2 && matchScore1 > matchScore2)){
+				points=points+3;
+				winnerpoints = 3;
+			}
+			//adivina ganador
+			if((betMatchScore2 > betMatchScore1 && matchScore2 > matchScore1)){
+				points=points+3;
+				winnerpoints = 3;
+			}
+			//si es empate
+			if(betMatchScore1 == betMatchScore2 && matchScore1 == matchScore2){
+				points=points+3;
+				drawPoints = 3;
+			}
+			//adivina score t1
+			if((betTeam1Id==matchTeam1Id) && (betMatchScore1 == matchScore1)){
+				points=points+2;
+				t1points = 2; 
+			}
+			//adivina score t2
+			if((betTeam2Id==matchTeam2Id) && (betMatchScore2 == matchScore2)){
+				points=points+2;
+				t2points = 2; 
+			}
+		}
+		
+
+
+
+		//alert(points);
+		if($("#match_"+i+"_score_1").hasClass("played")){
+			if(points>0){
+				$("#earned_"+i).html("<a href='#' data-toggle='modal' data-target='#modal"+i+"'>+"+points+"</a>");
+
+			}else{
+				$("#earned_"+i).html("<a href='#' style='color:rgb(233, 102, 102)' data-toggle='modal' data-target='#modal"+i+"'>"+points+"</a>");
+			}
+			$(".lastPoints").remove();
+			$("#earned_"+i).after('<div class="lastPoints"></div>');
+
+			var modal = getModal(i,
+				cruceHTML + 
+			'<p><strong>Por goles del equipo '+t1nameFlag+' ('+matchScore1+'):</strong> '+t1points+' punto(s)</p>'+
+		    '<p><strong>Por goles del equipo '+t2nameFlag+' ('+matchScore2+'):</strong> '+t2points+' punto(s)</p>'+
+			'<p><strong>Por equipo ganador:</strong> '+winnerpoints+' punto(s)</p>'+
+			'<p><strong>Por empate:</strong> '+drawPoints+' punto(s)</p>'+
+			
+			
+			'<p><strong>Puntos totales:</strong> '+points+' punto(s)</p>'
+			);
+			$("#earned_"+i).after(modal);
+
+		}
+		totalPoints = totalPoints + points;
+		
+		
+
+
+	}
+		//$(".lastPoints").html(totalPoints);
+});
+</script>
+<div style="height:40px;"></div>

@@ -43,7 +43,15 @@ game-over
               <tbody>
               
                 <tr>
-                  <td><span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span></td>
+                  <td style="position:relative;">
+                    <% if match.round.id == 1 %>
+<a href="/compare/compare_by_bet/<%= match.id %>" style="
+    position: absolute;
+    left: -30px;
+    top: 6px;
+" title="Predicciones de los usuarios"><img src="https://cdn0.iconfinder.com/data/icons/16x16-free-toolbar-icons/16/11.png"></a>
+<%end%>
+<span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span></td>
                   <td class="col-ajust">
                     <% if @winner_id == match.team1_id%>
                     <img width="20px" src="https://cdn4.iconfinder.com/data/icons/48x48-free-object-icons/48/Entertainment.png">
@@ -53,7 +61,12 @@ game-over
                   </td>
                   <td class="centered">
 <% if @played %>
-   <%= match.score_t1 %> - <%= match.score_t2 %> 
+                    <table>
+                      <tbody><tr><td><%= match.score_t1 %></td>
+                      <td><div class="form-separator">-</div></td>
+                      <td><%= match.score_t2 %></td></tr>
+                    </tbody></table>
+ 
 <% else%>
 <%= match.match_date.to_formatted_s(:time) %>
 <% end%>

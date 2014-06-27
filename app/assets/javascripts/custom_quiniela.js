@@ -269,10 +269,10 @@ function getMatchesChildrenId(matchIndex){
 	//ajustamos el orden de final y 3er ligar
 
 	//se actualizan los inputs
-	var aux1 = allMatches[14];
+	/*var aux1 = allMatches[14];
 		allMatches[14] = allMatches[15];
 		allMatches[15] = aux1;
-
+	*/
 
 	var matchId = 49;
 	$.each(allMatches,function(matchIndex,match){

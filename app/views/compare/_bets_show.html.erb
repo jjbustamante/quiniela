@@ -1,0 +1,73 @@
+
+ <% if  f.match.round.id == 1 and  f.match.id==1 %>             
+ 
+
+ 
+<% end  %>
+
+ <% if  f.match.round.id == 2 and  f.match.id==49 %>             
+ 
+<h3 id="tables">Octavos de final</h3>
+ 
+<% end  %>
+
+ <% if  f.match.round.id == 3 and  f.match.id==57 %>             
+ 
+<h3 id="tables">Cuartos de final</h3>
+ 
+<% end  %>
+
+ <% if  f.match.round.id == 4 and  f.match.id==61 %>             
+ 
+<h3 id="tables">Semifinales</h3>
+ 
+<% end  %>
+
+ <% if  f.match.round.id == 5 %>             
+ 
+<h3 id="tables">3er Lugar</h3>
+ 
+<% end  %>
+
+ <% if  f.match.round.id == 6 %>             
+ 
+<h3 id="tables">Final</h3>
+ 
+<% end  %>
+
+<table class="table table-striped table-hover" style="">
+              <tbody>
+
+                <tr>
+                  <td style="position:relative;">
+<% if f.match.round.id == 1 %>
+<a href="/compare/compare_by_bet/<%= f.match.id%>" style="
+    position: absolute;
+    left: -30px;
+    top: 11px;
+" title="Predicciones de los usuarios"><img src="https://cdn0.iconfinder.com/data/icons/16x16-free-toolbar-icons/16/11.png"></a>
+<%end%>
+<span class="flagsp flagsp_<%= f.team1.code %>" title=""> </span></td>
+                  <td class="col-ajust">
+                  <div class="name-wrapper left">
+                    <%= f.team1.name %>
+                  </div>
+                  </td>
+                  <td class="centered" style="width: 105px;">
+                    <table>
+                      <tr><td id="bet_<%= f.match.id %>_score_1" flag_code="<%= f.team1.code %>" country_name="<%= f.team1.name %>" t1="<%= f.team1.id %>" class="played bett1id_<%= f.match.id %>"><%= f.score_t1 %></td>
+                      <td><div class="form-separator">-</div></td>
+                      <td id="bet_<%= f.match.id %>_score_2" flag_code="<%= f.team2.code %>" country_name="<%= f.team2.name %>" winner_id="<%= f.winner_id %>" t2="<%= f.team2.id %>" class="played bett2id_<%= f.match.id %>"><%= f.score_t2 %></td></tr>
+                    </table>
+                  </td>
+                  <td class="rigth-align col-ajust">
+                   <div class="name-wrapper right">
+                    <%= f.team2.name %></div></td>
+                   <td class="rigth-align"> <span class="flagsp flagsp_<%= f.team2.code %>" title=""> </span></td>
+                  
+                </tr> 
+
+              </tbody>
+            </table>
+
+

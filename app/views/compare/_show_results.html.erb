@@ -1,0 +1,109 @@
+ <div id="round1" class="page-header">
+              <h1 id="tables" >Resultados reales</h1>
+            </div>
+            
+              
+               <%
+                @var1 =  ''
+                
+                @matches.each do |match|
+                    @played = false
+                    @winner_id = match.winner_id
+                  if match.played == 1 
+                    @played = true
+                  end 
+                
+              
+                if match.match_date.strftime("%m/%d") != @var1 %>
+                
+                <% if match.id==49  or  match.id==57 or  match.id==61 or  match.id==63 or  match.id==64 %>
+                <h3 
+<% if match.id==49 %>
+id="round2"
+                <% end %>
+
+                style=""><%= match.round.name %></h3>
+                <% end %>
+                
+
+
+                
+                 
+               <% end 
+                    @var1 = match.match_date.strftime("%m/%d")
+                 %> 
+
+
+
+               <% if  match.round.id == 1 and  match.id==1 %>             
+
+
+<% end  %>
+
+
+
+
+<table class="table table-striped table-hover 
+<% if @played %>
+game-over
+<% end%>
+
+ ">
+              <tbody>
+              
+
+                <tr>
+                  <td style="position:relative;">
+                    <div id="earned_<%= match.id %>" class="points"></div><span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span>
+
+                  </td>
+                  <td class="col-ajust">
+                   
+                    <div class="name-wrapper left">
+                       <% if @winner_id == match.team1_id%>
+                    <img width="20"src="https://cdn4.iconfinder.com/data/icons/48x48-free-object-icons/48/Entertainment.png">
+                    <% end %>
+                    <%= match.team1.name %>
+                    </div>
+                  </td>
+                  <td class="centered">
+
+<% if @played %>
+                    <table style="height: 32px;">
+                      <tbody>
+                        <tr>
+                          <td id="match_<%= match.id %>_score_1" t1="<%= match.team1.id %>" class="played matcht1id_<%= match.id %>" ><%= match.score_t1 %></td>
+                          <td><div class="form-separator">-</div></td>
+                          <td id="match_<%= match.id %>_score_2" winner_id="<%= match.winner_id %>" t2="<%= match.team2.id %>" class="matcht2id_<%= match.id %>"><%= match.score_t2 %></td></tr>
+                    </tbody></table>
+<% else%>
+<div style="height: 32px;">
+<%= match.match_date.to_formatted_s(:time) %>
+</div>
+<% end%>
+ 
+
+
+                 
+
+                  </td>
+                  <td class="rigth-align col-ajust">
+                     <div class="name-wrapper right">
+                       <% if @winner_id == match.team2_id%>
+                        <img width="20"src="https://cdn4.iconfinder.com/data/icons/48x48-free-object-icons/48/Entertainment.png">
+                        <% end %>
+                        <%= match.team2.name %>
+                      </div>
+                  </td>
+                   <td class="rigth-align" > 
+
+                    <span class="flagsp flagsp_<%= match.team2.code %>" title=""> </span>
+                    
+                   </td>
+                  
+                </tr> 
+
+              </tbody>
+            </table>
+              <% end %>
+

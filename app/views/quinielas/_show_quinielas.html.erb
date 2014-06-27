@@ -13,13 +13,16 @@
 <p class="lead welcome-message ">El torneo ya ha comenzado. ¡MUCHA SUERTE!</p>
 <% end %>
 
-<table class="table table-striped table-hover ranking-table">
+<table class="table table-striped table-hover ranking-table" style="
+    font-size: 15pt;
+    font-style: italic;
+    margin: 0;
+">
               <tr>
                   
-                  <td colspan="1">Id quiniela</td>
-                  <td>Nombre de quiniela</td>
-                  <td>Puntos acumulados</td>
-                  <td colspan="3"></td>
+                  <td>Nombre</td>
+                  <td>Puntos</td>
+                  <td colspan="1"></td>
                 </tr> 
            
             <%
@@ -28,12 +31,18 @@
                 @quinielas.each do |quiniela| %>
              
                 <tr>
-                  <td><span class="stuart-middle"># <%= quiniela.id %></span></td>
                   <td valign="middle"><span class="stuart-middle"><%= quiniela.name %></span></td>
                   <td><span class="stuart-middle"><%= quiniela.points ? quiniela.points : 0 %></span></td>
-                  <td width="80px"><a href="/quinielas/showro/<%= quiniela.id %>" class="btn btn-success">Ver</a></td>
-                  <td width="88px"><a href="/quinielas/<%= quiniela.id %>/edit" class="btn btn-primary">Editar</a></td>
-                   <td width="88px"><a href="/quinielas/<%= quiniela.id %>/delete" class="btn btn-danger">Eliminar</a></td>
+                  <td>
+
+                    <a  href="/compare/<%= quiniela.id %>" class="btn btn-success quini-class">Ver</a>
+                    <a  href="/quinielas/<%= quiniela.id %>/edit#16stage" class="btn btn-primary quini-class">Editar Segunda Fase</a>
+                    <% if @can_create_quiniela %>
+                    <a href="/quinielas/<%= quiniela.id %>/delete" class="btn btn-danger quini-class">Eliminar</a>
+                    <% end %>
+                  
+                    </td>
+                  
                   
                 </tr> 
 <% end 

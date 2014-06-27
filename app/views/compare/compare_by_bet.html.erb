@@ -1,0 +1,222 @@
+<div class="separator-top"></div>
+<div class="container">
+
+<div class="bs-docs-section">
+
+        <div class="row">
+
+          <div class="col-sm-12 col-lg-12">
+            <div class="page-header">
+              <h1 id="tables">Apuestas por partido</h1>
+            </div>
+            </div>
+
+          <div class="col-sm-7 col-lg-7">
+           
+
+            
+           
+
+                <% 
+@winners1_count = 0 
+@winners2_count = 0 
+@draw_count = 0 
+
+
+                @bets.each do |bet| 
+                  if bet.score_t1 > bet.score_t2
+                    @winners1_count = @winners1_count + 1
+                  end
+                  if bet.score_t1 < bet.score_t2
+                    @winners2_count = @winners2_count + 1
+end
+                  
+                  if  bet.score_t1 == bet.score_t2
+                      @draw_count = @draw_count + 1 
+end
+                  
+                  %>
+
+<table>
+<tr>
+<td>
+<h4>
+<% if bet.quiniela.user.name.empty? %>
+            <%=bet.quiniela.user.email.split(/@/)[0] %>
+ <% else %>
+            <%=bet.quiniela.user.name %>
+ <% end %>
+
+ - <a href="/quinielas/showro/<%= bet.quiniela.id %>"><%= bet.quiniela.name %></a>  - <%= bet.quiniela.points %> puntos</h4>  
+</td>
+</tr>
+</table>
+<table class="table table-striped table-hover <% if bet.score_t1 > bet.score_t2 %>win1<% end %> <% if bet.score_t2 > bet.score_t1 %>win2<% end %> <% if bet.score_t1 == bet.score_t2 %>tie<% end %>" style="">
+              <tbody>
+
+                <tr>
+                  <td><span class="flagsp flagsp_<%= bet.team1.code %>" title=""> </span></td>
+                  <td class="col-ajust"><%= bet.team1.name %></td>
+                  <td class="centered" style="width: 105px;">
+                    <table>
+                      <tr><td id="bet_<%= bet.match.id %>_score_1"><%= bet.score_t1 %></td>
+                      <td><div class="form-separator">-</div></td>
+                      <td id="bet_<%= bet.match.id %>_score_2"><%= bet.score_t2 %></td></tr>
+                    </table>
+                  </td>
+                  <td class="rigth-align col-ajust"><%= bet.team2.name %></td>
+                   <td class="rigth-align"> <span class="flagsp flagsp_<%= bet.team2.code %>" title=""> </span></td>
+                  
+                </tr> 
+
+              </tbody>
+            </table>
+
+                <% end %>
+
+            
+          </div>
+
+  
+ <div class="col-sm-5 col-lg-5" style="">
+           <div style="
+    float: right;
+    margin-top: -73px;
+">
+ <% if @match.id > 1  %>
+<a href="/compare/compare_by_bet/<%=@match.id - 1%>" class="btn btn-info">Anterior</a>
+ <% end %>           
+
+ <% if @match.id < 48%>
+<a href="/compare/compare_by_bet/<%=@match.id + 1%>" class="btn btn-info">Siguiente</a>
+ <% end %>  
+           </div>
+
+            <h4>Resultado real</h4>
+            <table class="table table-striped table-hover 
+<% if @played %>
+game-over
+<% end%>
+
+ ">
+              <tbody>
+              
+
+                <tr>
+                  <td style="position:relative;"><div id="earned_<%= @match.id %>" class="points"></div><span class="flagsp flagsp_<%= @match.team1.code %>" title=""> </span></td>
+                  <td class="col-ajust">
+                    <% if @winner_id == @match.team1_id%>
+                    <img width="20px" src="https://cdn4.iconfinder.com/data/icons/48x48-free-object-icons/48/Entertainment.png">
+                    <% end %>
+                    
+                    <%= @match.team1.name %>
+                  </td>
+                  <td class="centered">
+
+<% if @played %>
+                    <table style="height: 32px;">
+                      <tbody>
+                        <tr>
+                          <td id="match_<%= @match.id %>_score_1" class="played" ><%= @match.score_t1 %></td>
+                          <td><div class="form-separator">-</div></td>
+                          <td id="match_<%= @match.id %>_score_2"><%= @match.score_t2 %></td></tr>
+                    </tbody></table>
+<% else%>
+<div style="height: 32px;">
+<%= @match.match_date.to_formatted_s(:time) %>
+</div>
+<% end%>
+ 
+
+
+                 
+
+                  </td>
+                  <td class="rigth-align col-ajust">
+                     <% if @winner_id == @match.team2_id%>
+                    <img width="20px" src="https://cdn4.iconfinder.com/data/icons/48x48-free-object-icons/48/Entertainment.png">
+                    <% end %>
+                    <%= @match.team2.name %>
+                  </td>
+                   <td class="rigth-align" > 
+
+                    <span class="flagsp flagsp_<%= @match.team2.code %>" title=""> </span>
+                    
+                   </td>
+                  
+                </tr> 
+
+              </tbody>
+            </table>
+
+            <%
+              @total = @winners1_count + @winners2_count + @draw_count
+              @w1perc = @winners1_count
+              @w2perc = @winners2_count
+              @dperc = @draw_count
+
+            %>
+
+
+    <script type="text/javascript">
+
+      // Load the Visualization API and the piechart package.
+      google.load('visualization', '1.0', {'packages':['corechart']});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.setOnLoadCallback(drawChart);
+
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      function drawChart() {
+
+        // Create the data table.
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Topping');
+        data.addColumn('number', 'Slices');
+        data.addColumn('string', 'class');
+        data.addRows([
+          ['Dijeron que ganaba <%= @match.team1.name %>', <%= @w1perc %>, 'win1'],
+          ['Dijeron que ganaba <%= @match.team2.name %>', <%= @w2perc %>,'win2'],
+          ['Dijeron que habia empate',  <%= @dperc %>,'tie'],
+          
+        ]);
+
+        // Set chart options
+        var options = {'title':'',
+                        is3D: true,
+                       'width':480,
+                       'height':380};
+
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+         function selectHandler() {
+          var selectedItem = chart.getSelection()[0];
+          if (selectedItem) {
+            var class1 = data.getValue(selectedItem.row, 2);
+            $(".table-striped").removeClass("on");
+            $("."+class1).addClass("on");
+            $('html, body').animate({
+                scrollTop: $("."+class1+"").prev("table").offset().top
+            }, 500);
+          }
+        }
+
+        google.visualization.events.addListener(chart, 'select', selectHandler); 
+        chart.draw(data, options);
+      }
+    </script>
+
+    <h4>Porcentajes según apuestas.</h4>
+    <!--Div that will hold the pie chart-->
+    <div id="chart_div">Cargando gráfica...</div>
+                    </div>
+
+
+
+               
+      </div>
+
+
+</div>
