@@ -1,5 +1,6 @@
 
 
+
 <table class="table table-striped table-hover" style="display:none;">
               <tbody>
               
@@ -9,11 +10,12 @@
                   <td id="t1_<%= f.object.match.id %>_name" class="col-ajust"><%= f.object.match.team1.name %></td>
                   <td class="centered" style="width: 138px;">
                     <%= f.text_field :score_t1, :class => "form-control small-control score required digits" %>
-                    <%= f.hidden_field :team1_id, :value => f.object.match.team1.id %>
+                    <%= f.hidden_field :winner_id , :class => "required"%>
+                    <%= f.hidden_field :team1_id, :value => f.object.match.team1.id, :class => "required" %>
                     <div class="form-separator">-</div>
                     <%= f.text_field :score_t2, :class => "form-control small-control score required digits" %>
-                    <%= f.hidden_field :team2_id, :value => f.object.match.team2.id %>
-                    <%= f.hidden_field :match_id, :value => f.object.match.id %>
+                    <%= f.hidden_field :team2_id, :value => f.object.match.team2.id, :class => "required" %>
+                    <%= f.hidden_field :match_id, :value => f.object.match.id, :class => "required" %>
                   </td>
                   <td id="t2_<%= f.object.match.id %>_name" class="rigth-align col-ajust"><%= f.object.match.team2.name %></td>
                    <td class="rigth-align"> <span id="t2_<%= f.object.match.id %>_flag" class="flagsp flagsp_<%= f.object.match.team2.code %>" title=""> </span></td>

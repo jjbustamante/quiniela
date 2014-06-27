@@ -5,13 +5,16 @@
   <% end %>
 >
               <tbody>
-              
+               <% if f.object.match.id==49 %>
+              <tr><td colspan="5" style="font-size:40pt;">2da Fase</td></tr>
+                <% end %>
 
                 <tr id="match_<%= f.object.match.id %>">
                   <td><span id="t1_<%= f.object.match.id %>_flag" class="flagsp flagsp_<%= f.object.team1.code %>" title=""> </span></td>
                   <td id="t1_<%= f.object.match.id %>_name" class="col-ajust"><%= f.object.team1.name %></td>
                   <td class="centered" style="width: 138px;">
                     <%= f.text_field :score_t1, :class => "form-control small-control score required digits" %>
+                    <%= f.hidden_field :winner_id %>
                     <%= f.hidden_field :team1_id, :value => f.object.team1.id %>
                     <div class="form-separator">-</div>
                     <%= f.text_field :score_t2, :class => "form-control small-control score required digits" %>
@@ -26,7 +29,16 @@
               </tbody>
             </table>
 
-            <% if f.object.match.round.id == 2 %>
+            <% if f.object.match.round.id == 2 
+
+                if f.object.score_t1 == f.object.score_t2
+                    if f.object.team1.id == f.object.winner_id
+                      f.object.score_t1 = 1000000
+                    else
+                      f.object.score_t2 = 1000000
+                    end
+                end
+              %>
                   <script type="text/javascript">
                   var rowData1 = {name: "<%=f.object.team1.name%>", flag: '<%=f.object.team1.code%>', matchId: '<%=f.object.match.id%>',teamId: '<%=f.object.team1.id%>' , scoreT1: "<%=f.object.score_t1%>"};
                   var rowData2 = {name: "<%=f.object.team2.name%>", flag: '<%=f.object.team2.code%>', matchId: '<%=f.object.match.id%>',teamId: '<%=f.object.team2.id%>' , scoreT2: "<%=f.object.score_t2%>"};
@@ -39,7 +51,15 @@
                   
             </script>
             <% end %>
-            <% if f.object.match.round.id == 3 %>
+            <% if f.object.match.round.id == 3 
+              if f.object.score_t1 == f.object.score_t2
+                    if f.object.team1.id == f.object.winner_id
+                      f.object.score_t1 = 1000000
+                    else
+                      f.object.score_t2 = 1000000
+                    end
+                end
+                %>
                   <script type="text/javascript">
                   
                   var matchScoreData = [<%=f.object.score_t1%>,<%=f.object.score_t2%>];
@@ -48,7 +68,15 @@
             </script>
             <% end %>
 
-            <% if f.object.match.round.id == 4 %>
+            <% if f.object.match.round.id == 4 
+              if f.object.score_t1 == f.object.score_t2
+                    if f.object.team1.id == f.object.winner_id
+                      f.object.score_t1 = 1000000
+                    else
+                      f.object.score_t2 = 1000000
+                    end
+                end
+                %>
                   <script type="text/javascript">
                   
                   var matchScoreData = [<%=f.object.score_t1%>,<%=f.object.score_t2%>];
@@ -57,7 +85,15 @@
             </script>
             <% end %>
 
-                 <% if f.object.match.round.id == 5 %>
+                 <% if f.object.match.round.id == 5 
+                  if f.object.score_t1 == f.object.score_t2
+                    if f.object.team1.id == f.object.winner_id
+                      f.object.score_t1 = 1000000
+                    else
+                      f.object.score_t2 = 1000000
+                    end
+                end
+                %>
                   <script type="text/javascript">
                   
                   var matchScoreData = [<%=f.object.score_t1%>,<%=f.object.score_t2%>];
@@ -66,7 +102,15 @@
             </script>
             <% end %>
 
-                 <% if f.object.match.round.id == 6 %>
+                 <% if f.object.match.round.id == 6 
+                  if f.object.score_t1 == f.object.score_t2
+                    if f.object.team1.id == f.object.winner_id
+                      f.object.score_t1 = 1000000
+                    else
+                      f.object.score_t2 = 1000000
+                    end
+                end%>
+
                   <script type="text/javascript">
                   
                   var matchScoreData = [<%=f.object.score_t1%>,<%=f.object.score_t2%>];

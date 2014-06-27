@@ -377,8 +377,10 @@ height: 740px;
 
 
 .fuleco4{
-background: url(/assets/fuleco3.jpg) no-repeat 0px 0px;
+background: url(/assets/fuleco4.jpg) no-repeat 0px 0px;
 height: 400px;
+width: 284px;
+display: inline-block;
 }
 
 .navbar>.container .navbar-brand,.navbar>.container .navbar-brand:hover{
@@ -500,5 +502,35 @@ label.error{
 
 
 .round-disabled.widhter{
-	width: 113%;
+	width: 117%;
+}
+.2da_radio{
+	float: left;width: 15px;margin-top: 2px;
+}
+.alert-growl {
+  border-radius: 10px;
+  background-color: rgb(25, 25, 25);
+  background-color: rgba(25, 25, 25, 0.9);
+  border-width: 2px;
+  border-color: rgb(255, 255, 255);
+  border-color: rgba(255, 255, 255, 0.9);
+  color: rgb(255, 255, 255);
+  box-shadow: 0px 0px 10px rgb(25, 25, 25);
+  box-shadow: 0px 0px 10px rgba(25, 25, 25, 0.8);
+}
+.alert-growl button.close {
+  color: rgb(255, 255, 255);
+  opacity: 1;
+}
+.alert-growl img {
+  float: left;
+  padding: 0px 5px 0px 0px;
+}
+hr.separator {
+    clear: both;
+    margin-top: 10px;
+    margin-bottom: 13px;
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(left,rgba(0,0,0,0), rgba(0,0,0,0.15), rgba(0,0,0,0));
 }

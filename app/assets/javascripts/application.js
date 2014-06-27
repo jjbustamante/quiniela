@@ -16,18 +16,14 @@
 //= require_tree ../../../vendor/assets/javascripts
 
 var customData = {};
+var DRAW_VALUE = 1000000;
 openMenu = function(e){
 	$(".dropdown").addClass("open");
 };
  
 /* Edit function is called when team label is clicked */
 function edit_fn(container, data, doneCb) {
-  /*var input = $('<input type="text">')
-  input.val(data.name)
-  container.html(input)
-  input.focus()
-  input.blur(function() { doneCb({flag: data.flag, name: input.val()}) })*/
-  //
+  //alert("editado");
 }
  
 /* Render function is called for each team label when data is changed, data
@@ -35,10 +31,22 @@ function edit_fn(container, data, doneCb) {
 function render_fn(container, data, score) {
   if (!data.flag || !data.name)
     return
-  container.append('<span class="flagsp flagsp_'+data.flag+'" title=""> </span>').append(data.name)
+
+	
+  container.append('<span team-name="'+data.name+'" class="flagsp flagsp_'+
+  	data.flag+'" title=""> </span>').append(data.name)
+ 
 
 }
-
+initializeBrackets = function(customData){
+	  $('div#customHandlers .demo').bracket({
+	    init: customData,    
+	    save: matchEdited, /* without save() labels are disabled */
+	    decorator: {edit: edit_fn,
+	                render: render_fn}});
+	  $(".jQBracket").css("width","762px");
+	  checkDraws();
+};
 function getMatchesChildrenId(matchIndex){
 
 	if(matchIndex==0 || matchIndex==1)
@@ -279,30 +287,89 @@ function getMatchesChildrenId(matchIndex){
 		updateMatchRow(matchId,match[0].teamId,match[1].teamId,match[0].team1Score,match[1].team2Score);
 		matchId++;
 	});
+
+	//se verifica si hay empates
+	checkDraws();
  }
 updateMatchRow = function(matchId,team1Id,team2Id,team1Score,team2Score){
 	//actualizamos el id del primer team
 	$("#quiniela_bets_attributes_"+(matchId-1)+"_team1_id").val(team1Id);
 	$("#quiniela_bets_attributes_"+(matchId-1)+"_team2_id").val(team2Id);
+
+	if(team1Id==null)
+		team1Score = "";
+	if(team2Id==null)
+		team2Score = "";
 	
+	if(team1Score>team2Score){
+		$("#quiniela_bets_attributes_"+(matchId-1)+"_winner_id").val(team1Id);
+	}else{
+		$("#quiniela_bets_attributes_"+(matchId-1)+"_winner_id").val(team2Id);
+	}
+	
+	if(team1Score==DRAW_VALUE){
+		team1Score = team2Score;
+	}
+	if(team2Score==DRAW_VALUE){
+		team2Score = team1Score;
+	}
+
 	//Actualizamos el value de cada score
 	$("#quiniela_bets_attributes_"+(matchId-1)+"_score_t1").val(team1Score);
 	$("#quiniela_bets_attributes_"+(matchId-1)+"_score_t2").val(team2Score);
 	
 };
-initializeBrackets = function(customData){
-	  $('div#customHandlers .demo').bracket({
-	    init: customData,
-	    
-	    save: matchEdited, /* without save() labels are disabled */
-	    decorator: {edit: edit_fn,
-	                render: render_fn}});
-	  $(".jQBracket").css("width","762px");
+checkDraws = function(){
+	var allFill = true;
+	$(".score.editable").each(function(index,e){
+		if(index % 2 == 0){
+			var val1 = $("[data-resultid=result-"+index+"]");
+			var val2 = $("[data-resultid=result-"+(index+1)+"]");
+			var addRadios = true;
+			if(val1.html()==DRAW_VALUE){
+				val1.html(val2.html());
+				addRadios = false;
+			}
+			if(val2.html()==DRAW_VALUE){
+				val2.html(val1.html());
+				addRadios = false;
+			}
+			if((val1.html()!="--" && val2.html()!="--") && val1.html()==val2.html()){
+				if(addRadios){
+					val1.prev(".label.editable").prepend('<input data-container="body" data-toggle="popover" data-content="Debes elegir el ganador en caso de empates" class="radio-pop"  style="float: left;width: 15px;margin-top: 2px;" type="radio" onclick="updateScore(this,'+(index)+')" name="asd">');
+					val2.prev(".label.editable").prepend('<input style="float: left;width: 15px;margin-top: 2px;" type="radio" onclick="updateScore(this,'+(index+1)+')" name="asd">');
+					$('.radio-pop').popover({
+					    trigger: 'focus',
+					        'placement': 'left'
+					}).focus();
+				}
+			}else if(val1.html()=="--" || val2.html()=="--"){
+				//alert("Por favor completa todos los resultados.");
+			}
+				
+		}
+	});
 };
-submitQuinielaForm = function(){
-	if($("#quinielaForm").valid()){
-        alert("valido");
-    }else{
-      	alert("no valido");
-    }
+
+
+
+
+
+updateScore = function(e,teamId){
+	var val1 = $("[data-resultid=result-"+teamId+"]");
+	var scoreElement = $(e).parent(".label.editable").next(".score.editable");
+	var scoreParent = scoreElement.parent();
+	var aux = scoreElement.html();
+	scoreElement.click();
+	scoreElement.children("input[type=text]").val(DRAW_VALUE).blur();
+}
+
+showNotification = function(message,type){
+	if(!($(".bootstrap-growl").length > 0))
+	$.bootstrapGrowl(message, {
+                        type: type,
+                        align: 'center',
+                        stackup_spacing: 30,
+                        width: "100%"
+                    });
 };

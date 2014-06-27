@@ -36,11 +36,20 @@
 
               </p>
               <% end %>
-<script type="text/javascript">
+
+              <script type="text/javascript">
 jQuery.extend(jQuery.validator.messages, {
     required: "",
     digits: ""
     
 });
-  $( "#quinielaForm" ).validate();
+  $( "#quinielaForm" ).validate(
+{
+  invalidHandler: function() {
+    //$( "#summary" ).text( validator.numberOfInvalids() + " field(s) are invalid" );
+    showNotification("Recuerda que debes llenar todos los resultados para poder guardar tu quiniela","danger");
+  }
+}
+
+    );
 </script>

@@ -21,21 +21,7 @@
 </script>
 
 <div class="form-tournament-wrapper">
-            <%= f.fields_for :bets, @quiniela.bets.order("match_id asc") do |builder| %>
-              <%= render :partial => 'bets_fields_edit', :locals => {:f => builder} %>
-
-            <% end %>
-
-
-  
-                <%= f.fields_for :bets, @bets do |builder| %>
-                  <%= render :partial => 'bets_fields_hidden', :locals => {:f => builder} %>
-              
-
-            <% end %>
-
-
-<% if !@group_stage_open %>
+  <% if !@group_stage_open %>
 <div class="round-disabled">
 <div class="disabled-text alert alert-warning">
   Esta fase está bloqueada.<a href="#" data-toggle="tooltip" title="<%= @bloq_message2%>" class="link-small">¿Por que?</a>
@@ -46,9 +32,23 @@ $(document).ready(function(){
     $(".link-small").tooltip({placement: 'top'});
 });
 </script>
-<% end %>
-</div>
 
+
+<% end %>
+            <%= f.fields_for :bets, @quiniela.bets.order("match_id asc") do |builder| %>
+              <%= render :partial => 'bets_fields_edit', :locals => {:f => builder} %>
+
+            <% end %>
+
+
+        <% if @round_of_16_open %>
+                <%= f.fields_for :bets, @bets do |builder| %>
+                  <%= render :partial => 'bets_fields_hidden', :locals => {:f => builder} %>
+                <% end %>
+        <% end %>
+
+
+</div>
 
 <%= render :partial => 'brackets'%>
 
@@ -63,11 +63,25 @@ $(document).ready(function(){
               </p>
 
               <% end %>
+
+
+
               <script type="text/javascript">
 jQuery.extend(jQuery.validator.messages, {
     required: "",
     digits: ""
     
 });
-  $( "#quinielaForm" ).validate();
+  $( "#quinielaForm" ).validate(
+
+{
+  invalidHandler: function() {
+    //$( "#summary" ).text( validator.numberOfInvalids() + " field(s) are invalid" );
+    showNotification("Recuerda que debes llenar todos los resultados para poder guardar tu quiniela","danger");
+  }
+}
+
+ );
+
 </script>
+
