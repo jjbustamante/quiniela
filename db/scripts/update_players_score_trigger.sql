@@ -9,13 +9,13 @@ BEGIN
 			score := 0;
 			-- No es primera ronda
 			IF new.round_id <> 1 THEN
-				-- Si No son octavos de final y Aciertas el equipo 3 puntos
+				-- Si No son octavos de final y Aciertas el equipo 2 puntos
 				IF new.round_id <> 2 THEN
 					IF row_data.team1_id = new.team1_id or row_data.team1_id = new.team2_id THEN
-						score := score + 3;
+						score := score + 2;
 					END IF;
 					IF row_data.team2_id = new.team1_id or row_data.team2_id = new.team2_id THEN
-						score := score + 3;
+						score := score + 2;
 					END IF;
 				END IF;
 				
@@ -31,21 +31,22 @@ BEGIN
 					score := score + 3;
 				END IF;
 				
+				-- 1 Punto si predices el empate
 				IF (new.score_t1 = new.score_t2) AND 
 					(row_data.score_t1 = row_data.score_t2) AND
 					((row_data.team1_id = new.team1_id AND row_data.team2_id = new.team2_id ) OR
 					(row_data.team1_id = new.team2_id AND row_data.team2_id = new.team1_id )) THEN
-					score := score + 3;
+					score := score + 1;
 				END IF;
 				
 				IF old.score_t1 IS NOT NULL or old.score_t2 IS NOT NULL THEN
 				
 					IF old.round_id <> 2 THEN
 						IF row_data.team1_id = old.team1_id or row_data.team1_id = old.team2_id THEN
-							score := score - 3;
+							score := score - 2;
 						END IF;
 						IF row_data.team2_id = old.team1_id or row_data.team2_id = old.team2_id THEN
-							score := score - 3;
+							score := score - 2;
 						END IF;
 					END IF;
 					
@@ -61,11 +62,12 @@ BEGIN
 						score := score - 3;
 					END IF;
 					
+					-- Aciertas el empate
 					IF (old.score_t1 = old.score_t2) AND 
 						(row_data.score_t1 = row_data.score_t2) AND
 						((row_data.team1_id = old.team1_id AND row_data.team2_id = old.team2_id ) OR
 						(row_data.team1_id = old.team2_id AND row_data.team2_id = old.team1_id )) THEN
-							score := score - 3;
+							score := score - 1;
 					END IF;
 
 				END IF;

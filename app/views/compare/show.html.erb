@@ -87,8 +87,8 @@ $(document).ready(function(){
 			//adivina cruce 1
 			if(betTeam1Id!=null && (betTeam1Id==matchTeam1Id /*|| betTeam1Id==matchTeam2Id*/)){
 				if(i>56){
-					points=points+3;
-					t1Cruce = 3;
+					points=points+2;
+					t1Cruce = 2;
 					cruceHTML = '<p><strong>Por predecir equipo de cruce '+t1nameFlag+':</strong> '+t1Cruce+' punto(s) Excepto en 8vos </p>';
 				} 
 				hasCruce1 = true;
@@ -96,8 +96,8 @@ $(document).ready(function(){
 			//adivina cruce 2
 			if(betTeam2Id!=null && (betTeam2Id==matchTeam2Id /*|| betTeam2Id==matchTeam1Id*/)){
 				if(i>56){
-					points=points+3;
-					t2Cruce = 3;
+					points=points+2;
+					t2Cruce = 2;
 					cruceHTML += '<p><strong>Por predecir equipo de cruce '+t2nameFlag+':</strong> '+t2Cruce+' punto(s) Excepto en 8vos </p>';
 				}
 				hasCruce2 = true;
@@ -113,7 +113,7 @@ $(document).ready(function(){
 				points=points+2;
 				t2points = 2; 
 			}
-			//adivina si es ganador solo si tiene ambos cruces
+			//adivina si es ganador 
 			if(matchWinnerId==betWinnerId){
 				points=points+3;
 				winnerpoints = 3;
@@ -122,8 +122,8 @@ $(document).ready(function(){
 			//adivina si es empate
 			if((matchScore1 == matchScore2) && (betMatchScore1 == betMatchScore2)){
 				if((hasCruce1 && hasCruce2)){
-					points=points+3;
-					drawPoints = 3;
+					points=points+1;
+					drawPoints = 1;
 				}
 			}
 			

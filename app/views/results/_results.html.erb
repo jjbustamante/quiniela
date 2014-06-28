@@ -44,7 +44,7 @@ game-over
               
                 <tr>
                   <td style="position:relative;">
-                    <% if match.round.id == 1 %>
+                    <% if (match.round.id == 1 || match.round.id == 2) %>
 <a href="/compare/compare_by_bet/<%= match.id %>" style="
     position: absolute;
     left: -30px;
