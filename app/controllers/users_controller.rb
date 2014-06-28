@@ -63,5 +63,10 @@ class UsersController < ApplicationController
     redirect_to "/"
   end
 
+  def show_count
+    @user = current_user # makes our views "cleaner" and more consistent
+     @session = current_user
+    @users = User.all(:joins => :quinielas, :select => "users.name, Users.email, count(quinielas.id) as quinielas_count", :group => "users.id")
+  end
 
 end

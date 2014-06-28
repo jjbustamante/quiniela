@@ -1,8 +1,3 @@
-CREATE OR REPLACE FUNCTION increment(i integer) RETURNS integer AS $$
-        BEGIN
-                RETURN i + 1;
-        END;
-$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION update_players_score() RETURNS TRIGGER AS $$
 DECLARE
@@ -33,6 +28,9 @@ BEGIN
 					IF (new.score_t1 < new.score_t2) and (row_data.team1_id = new.team2_id) THEN
 						score := score + 2;
 					END IF;
+					IF (new.score_t1 = new.score_t2) and (new.winner_id = row_data.team1_id) THEN
+						score := score + 2;
+					END IF;
 				END IF;
 				IF (row_data.score_t1 < row_data.score_t2) THEN
 					IF (new.score_t1 > new.score_t2) and (row_data.team2_id = new.team1_id) THEN
@@ -41,10 +39,18 @@ BEGIN
 					IF (new.score_t1 < new.score_t2) and (row_data.team2_id = new.team2_id) THEN
 						score := score + 2;
 					END IF;
+					IF (new.score_t1 = new.score_t2) and (new.winner_id = row_data.team2_id) THEN
+						score := score + 2;
+					END IF;
 				END IF;
 				IF (row_data.score_t1 = row_data.score_t2) THEN
-					IF (new.score_t1 = new.score_t2) and ((row_data.team1_id = new.team1_id) or (row_data.team1_id = new.team2_id))
-						and ((row_data.team2_id = new.team2_id) or (row_data.team2_id = new.team1_id)) THEN
+					IF (new.score_t1 > new.score_t2) and (row_data.winner_id = new.team1_id) THEN
+						score := score + 2;
+					END IF;
+					IF (new.score_t1 < new.score_t2) and (row_data.winner_id = new.team2_id) THEN
+						score := score + 2;
+					END IF;
+					IF (new.score_t1 = new.score_t2) and (new.winner_id = row_data.winner_id) THEN
 						score := score + 2;
 					END IF;
 				END IF;
@@ -72,6 +78,9 @@ BEGIN
 						IF (old.score_t1 < old.score_t2) and (row_data.team1_id = old.team2_id) THEN
 							score := score - 2;
 						END IF;
+						IF (old.score_t1 = old.score_t2) and (old.winner_id = row_data.team1_id) THEN
+							score := score - 2;
+						END IF;
 					END IF;
 					IF (row_data.score_t1 < row_data.score_t2) THEN
 						IF (old.score_t1 > old.score_t2) and (row_data.team2_id = old.team1_id) THEN
@@ -80,10 +89,18 @@ BEGIN
 						IF (old.score_t1 < old.score_t2) and (row_data.team2_id = old.team2_id) THEN
 							score := score - 2;
 						END IF;
+						IF (old.score_t1 = old.score_t2) and (old.winner_id = row_data.team2_id) THEN
+							score := score - 2;
+						END IF;
 					END IF;
 					IF (row_data.score_t1 = row_data.score_t2) THEN
-						IF (old.score_t1 = old.score_t2) and ((row_data.team1_id = old.team1_id) or (row_data.team1_id = old.team2_id))
-							and ((row_data.team2_id = old.team2_id) or (row_data.team2_id = old.team1_id)) THEN
+						IF (old.score_t1 > old.score_t2) and (row_data.winner_id = old.team1_id) THEN
+							score := score - 2;
+						END IF;
+						IF (old.score_t1 < old.score_t2) and (row_data.winner_id = old.team2_id) THEN
+							score := score - 2;
+						END IF;
+						IF (old.score_t1 = old.score_t2) and (old.winner_id = row_data.winner_id) THEN
 							score := score - 2;
 						END IF;
 					END IF;
@@ -165,9 +182,10 @@ EXCEPTION WHEN others THEN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER update_players_score ON matches;
 
 CREATE TRIGGER update_players_score
-BEFORE UPDATE ON matches
+BEFORE UPDATE OF score_t1, score_t2 ON matches
 FOR EACH ROW
 EXECUTE PROCEDURE update_players_score();
 
