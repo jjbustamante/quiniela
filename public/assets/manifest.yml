@@ -1,5 +1,4 @@
 ---
-<<<<<<< HEAD
 bloq.png: bloq.png
 bloq/index.png: bloq.png
 brushed.png: brushed.png
@@ -36,41 +35,3 @@ jquery-1.10.2.min.map: jquery-1.10.2.min.map
 jquery-1/index.10.2.min.map: jquery-1.10.2.min.map
 jquery.min.map: jquery.min.map
 jquery/index.min.map: jquery.min.map
-=======
-bloq.png: bloq-1ff2ffd7615b99dde2941287d2c51981.png
-bloq/index.png: bloq-1ff2ffd7615b99dde2941287d2c51981.png
-brushed.png: brushed-025796337e90dc2ea26c4d1793518667.png
-brushed/index.png: brushed-025796337e90dc2ea26c4d1793518667.png
-favicongrande.png: favicongrande-74ca24dc7927eb9f2db1b9cad85a8d9e.png
-favicongrande/index.png: favicongrande-74ca24dc7927eb9f2db1b9cad85a8d9e.png
-flagsp.png: flagsp-451658ec46e7d0289470d646e2bb3931.png
-flagsp/index.png: flagsp-451658ec46e7d0289470d646e2bb3931.png
-fuleco.png: fuleco-878fff829a14f640e931c4b9a4419e4e.png
-fuleco/index.png: fuleco-878fff829a14f640e931c4b9a4419e4e.png
-fuleco2.jpg: fuleco2-f48e8f10980156bf0eb7958a6bf53e59.jpg
-fuleco2/index.jpg: fuleco2-f48e8f10980156bf0eb7958a6bf53e59.jpg
-fuleco3.jpg: fuleco3-c43d4ced242523593d6fac5b58966364.jpg
-fuleco3/index.jpg: fuleco3-c43d4ced242523593d6fac5b58966364.jpg
-fuleco4.jpg: fuleco4-713a70dcf79761dddd7d765d0bd5cad8.jpg
-fuleco4/index.jpg: fuleco4-713a70dcf79761dddd7d765d0bd5cad8.jpg
-logo.png: logo-249bf6395204488993e3124016d49e3a.png
-logo/index.png: logo-249bf6395204488993e3124016d49e3a.png
-logo2.png: logo2-bcc02b5d3d5585dff055fcafdcd479f4.png
-logo2/index.png: logo2-bcc02b5d3d5585dff055fcafdcd479f4.png
-missing.jpg: missing-71b2a27759b2c9690d94b91960a97110.jpg
-missing/index.jpg: missing-71b2a27759b2c9690d94b91960a97110.jpg
-old_moon.png: old_moon-9f03a2372b69d1cd6360bce9eeaf2e68.png
-old_moon/index.png: old_moon-9f03a2372b69d1cd6360bce9eeaf2e68.png
-photo.jpg: photo-dd4bf22254f4e85a59767bb2579adebd.jpg
-photo/index.jpg: photo-dd4bf22254f4e85a59767bb2579adebd.jpg
-rails.png: rails-a3386665c05a2d82f711a4aaa72d247c.png
-rails/index.png: rails-a3386665c05a2d82f711a4aaa72d247c.png
-application.js: application-1b13569e9620782f423d4cd3ce931750.js
-application/index.js: application-1b13569e9620782f423d4cd3ce931750.js
-application.css: application-103dc4060456409e3e53b7d86e2bfa4d.css
-application/index.css: application-103dc4060456409e3e53b7d86e2bfa4d.css
-jquery-1.10.2.min.map: jquery-1.10.2.min-6d89202867bf3b040235b323f497aba8.map
-jquery-1/index.10.2.min.map: jquery-1.10.2.min-6d89202867bf3b040235b323f497aba8.map
-jquery.min.map: jquery.min-388372ef65cc311f6a3df4a6ceac8d22.map
-jquery/index.min.map: jquery.min-388372ef65cc311f6a3df4a6ceac8d22.map
->>>>>>> 0788e6a9950eeec2a0c589651be7320179167e6e

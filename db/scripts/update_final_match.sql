@@ -1,0 +1,2 @@
+﻿update matches set match_date='2014-07-13 12:30:00', round_id=6, team1_id=63, team2_id=64 where id=63;
+update matches set match_date='2014-07-12 15:30:00', round_id=5, team1_id=61, team2_id=62 where id=64;

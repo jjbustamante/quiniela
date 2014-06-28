@@ -32,26 +32,6 @@
 
 
 
-
-
-      
-        
-        
-      
-      
-        
-		
-		
-		
-		
-      
-      
-        
-      
-    
-  
-
-
 <script type="text/javascript">
 function getModal(id,body){
 	return '<div class="modal fade" id="modal'+id+'" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'+
@@ -93,23 +73,31 @@ $(document).ready(function(){
 		var betTeam2Id = $(".bett2id_"+i).attr("t2");
 		var matchTeam1Id = $(".matcht1id_"+i).attr("t1");
 		var matchTeam2Id = $(".matcht2id_"+i).attr("t2");
+		
+		var matchWinnerId = $(".matcht2id_"+i).attr("winner_id");
+		var betWinnerId = $(".bett2id_"+i).attr("winner_id");
 
 		if(i>48){
 			var t1Cruce = 0;
 			var t2Cruce = 0;
 			
-			if(betTeam1Id==matchTeam1Id){
+			if(betTeam1Id!=null && (betTeam1Id==matchTeam1Id || betTeam1Id==matchTeam2Id)){
 				points=points+1;
 				t1Cruce = 1;
+				cruce = '<p><strong>Por predecir equipo de cruce '+t1nameFlag+':</strong> '+t1Cruce+' punto(s)</p>';
 			}
-			if(betTeam2Id==matchTeam2Id){
+			if(betTeam2Id!=null && (betTeam2Id==matchTeam2Id || betTeam2Id==matchTeam1Id)){
 				points=points+1;
 				t2Cruce = 1;
+				cruce += '<p><strong>Por predecir equipo de cruce '+t2nameFlag+':</strong> '+t2Cruce+' punto(s)</p>';
 			}	
-			cruce = '<p><strong>Por predecir equipo de cruce '+t1nameFlag+':</strong> '+t1Cruce+' punto(s)</p>';
-			cruce += '<p><strong>Por predecir equipo de cruce '+t2nameFlag+':</strong> '+t2Cruce+' punto(s)</p>';
-				
+			
+			
 
+			if((matchScore1 == matchScore2 || betMatchScore1==betMatchScore2) && matchWinnerId==betWinnerId){
+				points=points+2;
+				winnerpoints = 2;
+			}
 			
 		}
 
@@ -121,21 +109,21 @@ $(document).ready(function(){
 			points=points+1;
 			t2points = 1; 
 		}
+
 		if((betTeam1Id==matchTeam1Id) && (betMatchScore1 > betMatchScore2 && matchScore1 > matchScore2)){
 			points=points+2;
 			winnerpoints = 2;
-			/*if(i==32)
-				alert(betMatchScore1 + " > " + betMatchScore2 + "; " + matchScore1 + " > " + matchScore2);*/
-			
 		}
+
 		if((betTeam1Id==matchTeam1Id) && (betMatchScore2 > betMatchScore1 && matchScore2 > matchScore1)){
 			points=points+2;
 			winnerpoints = 2;
-
 		}
-		if((betTeam1Id==matchTeam1Id) && (betMatchScore1 == betMatchScore2 && matchScore1 == matchScore2)){
-			points=points+2;
-			drawPoints = 2; 
+		if(i<48){
+			if((betTeam1Id==matchTeam1Id && betTeam2Id==matchTeam2Id) && (betMatchScore1 == betMatchScore2 && matchScore1 == matchScore2)){
+				points=points+2;
+				drawPoints = 2;
+			}
 		}
 
 		//alert(points);
@@ -164,7 +152,7 @@ $(document).ready(function(){
 
 		}
 		totalPoints = totalPoints + points;
-
+		
 		
 
 
