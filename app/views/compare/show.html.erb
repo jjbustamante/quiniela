@@ -83,47 +83,49 @@ $(document).ready(function(){
 			var hasCruce1 = false;
 			var hasCruce2 = false;
 			
+			
 			//adivina cruce 1
 			if(betTeam1Id!=null && (betTeam1Id==matchTeam1Id /*|| betTeam1Id==matchTeam2Id*/)){
-				points=points+1;
-				t1Cruce = 1;
-				cruceHTML = '<p><strong>Por predecir equipo de cruce '+t1nameFlag+':</strong> '+t1Cruce+' punto(s)</p>';
+				if(i>56){
+					points=points+3;
+					t1Cruce = 3;
+					cruceHTML = '<p><strong>Por predecir equipo de cruce '+t1nameFlag+':</strong> '+t1Cruce+' punto(s) Excepto en 8vos </p>';
+				} 
 				hasCruce1 = true;
 			}
 			//adivina cruce 2
 			if(betTeam2Id!=null && (betTeam2Id==matchTeam2Id /*|| betTeam2Id==matchTeam1Id*/)){
-				points=points+1;
-				t2Cruce = 1;
-				cruceHTML += '<p><strong>Por predecir equipo de cruce '+t2nameFlag+':</strong> '+t2Cruce+' punto(s)</p>';
+				if(i>56){
+					points=points+3;
+					t2Cruce = 3;
+					cruceHTML += '<p><strong>Por predecir equipo de cruce '+t2nameFlag+':</strong> '+t2Cruce+' punto(s) Excepto en 8vos </p>';
+				}
 				hasCruce2 = true;
 			}
+						
 			//adivina score t1 solo si tiene cruce
 			if(hasCruce1 && betMatchScore1==matchScore1){
-				points=points+1;
-				t1points = 1; 
+				points=points+2;
+				t1points = 2; 
 			}
 			//adivina score t2	solo si tiene cruce
 			if(hasCruce2 && betMatchScore2==matchScore2){
-				points=points+1;
-				t2points = 1; 
+				points=points+2;
+				t2points = 2; 
 			}
 			//adivina si es ganador solo si tiene ambos cruces
 			if(matchWinnerId==betWinnerId){
-				//if((hasCruce1 && hasCruce2)){
-					points=points+2;
-					winnerpoints = 2;
-				//}
-			}else{
-				//adivina si es empate
-				/*if((matchScore1 == matchScore2 && betMatchScore1==betMatchScore2)){
-					if((hasCruce1 && hasCruce2)){
-						points=points+2;
-						drawPoints = 2;
-					}
-				}*/
+				points=points+3;
+				winnerpoints = 3;
 			}
-				
-
+			
+			//adivina si es empate
+			if((matchScore1 == matchScore2) && (betMatchScore1 == betMatchScore2)){
+				if((hasCruce1 && hasCruce2)){
+					points=points+3;
+					drawPoints = 3;
+				}
+			}
 			
 			
 		}else{
