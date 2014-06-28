@@ -386,3 +386,17 @@ function readURL(input) {
         reader.readAsDataURL(input.files[0]);
     }
 }
+setWinnerId = function(e,teamId,matchId){
+	$("#"+matchId).children("tbody").children("tr").children("td").children("#match_winner_id").val(teamId);
+};
+checkForDraw = function(e){
+	var matchId = $(e).attr("match_id");
+	var valt1 = $("#"+matchId).children("tbody").children("tr").children("td").children("#match_score_t1").val();
+	var valt2 = $("#"+matchId).children("tbody").children("tr").children("td").children("#match_score_t2").val();
+	if(valt1==valt2){
+		$("#"+matchId).children("tbody").children("tr").children("td").children(".hidden-radio").show();
+	}else{
+		$("#"+matchId).children("tbody").children("tr").children("td").children(".hidden-radio").hide();
+	}
+
+};

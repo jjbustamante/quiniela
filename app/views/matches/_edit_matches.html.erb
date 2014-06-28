@@ -34,6 +34,9 @@
                     
 
                     if match.editable == 1%>
+                     <% if match.round.id > 1 %>
+                    <input type="radio" name="match_<%=match.id%>" class="hidden-radio" onclick="setWinnerId(this,'<%=match.team1.id%>','<%=match.id%>')"/>
+                     <% end %>
                      <%= match.team1.name %><%= f.select(:team1_id, teams.map { |value| [ value.name, value.id ] },{},:class => "form-control") %>
                     <%else%>
                     <%= match.team1.name %>
@@ -43,9 +46,14 @@
                     
                   </td>
                   <td class="centered" style="width: 138px;">
-                    <%= f.text_field :score_t1, :class => "form-control small-control"%>
+                    
+                    <%= f.text_field   :score_t1, :class => "form-control small-control", :onkeyup => "checkForDraw(this)", :match_id => match.id%>
+                    <% if match.round.id > 1 %>
+                    <%= f.text_field :winner_id, :class => "form-control small-control"%>
+                    <% end %>
                     <div class="form-separator">-</div>
-                    <%= f.text_field :score_t2, :class => "form-control small-control" %>
+                    <%= f.text_field :score_t2, :class => "form-control small-control", :onkeyup => "checkForDraw(this)", :match_id => match.id %>
+                    
                   </td>
                   <td class="rigth-align col-ajust">
                                         <% 
@@ -53,6 +61,9 @@
                     
                     if match.editable == 1 %>
                      <%= match.team2.name %>
+                     <% if match.round.id > 1 %>
+                    <input type="radio" name="match_<%=match.id%>" class="hidden-radio" onclick="setWinnerId(this,'<%=match.team2.id%>','<%=match.id%>')"/>
+                    <% end %>
                       <%= f.select(:team2_id, teams.map { |value| [ value.name, value.id ] },{}, :class => "form-control") %>
 
                     <%else%>
