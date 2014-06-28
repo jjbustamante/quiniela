@@ -48,6 +48,7 @@ class QuinielasController < ApplicationController
 	end
 
 	def showro
+		@session = current_user
 		@quiniela = Quiniela.find(params[:id])
 	end
 
@@ -60,7 +61,7 @@ class QuinielasController < ApplicationController
 			flash[:success] = "Tu quiniela se ha eliminado"
 			redirect_to '/quinielas/show'
 		else
-			flash[:success] = "¡Ya ha iniciado el torneo, no puede eliminar su quiniela!"
+			flash[:success] = "¡Ya ha iniciado el torneo, no puedes eliminar tu quiniela!"
 			redirect_to '/quinielas/show'
 		end
 	end
@@ -124,7 +125,7 @@ class QuinielasController < ApplicationController
 	end
 
 	def update
-		#if DateTime.now < APP_CONFIG['deadline_fase_grupos'].to_datetime
+		if DateTime.now < APP_CONFIG['deadline_2da_fase'].to_datetime
 			@quiniela = Quiniela.find(params[:id])
 			if @quiniela.user.id != current_user.id
 				redirect_back_or_default root_url
@@ -135,11 +136,11 @@ class QuinielasController < ApplicationController
 			else
 			    render 'edit'
 			end
-		#else
+		else
 
-			#flash[:success] = "¡Ya ha iniciado el torneo, no puede modificar sus apuestas de la fase de grupos!"
-			#redirect_to '/'
-		#end
+			flash[:success] = "¡Ya ha iniciado el torneo, no puedes modificar las apuestas de la fase de grupos!"
+			redirect_to '/'
+		end
 	end
 
 	def show

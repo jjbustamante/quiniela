@@ -1,13 +1,12 @@
 
             <div class="page-header">
-            <h1 id="tables">Quiniela de <%= @quiniela.user.name %></h1>
+            <h1 id="tables"><%= @quiniela.name %></h1>
             </div>
-               <h3 id="tables">Nombre: <%= @quiniela.name %></h3>
-               <h3 id="tables">Puntaje: <%= @quiniela.points ? @quiniela.points : 0 %></h3>
 
-               <div class="page-header">
-            <h2 id="tables">Fase de grupos</h2>
-            </div>
-                <% @quiniela.bets.where("match_id < 49").order("match_id asc").each do |bet| %>
+
+                <% @quiniela.bets.where("").order("id asc").each do |bet| %>
                       <%= render :partial => 'bets_show', :locals => {:f => bet} %>
                 <% end %>
+
+
+

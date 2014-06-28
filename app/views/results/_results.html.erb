@@ -15,6 +15,17 @@
                 
               
                 if match.match_date.strftime("%m/%d") != @var1 %>
+                
+                <% if match.id==49  or  match.id==57 or  match.id==61 or  match.id==63 or  match.id==64 %>
+                <h2 
+<% if match.id==49 %>
+id="round2"
+                <% end %>
+
+                style="margin-top:90px;margin-bottom:20px;"><%= match.round.name %></h2>
+                <% end %>
+                
+
 
                 <h4>Fecha: <%= match.match_date.to_formatted_s(:short) %> 
                 </h4>
@@ -63,16 +74,3 @@ game-over
             </table>
               <% end %>
 
- <%
-              
-                @rounds.each do |round| 
-                  if round.status == 0
-                  %>
-              
- <div id="round<%= round.id %>" class="page-header">
-              <h1 id="tables">Resultados: <%= round.name %></h1>
-            </div>
-            <h4>Todavia no hay resultados para esta fase</h4>
-    <% 
-end
-    end %>

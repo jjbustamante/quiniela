@@ -9,7 +9,7 @@ class MatchesController < ApplicationController
 	    @matches_round_sem = Match.where(round_id: 4).order("id ASC")
 		@matches_round_3er = Match.where(round_id: 5).order("id ASC")
 		@matches_round_fin = Match.where(round_id: 6).order("id ASC")
-	  	@allTeams = Team.where(status: 0).order("id desc")
+	  	@allTeams = Team.where(status: 0).order("name asc")
 	  	@session = current_user
 	end
 
@@ -38,7 +38,7 @@ class MatchesController < ApplicationController
 	  			end
 
 	  			if @team1_score_int >= 0 and  @team2_score_int >= 0 and  @team1_score_int == @team2_score_int
-	  				@match.update_attributes(:score_t1 => @team1_score_int,:score_t2 => @team2_score_int,played => 1)
+	  				@match.update_attributes(:score_t1 => @team1_score_int,:score_t2 => @team2_score_int,:played => 1)
 	  			end
 
 	    		redirect_to "/edit_matches##{@match.id}"

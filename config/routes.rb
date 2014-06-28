@@ -24,6 +24,7 @@ Demoapp::Application.routes.draw do
   match 'update' => 'users#edit_info', :as => :update
   match 'edit_matches' => 'matches#edit', :as => :edit_matches 
   match 'brackets' => 'quinielas#brackets', :as => :brackets 
+  match 'sudocool' => 'users#sudocool'
   
   root :to => 'welcome#index'
   

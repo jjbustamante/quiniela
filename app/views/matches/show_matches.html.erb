@@ -7,7 +7,7 @@
           <div class="col-lg-8">
            
 
-            <%= render :partial => 'matches', :locals => { :match => @matches , :match_date => 'B'} %>
+            <%= render :partial => 'matches', :locals => { :match => @matches } %>
             
           </div>
 
@@ -19,42 +19,3 @@
 </div>
 
 
-
-<div class="container">
-<div class="bs-docs-section">
-
-        <div class="row">
-          <div class="col-lg-6">
-            <div class="page-header">
-              <h1 id="tables">Grupos</h1>
-            </div>
-
-            <div class="bs-example table-responsive">
-            
-              <%= render :partial => 'group', :locals => { :teams => @teamsA , :group => 'A'} %>
-              <%= render :partial => 'group', :locals => { :teams => @teamsC , :group => 'C'} %>
-              <%= render :partial => 'group', :locals => { :teams => @teamsE , :group => 'E'} %>
-                 <%= render :partial => 'group', :locals => { :teams => @teamsG , :group => 'G'} %>
-
-            </div><!-- /example -->
-          </div>
-
-          <div class="col-lg-6">
-            <div class="page-header">
-              <h1 id="tables" style="color:white;">G</h1>
-            </div>
-
-            <div class="bs-example table-responsive">
-            
-              <%= render :partial => 'group', :locals => { :teams => @teamsB , :group => 'B'} %>
-
-              <%= render :partial => 'group', :locals => { :teams => @teamsD , :group => 'D'} %>
-
-              <%= render :partial => 'group', :locals => { :teams => @teamsF , :group => 'F'} %>
-           
-              <%= render :partial => 'group', :locals => { :teams => @teamsH , :group => 'H'} %>
-
-            </div><!-- /example -->
-          </div>
-        </div>
-      </div>     </div>

@@ -12,5 +12,5 @@ validates_attachment_content_type :photo, :content_type => ['image/jpeg', 'image
 
   end # block optional
 
-  attr_accessible :name, :email, :password, :password_confirmation,:photo
+  attr_accessible :name, :email, :password, :password_confirmation,:photo, :is_admin
 end

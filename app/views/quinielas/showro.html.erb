@@ -11,7 +11,12 @@
             
           </div>
 
-          
+                     <div class="col-lg-4 fuleco2 help-fixed">
+  <h3>Informacion:</h3>
+               <h4 id="tables">Creador: <%= @quiniela.user.name %></h4 >
+               <h4 id="tables">Puntaje: <%= @quiniela.points ? @quiniela.points : 0 %></h4 >
+               <h4 id="tables">Fecha de creacion: <%= @quiniela.created_at.to_formatted_s(:short) %></h4 >
+
         </div>
       </div>
 

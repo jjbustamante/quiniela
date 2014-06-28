@@ -6,9 +6,12 @@
   <div class="row">
           <div class="col-lg-12">
             <div class="bs-example">
-              <div class="alert alert-dismissable alert-success">
-                <button type="button" class="close" data-dismiss="alert">×</button>
-                <p><strong><%=flash[:success]%></strong></p>
+              <div class="alert alert-dismissable alert-success" style="text-align: center;">
+                <button type="button" class="close" data-dismiss="alert">×<%=@user_is_admin%></button>
+                <% if  flash[:success].include? "Wayne" %>
+                  <img src='http://i1.sndcdn.com/artworks-000036331151-0kq56a-crop.jpg?30a2558' width='100'>
+                <% end %>
+                  <p><strong><%=flash[:success]%></strong></p>
               </div>
             </div>
           </div>
@@ -84,10 +87,12 @@
 
 <div class="col-lg-7">
   <table>
-    <tr><td><p class="lead game-rule blaki">Los premios que serán entregados al final del torneo constan de:</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">1er premio: 60% del acumulado por venta de quinielas.</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">2do premio: 30% del acumulado por venta de quinielas.</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">3er premio: 10% del acumulado por venta de quinielas.</p></td></tr>
+    <tr><td><p class="lead game-rule blaki">Los premios que serán entregados al final del torneo.</p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">1ER premio: 60% del acumulado.</p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">2DO premio: 30% del acumulado.</p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">3ER premio: 10% del acumulado.</p></td></tr>
+    <tr><td><h3 class="sub-rule alert alert-info" style="text-align:center;">Total acumulado: 0,00 Bs</h3></td></tr>
+    
   </table>
 </div>
   <div class="col-lg-5 fuleco2" style="height:300px;"></div>
@@ -114,10 +119,10 @@
     <tr><td><p class="lead game-rule">Según los resultados que ingreses se escogerán los equipos que pasan de Octavos de Final a las siguientes rondas.</p></td></tr>
     <tr><td><p class="lead game-rule">Consigues puntos cuando:</p></td></tr>
     <tr><td><p class="lead game-rule blaki">Fase de Grupo:</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">1) 2 punto por adivinar el ganador o el empate.</p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">1) 2 puntos por adivinar el ganador o el empate.</p></td></tr>
     <tr><td><p class="lead game-rule sub-rule">2) 1 punto si adivinas el score de un equipo (2 si adivinas ambos).</p></td></tr>
     <tr><td><p class="lead game-rule blaki">Segunda Fase:</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">1) 2 punto por adivinar el ganador o el empate (en este caso debes tener ambos equipos).</p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">1) 2 puntos por adivinar el ganador o el empate (en este caso debes tener ambos equipos).</p></td></tr>
     <tr><td><p class="lead game-rule sub-rule">2) 1 punto si adivinas uno de los equipos (2 puntos en caso de adivinar ambos).</p></td></tr>
     <tr><td><p class="lead game-rule sub-rule">3) 1 punto si adivinas el score de un solo equipo (solo si adivinaste el equipo participante). </p></td></tr>
     <tr><td><p class="lead game-rule"><strong>OJO:</strong> Contará solamente el resultado en los 90 minutos de juego, no contara extra-tiempo ni penales. También significa que puede haber empate en los resultados.</p></td></tr>

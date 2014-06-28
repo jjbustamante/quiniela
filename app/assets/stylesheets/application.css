@@ -286,7 +286,7 @@ border: 1px solid #CCC;
  display:inline-block; vertical-align:middle;margin-top: 15px;
 }
 .table-striped.game-over>tbody>tr:nth-child(odd)>td{
-	background-color:rgb(132, 240, 132);
+	background-color:rgb(160, 204, 160);
 }
 .col-ajust img{
 	margin-right: 5px;
@@ -400,7 +400,7 @@ display: inline-block;
 }
 .header-brackets{
 	margin-left: 9px;
-	font-size: 16pt;
+	font-size: 13pt;
 	font-style: italic;
 	margin-bottom: 15px;
 	color: #666;
@@ -504,6 +504,7 @@ label.error{
 }
 .2da_radio{
 	float: left;width: 15px;margin-top: 2px;
+	cursor: pointer;
 }
 .alert-growl {
   border-radius: 10px;
@@ -531,17 +532,4 @@ hr.separator {
     border: 0;
     height: 1px;
     background-image: linear-gradient(left,rgba(0,0,0,0), rgba(0,0,0,0.15), rgba(0,0,0,0));
-}
-div.jQBracket .team div.label {
-color: #666;
-text-align: left;
-padding: 6px;
-position: absolute;
-width: 108px;
-height: 22px;
-white-space: nowrap;
-overflow: hidden;
-font-size: 11pt;
-font-family: Open sans;
-font-weight: normal;
 }

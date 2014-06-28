@@ -12,15 +12,29 @@
                 <tr id="match_<%= f.object.match.id %>">
                   <td><span id="t1_<%= f.object.match.id %>_flag" class="flagsp flagsp_<%= f.object.team1.code %>" title=""> </span></td>
                   <td id="t1_<%= f.object.match.id %>_name" class="col-ajust"><%= f.object.team1.name %></td>
-                  <td class="centered" style="width: 138px;">
-                    <%= f.text_field :score_t1, :class => "form-control small-control score required digits" %>
-                    <%= f.hidden_field :winner_id %>
-                    <%= f.hidden_field :team1_id, :value => f.object.team1.id %>
-                    <div class="form-separator">-</div>
-                    <%= f.text_field :score_t2, :class => "form-control small-control score required digits" %>
-                    <%= f.hidden_field :team2_id, :value => f.object.team2.id %>
-                    <%= f.hidden_field :match_id, :value => f.object.match.id %>
-                  </td>
+                  
+
+                    <% if @group_stage_open %>
+                    <td class="centered" style="width: 138px;">
+                          <%= f.text_field :score_t1, :class => "form-control small-control score required digits" %>
+                          <%= f.hidden_field :winner_id %>
+                          <%= f.hidden_field :team1_id, :value => f.object.team1.id %>
+                          <div class="form-separator">-</div>
+                          <%= f.text_field :score_t2, :class => "form-control small-control score required digits" %>
+                          <%= f.hidden_field :team2_id, :value => f.object.team2.id %>
+                          <%= f.hidden_field :match_id, :value => f.object.match.id %>
+                          
+                     <% else %>
+                     <td class="centered" style="width: 50px;">
+                     <table>
+                      <tr><td><%= f.label f.object.score_t1 %></td>
+                      <td><div class="form-separator">-</div></td>
+                      <td><%= f.label f.object.score_t2 %></td></tr>
+                    </table>
+                         </td>
+                     <% end %>
+
+                  
                   <td id="t2_<%= f.object.match.id %>_name" class="rigth-align col-ajust"><%= f.object.team2.name %></td>
                    <td class="rigth-align"> <span id="t2_<%= f.object.match.id %>_flag" class="flagsp flagsp_<%= f.object.team2.code %>" title=""> </span></td>
                   

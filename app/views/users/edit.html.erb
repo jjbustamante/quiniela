@@ -24,12 +24,32 @@
 
 <div class="col-lg-3">
   <a href="" onclick = "$('#user_photo').trigger('click');">
-  <%= image_tag @user.photo.url(:small) %>
+  <%= image_tag @user.photo.url(:small), :id => "user_preview", :width => "130px" %>
   </a>
  </div>
- <div class="col-lg-3">
-    <%= f.file_field :photo %>
- </div>
+
+
+ <div id="upload-file-container">
+    <%= f.file_field :photo %>\<script type="text/javascript">
+$(document).ready(function(){
+
+$("#user_photo").change(function(){
+    readURL(this);
+});
+});
+    </script>
+</div>
+<style type="text/css">
+#upload-file-container {
+   background: url(images/custom-file-input.png) no-repeat;
+}
+
+#upload-file-container input {
+   filter: alpha(opacity=0);
+   opacity: 0;
+   cursor: pointer;
+}
+</style>
   </div>
 
 
