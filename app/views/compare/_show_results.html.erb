@@ -17,12 +17,12 @@
                 if match.match_date.strftime("%m/%d") != @var1 %>
                 
                 <% if match.id==49  or  match.id==57 or  match.id==61 or  match.id==63 or  match.id==64 %>
-                <h2 
+                <h3 
 <% if match.id==49 %>
 id="round2"
                 <% end %>
 
-                style="margin-top:90px;margin-bottom:20px;"><%= match.round.name %></h2>
+                style=""><%= match.round.name %></h3>
                 <% end %>
                 
 
@@ -40,40 +40,6 @@ id="round2"
 
 <% end  %>
 
- <% if  match.round.id == 1 and  match.id==1 %>             
- 
-
- 
-<% end  %>
-
- <% if  match.round.id == 2 and  match.id==49 %>             
- 
-<h2 id="tables" class="niveler"></h2>
- 
-<% end  %>
-
- <% if  match.round.id == 3 and  match.id==57 %>             
- 
-<h2 id="tables" class="niveler"></h2>
- 
-<% end  %>
-
- <% if  match.round.id == 4 and  match.id==61 %>             
- 
-<h2 id="tables" class="niveler"></h2>
- 
-<% end  %>
-
- <% if  match.round.id == 5 and  match.id==63 %>             
- 
-<h2 id="tables" class="niveler"></h2>
- 
-<% end  %>
-
- <% if  match.round.id == 6 and  match.id==64 %>             
- 
-<h2 id="tables" class="niveler"></h2>
-<% end  %>
 
 
 
@@ -87,7 +53,10 @@ game-over
               
 
                 <tr>
-                  <td style="position:relative;"><div id="earned_<%= match.id %>" class="points"></div><span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span></td>
+                  <td style="position:relative;">
+                    <div id="earned_<%= match.id %>" class="points"></div><span class="flagsp flagsp_<%= match.team1.code %>" title=""> </span>
+
+                  </td>
                   <td class="col-ajust">
                     <% if @winner_id == match.team1_id%>
                     <img width="20px" src="https://cdn4.iconfinder.com/data/icons/48x48-free-object-icons/48/Entertainment.png">
@@ -101,9 +70,9 @@ game-over
                     <table style="height: 32px;">
                       <tbody>
                         <tr>
-                          <td id="match_<%= match.id %>_score_1" class="played" ><%= match.score_t1 %></td>
+                          <td id="match_<%= match.id %>_score_1" t1="<%= match.team1.id %>" class="played matcht1id_<%= match.id %>" ><%= match.score_t1 %></td>
                           <td><div class="form-separator">-</div></td>
-                          <td id="match_<%= match.id %>_score_2"><%= match.score_t2 %></td></tr>
+                          <td id="match_<%= match.id %>_score_2" t2="<%= match.team2.id %>" class="matcht2id_<%= match.id %>"><%= match.score_t2 %></td></tr>
                     </tbody></table>
 <% else%>
 <div style="height: 32px;">

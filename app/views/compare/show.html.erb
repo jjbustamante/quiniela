@@ -30,45 +30,146 @@
 
 </div>
 
-<script type="text/javascript">
-$(document).ready(function(){
-	for(i=1;i<=64;i++){
-		var betMatchScore1 = $("#bet_"+i+"_score_1").html();
-		var betMatchScore2 = $("#bet_"+i+"_score_2").html();
-		var matchScore1 = $("#match_"+i+"_score_1").html();
-		var matchScore2 = $("#match_"+i+"_score_2").html();
-		var points = 0;
 
-		if(betMatchScore1 == matchScore1){
+
+
+
+      
+        
+        
+      
+      
+        
+		
+		
+		
+		
+      
+      
+        
+      
+    
+  
+
+
+<script type="text/javascript">
+function getModal(id,body){
+	return '<div class="modal fade" id="modal'+id+'" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">'+
+		   '<div class="modal-dialog">'+
+		   '<div class="modal-content">'+
+		   '<div class="modal-header">'+
+		   '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>'+
+		   '<h3 class="modal-title" id="myModalLabel">Puntos repartidos</h3>'+
+		   '</div>'+
+		   '<div class="modal-body">'+
+		   	body +
+		   '</div>'+
+			'<div class="modal-footer">'+
+			'<button type="button" class="btn btn-success" data-dismiss="modal">Cerrar</button>'+
+			'</div></div></div></div>';
+			
+
+}
+$(document).ready(function(){
+	var totalPoints = 0;
+	for(i=1;i<=64;i++){
+		var betMatchScore1 = parseInt($("#bet_"+i+"_score_1").html());
+		var betMatchScore2 = parseInt($("#bet_"+i+"_score_2").html());
+		var matchScore1 = parseInt($("#match_"+i+"_score_1").html());
+		var matchScore2 = parseInt($("#match_"+i+"_score_2").html());
+		
+		
+		var points = 0;
+		var t1points = 0;
+		var t2points = 0;
+		var winnerpoints = 0;
+		var t1nameFlag = '<span class="flagsp flagsp_'+$("#bet_"+i+"_score_1").attr("flag_code")+'" title=""> </span> '+$("#bet_"+i+"_score_1").attr("country_name")+'';
+		var t2nameFlag = '<span class="flagsp flagsp_'+$("#bet_"+i+"_score_2").attr("flag_code")+'" title=""> </span> '+$("#bet_"+i+"_score_2").attr("country_name")+'';
+		var drawPoints = 0;
+		var crucePoints = 0;
+		var cruce = "";
+		
+		var betTeam1Id = $(".bett1id_"+i).attr("t1");
+		var betTeam2Id = $(".bett2id_"+i).attr("t2");
+		var matchTeam1Id = $(".matcht1id_"+i).attr("t1");
+		var matchTeam2Id = $(".matcht2id_"+i).attr("t2");
+
+		if(i>48){
+			var t1Cruce = 0;
+			var t2Cruce = 0;
+			
+			if(betTeam1Id==matchTeam1Id){
+				points=points+1;
+				t1Cruce = 1;
+			}
+			if(betTeam2Id==matchTeam2Id){
+				points=points+1;
+				t2Cruce = 1;
+			}	
+			cruce = '<p><strong>Por predecir equipo de cruce '+t1nameFlag+':</strong> '+t1Cruce+' punto(s)</p>';
+			cruce += '<p><strong>Por predecir equipo de cruce '+t2nameFlag+':</strong> '+t2Cruce+' punto(s)</p>';
+				
+
+			
+		}
+
+		if((betTeam1Id==matchTeam1Id) && (betMatchScore1 == matchScore1)){
 			points=points+1;
+			t1points = 1; 
 		}
-		if(betMatchScore2 == matchScore2){
+		if((betTeam2Id==matchTeam2Id) && (betMatchScore2 == matchScore2)){
 			points=points+1;
+			t2points = 1; 
 		}
-		if(betMatchScore1 > betMatchScore2 && matchScore1 > matchScore2){
-			points=points+2; 
+		if((betTeam1Id==matchTeam1Id) && (betMatchScore1 > betMatchScore2 && matchScore1 > matchScore2)){
+			points=points+2;
+			winnerpoints = 2;
+			/*if(i==32)
+				alert(betMatchScore1 + " > " + betMatchScore2 + "; " + matchScore1 + " > " + matchScore2);*/
+			
 		}
-		if(betMatchScore2 > betMatchScore1 && matchScore2 > matchScore1){
-			points=points+2; 
+		if((betTeam1Id==matchTeam1Id) && (betMatchScore2 > betMatchScore1 && matchScore2 > matchScore1)){
+			points=points+2;
+			winnerpoints = 2;
+
 		}
-		if(betMatchScore1 == betMatchScore2 && matchScore1 == matchScore2){
-			points=points+2; 
+		if((betTeam1Id==matchTeam1Id) && (betMatchScore1 == betMatchScore2 && matchScore1 == matchScore2)){
+			points=points+2;
+			drawPoints = 2; 
 		}
 
 		//alert(points);
 		if($("#match_"+i+"_score_1").hasClass("played")){
 			if(points>0){
-				$("#earned_"+i).html("+"+points);
+				$("#earned_"+i).html("<a href='#' data-toggle='modal' data-target='#modal"+i+"'>+"+points+"</a>");
 
 			}else{
-				$("#earned_"+i).html(points);
+				$("#earned_"+i).html("<a href='#' data-toggle='modal' data-target='#modal"+i+"'>"+points+"</a>");
 				$("#earned_"+i).css("color","rgb(233, 102, 102)");
 			}
-				
-		
-				
-		}
+			$(".lastPoints").remove();
+			$("#earned_"+i).after('<div class="lastPoints"></div>');
+
+			var modal = getModal(i,
+				cruce + 
+			'<p><strong>Por goles del equipo '+t1nameFlag+' ('+matchScore1+'):</strong> '+t1points+' punto(s)</p>'+
+		    '<p><strong>Por goles del equipo '+t2nameFlag+' ('+matchScore2+'):</strong> '+t2points+' punto(s)</p>'+
+			'<p><strong>Por equipo ganador:</strong> '+winnerpoints+' punto(s)</p>'+
+			'<p><strong>Por empate:</strong> '+drawPoints+' punto(s)</p>'+
 			
+			
+			'<p><strong>Puntos totales:</strong> '+points+' punto(s)</p>'
+			);
+			$("#earned_"+i).after(modal);
+
+		}
+		totalPoints = totalPoints + points;
+
+		
+
+
 	}
+		$(".lastPoints").html(totalPoints);
 });
 </script>
+<div style="height:40px;"></div>

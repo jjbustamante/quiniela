@@ -23,13 +23,13 @@
  
 <% end  %>
 
- <% if  f.match.round.id == 5 and  f.match.id==63 %>             
+ <% if  f.match.round.id == 5 %>             
  
 <h3 id="tables">3er Lugar</h3>
  
 <% end  %>
 
- <% if  f.match.round.id == 6 and  f.match.id==64 %>             
+ <% if  f.match.round.id == 6 %>             
  
 <h3 id="tables">Final</h3>
  
@@ -40,18 +40,20 @@
 
                 <tr>
                   <td style="position:relative;">
+<% if f.match.round.id == 1 %>
 <a href="/compare/compare_by_bet/<%= f.match.id%>" style="
     position: absolute;
     left: -30px;
     top: 11px;
 " title="Predicciones de los usuarios"><img src="https://cdn0.iconfinder.com/data/icons/16x16-free-toolbar-icons/16/11.png"></a>
+<%end%>
 <span class="flagsp flagsp_<%= f.team1.code %>" title=""> </span></td>
                   <td class="col-ajust"><%= f.team1.name %></td>
                   <td class="centered" style="width: 105px;">
                     <table>
-                      <tr><td id="bet_<%= f.match.id %>_score_1"><%= f.score_t1 %></td>
+                      <tr><td id="bet_<%= f.match.id %>_score_1" flag_code="<%= f.match.team1.code %>" country_name="<%= f.match.team1.name %>" t1="<%= f.team1.id %>" class="played bett1id_<%= f.match.id %>"><%= f.score_t1 %></td>
                       <td><div class="form-separator">-</div></td>
-                      <td id="bet_<%= f.match.id %>_score_2"><%= f.score_t2 %></td></tr>
+                      <td id="bet_<%= f.match.id %>_score_2" flag_code="<%= f.match.team2.code %>" country_name="<%= f.match.team2.name %>" t2="<%= f.team2.id %>" class="played bett2id_<%= f.match.id %>"><%= f.score_t2 %></td></tr>
                     </table>
                   </td>
                   <td class="rigth-align col-ajust"><%= f.team2.name %></td>

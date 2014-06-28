@@ -22,13 +22,13 @@
 
 <% end  %>
 
- <% if f.match.round.id == 5 and f.match.id==63 %>             
+ <% if f.match.round.id == 5 and f.match.id==64 %>             
 
 <h2 id="tables">3er Lugar</h2>
 
 <% end  %>
 
- <% if f.match.round.id == 6 and f.match.id==64 %>             
+ <% if f.match.round.id == 6 and f.match.id==63 %>             
 
 <h2 id="tables">Final</h2>
 
@@ -43,11 +43,13 @@
 
                 <tr>
                   <td style="position:relative;">
+                    <% if f.match.round.id == 1 %>
 <a href="/compare/compare_by_bet/<%= f.match.id%>" style="
     position: absolute;
     left: -30px;
     top: 11px;
 " title="Predicciones de los usuarios"><img src="https://cdn0.iconfinder.com/data/icons/16x16-free-toolbar-icons/16/11.png"></a>
+<%end%>
 <span class="flagsp flagsp_<%= f.team1.code %>" title=""> </span></td>
                   <td class="col-ajust">
              
