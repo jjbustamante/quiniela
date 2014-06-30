@@ -104,9 +104,10 @@ class QuinielasController < ApplicationController
 			if @quiniela.user.id != current_user.id
 				redirect_back_or_default root_url
 			end
+
 			@bets = []
-			if @quiniela.bets.size <= 48
-				@matches = Match.where(round_id: [2,3,4,5,6]).order("id ASC")
+			if @quiniela.bets.size <= 60
+				@matches = Match.where(round_id: [4,5,6]).order("id ASC")
 				@matches.each do |m|
 					bet = @quiniela.bets.build
 					bet.match = m
@@ -124,6 +125,9 @@ class QuinielasController < ApplicationController
 
 	def update
 		if DateTime.now < APP_CONFIG['deadline_2da_fase'].to_datetime
+			print 'INICIO'
+			print params
+			print 'FINALL'
 			@quiniela = Quiniela.find(params[:id])
 			if @quiniela.user.id != current_user.id
 				redirect_back_or_default root_url

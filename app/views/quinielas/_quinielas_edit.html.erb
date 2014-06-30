@@ -42,6 +42,7 @@ $(document).ready(function(){
 
 
         <% if @round_of_16_open %>
+ 
                 <%= f.fields_for :bets, @bets do |builder| %>
                   <%= render :partial => 'bets_fields_hidden', :locals => {:f => builder} %>
                 <% end %>

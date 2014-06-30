@@ -109,10 +109,10 @@ $(document).ready(function(){
 			}
 			//adivina si es ganador solo si tiene ambos cruces
 			if(matchWinnerId==betWinnerId){
-				//if((hasCruce1 && hasCruce2)){
+				if((hasCruce1 && hasCruce2)){
 					points=points+2;
 					winnerpoints = 2;
-				//}
+				}
 			}else{
 				//adivina si es empate
 				/*if((matchScore1 == matchScore2 && betMatchScore1==betMatchScore2)){
@@ -188,8 +188,8 @@ $(document).ready(function(){
 
 
 	}
-		//$(".lastPoints").html(totalPoints);
-		$(".lastPoints").hide();
+		$(".lastPoints").html(totalPoints);
+		//$(".lastPoints").hide();
 });
 </script>
 <div style="height:40px;"></div>

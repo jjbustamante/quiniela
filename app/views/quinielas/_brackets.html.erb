@@ -27,9 +27,9 @@ Gran final
 <div class="demo"></div>
 </div>
 
-<% if !@round_of_16_open %>
-<div class="round-disabled widhter">
-<div class="disabled-text alert alert-warning">
+<% #if !@round_of_16_open %>
+<div class="round-disabled widhter" style="width:387px;height: 575px;">
+<div class="disabled-text alert alert-warning" style="display:none;">
   Esta fase está bloqueada.<a href="#" data-toggle="tooltip" title="<%= @bloq_message %>" class="link-small">¿Por que?</a>
 </div>
 </div>
@@ -38,7 +38,7 @@ $(document).ready(function(){
     $(".link-small").tooltip({placement: 'top'});
 });
 </script>
-<% end %>
+<% #end %>
 
 
 </div>

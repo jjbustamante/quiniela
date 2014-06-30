@@ -4,7 +4,7 @@
             </div>
 
 
-                <% @quiniela.bets.where("").order("id asc").each do |bet| %>
+                <% @quiniela.bets.where("").order("match_id asc").each do |bet| %>
                       <%= render :partial => 'bets_show', :locals => {:f => bet} %>
                 <% end %>
 

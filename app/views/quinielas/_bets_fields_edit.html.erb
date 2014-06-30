@@ -14,7 +14,7 @@
                   <td id="t1_<%= f.object.match.id %>_name" class="col-ajust"><%= f.object.team1.name %></td>
                   
 
-                    <% if @group_stage_open or  f.object.match.round.id > 1 %>
+                    <% if @group_stage_open or  f.object.match.round.id > 3 %>
                     <td class="centered" style="width: 138px;">
                           <%= f.text_field :score_t1, :class => "form-control small-control score required digits" %>
                           <%= f.hidden_field :winner_id %>
