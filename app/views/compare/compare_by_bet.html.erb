@@ -56,7 +56,11 @@ end
 
                 <tr>
                   <td><span class="flagsp flagsp_<%= bet.team1.code %>" title=""> </span></td>
-                  <td class="col-ajust"><%= bet.team1.name %></td>
+                  <td class="col-ajust">
+
+                    <%= bet.team1.name %>
+
+                  </td>
                   <td class="centered" style="width: 105px;">
                     <table>
                       <tr><td id="bet_<%= bet.match.id %>_score_1"><%= bet.score_t1 %></td>

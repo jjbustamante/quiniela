@@ -50,6 +50,9 @@
 <span class="flagsp flagsp_<%= f.team1.code %>" title=""> </span></td>
                   <td class="col-ajust">
                   <div class="name-wrapper left">
+                     <% if f.winner_id== f.team1_id%>
+                    <img width="20"src="https://cdn4.iconfinder.com/data/icons/48x48-free-object-icons/48/Entertainment.png">
+                    <% end %>
                     <%= f.team1.name %>
                   </div>
                   </td>
@@ -62,6 +65,9 @@
                   </td>
                   <td class="rigth-align col-ajust">
                    <div class="name-wrapper right">
+                     <% if f.winner_id== f.team2_id%>
+                    <img width="20"src="https://cdn4.iconfinder.com/data/icons/48x48-free-object-icons/48/Entertainment.png">
+                    <% end %>
                     <%= f.team2.name %></div></td>
                    <td class="rigth-align"> <span class="flagsp flagsp_<%= f.team2.code %>" title=""> </span></td>
                   
