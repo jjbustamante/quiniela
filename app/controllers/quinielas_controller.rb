@@ -107,6 +107,7 @@ class QuinielasController < ApplicationController
 
 			@bets = []
 			if @quiniela.bets.size <= 60
+				
 				@matches = Match.where(round_id: [4,5,6]).order("id ASC")
 				@matches.each do |m|
 					bet = @quiniela.bets.build
