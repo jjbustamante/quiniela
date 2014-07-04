@@ -55,13 +55,17 @@ $(document).ready(function(){
 
 
 
+<%if @round_of_16_open %>
+          <p style="text-align:left;width:100%;margin-top:20px;">
 
 
-              <p style="text-align:left;width:100%;margin-top:20px;">
                 <%= f.submit "GUARDAR QUINIELA" ,:class => "btn btn-primary" %>
 
 
               </p>
+<%end%>
+
+    
 
               <% end %>
 
