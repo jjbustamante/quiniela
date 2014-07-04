@@ -111,9 +111,9 @@
 
 <% end %>
 
-<!--
+<% if DateTime.now > APP_CONFIG['deadline_2da_fase'].to_datetime%>
  <div class="page-header">
-              <h1 id="tables"><span style="color: rgb(245, 167, 28);">¡ATENCIÓN!</span> Edición de la segunda fase.</h1>
+              <h1 id="tables"> Cerrada la segunda fase de la quiniela.</h1>
             </div>
 
 <div class="container">
@@ -121,15 +121,18 @@
 <div class="row">
 
 <div class="col-sm-12  col-lg-12">
-  <p class="lead game-rule blaki" style="font-weight: normal;"><strong>¡Remonta esa quiniela!</strong> desde el <strong>26 de Junio a las 6:00 pm</strong> hasta el <strong>28 de Junio a las 11:30 am</strong> estará disponible para su edición la segunda fase de la quiniela DBAccess 2014, no dejes de hacerlo, luego de esta fecha <span style="color:red;">¡NO HABRÁ PRORROGA!</span><span style="color:white;">   ES CONTIGO ISAAC >:(</span></p>
-  <p style="text-align:center;"><input type="button" class="btn btn-success btn-lg" onclick="openGallery()" value="¡SEGUNDA FASE!"></p>
-
+  <p class="lead game-rule blaki" style="font-weight: normal;">Se procedió al cierre de la edición de la segunda fase, <span style="
+    font-weight: bold;
+    color: #3498db;
+">¡MUCHA SUERTE A TODOS NUESTROS PARTICIPANTES!</span></p>
+  
 </div>
 
 </div>
 
 </div>
--->
+<% else%>
+
  <div class="page-header">
               <h1 id="tables"><span style="color: rgb(245, 167, 28);">¡ATENCIÓN!</span> Equivocación en cruces de Semifinales y Final</h1>
             </div>
@@ -161,7 +164,33 @@ Podrán hacer esto a partir de este momento hasta el inicio de los 4tos de final
 </div>
 
 </div>
+<% end%>
 
+
+ <div class="page-header" style="margin-top: 0;">
+              <h1 id="tables">¡Premios!</h1>
+            </div>
+
+<div class="container">
+
+<div class="row">
+<% @acumulado = 2300 %>
+<div class="col-sm-8  col-lg-8">
+  <table>
+    <tr><td><p class="lead game-rule blaki">Los premios que serán entregados al final del torneo.</p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">1er premio: 60% del acumulado. <span style="font-weight:bold;"><%= (60*@acumulado)/100%> Bs</span></p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">2do premio: 30% del acumulado. <span style="font-weight:bold;"><%= (30*@acumulado)/100%> Bs</span></p></td></tr>
+    <tr><td><p class="lead game-rule sub-rule">3er premio: 10% del acumulado. <span style="font-weight:bold;"><%= (10*@acumulado)/100%> Bs</span></p></td></tr>
+    <tr><td><h3 class="sub-rule alert alert-info" style="text-align:center;">Total acumulado: <%=@acumulado%>,00 Bs</h3></td></tr>
+    
+  </table>
+</div>
+  <div class="col-sm-4  col-lg-4 fuleco2" style="height:266px;"></div>
+
+</div>
+
+
+</div>
 
  <div class="page-header">
               <h1 id="tables">¡Lo último!</h1>
@@ -185,30 +214,6 @@ Podrán hacer esto a partir de este momento hasta el inicio de los 4tos de final
 </div>
 
 
- <div class="page-header" style="margin-top: 0;">
-              <h1 id="tables">¡Premios!</h1>
-            </div>
-
-<div class="container">
-
-<div class="row">
-<% @acumulado = 2100 %>
-<div class="col-sm-8  col-lg-8">
-  <table>
-    <tr><td><p class="lead game-rule blaki">Los premios que serán entregados al final del torneo.</p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">1er premio: 60% del acumulado. <span style="font-weight:bold;"><%= (60*@acumulado)/100%> Bs</span></p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">2do premio: 30% del acumulado. <span style="font-weight:bold;"><%= (30*@acumulado)/100%> Bs</span></p></td></tr>
-    <tr><td><p class="lead game-rule sub-rule">3er premio: 10% del acumulado. <span style="font-weight:bold;"><%= (10*@acumulado)/100%> Bs</span></p></td></tr>
-    <tr><td><h3 class="sub-rule alert alert-info" style="text-align:center;">Total acumulado: <%=@acumulado%>,00 Bs</h3></td></tr>
-    
-  </table>
-</div>
-  <div class="col-sm-4  col-lg-4 fuleco2" style="height:266px;"></div>
-
-</div>
-
-
-</div>
 
 
 
