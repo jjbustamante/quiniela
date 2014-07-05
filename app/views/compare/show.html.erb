@@ -114,7 +114,7 @@ $(document).ready(function(){
 			}
 			//adivina si es ganador solo si tiene ambos cruces
 			if(matchWinnerId==betWinnerId){
-				if((hasCruce1 && hasCruce2)){
+				if(((hasCruce1 && betWinnerId==betTeam1Id) || (hasCruce2 && betWinnerId==betTeam2Id))){
 					points=points+2;
 					winnerpoints = 2;
 				}
@@ -193,7 +193,7 @@ $(document).ready(function(){
 
 
 	}
-		//$(".lastPoints").html(totalPoints);
+		$(".lastPoints").html(totalPoints);
 		$(".lastPoints").hide();
 });
 </script>
