@@ -29,6 +29,8 @@ Demoapp::Application.routes.draw do
   
   match 'results' => 'results#show_results', :as => :results
   match 'ranking' => 'ranking#show_ranking', :as => :ranking
+  match 'roundOf16' => 'ranking#show_ranking2', :as => :roundOf16
+  match 'firstRound' => 'ranking#show_ranking3', :as => :firstRound
   match 'update' => 'users#edit_info', :as => :update
   match 'edit_matches' => 'matches#edit', :as => :edit_matches 
   match 'brackets' => 'quinielas#brackets', :as => :brackets 

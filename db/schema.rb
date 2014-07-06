@@ -11,19 +11,18 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140615170012) do
+ActiveRecord::Schema.define(:version => 20140706000448) do
 
   create_table "bets", :force => true do |t|
     t.integer  "score_t1"
     t.integer  "score_t2"
-    t.datetime "created_at",    :null => false
-    t.datetime "updated_at",    :null => false
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
     t.integer  "winner_id"
     t.integer  "match_id"
     t.integer  "quiniela_id"
     t.integer  "team1_id"
     t.integer  "team2_id"
-    t.integer  "earned_points"
   end
 
   create_table "matches", :force => true do |t|
@@ -47,9 +46,10 @@ ActiveRecord::Schema.define(:version => 20140615170012) do
     t.string   "name"
     t.integer  "points"
     t.date     "last_update"
-    t.datetime "created_at",  :null => false
-    t.datetime "updated_at",  :null => false
+    t.datetime "created_at",         :null => false
+    t.datetime "updated_at",         :null => false
     t.integer  "user_id"
+    t.integer  "first_round_points"
   end
 
   add_index "quinielas", ["user_id"], :name => "index_quinielas_on_user_id"

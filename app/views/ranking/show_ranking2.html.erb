@@ -9,15 +9,14 @@
         <div class="row">
           <div class="col-sm-12 col-lg-12" style="margin-top: 70px;">
            
-
-             <div class="col-sm-6 col-lg-6">
-              <h1 id="tables" style="margin-top: 5px;">Ranking general</h1>
+        <div class="col-sm-6 col-lg-6">
+              <h1 id="tables" style="margin-top: 5px;">Ranking 2da fase</h1>
             </div>
             <div class="col-sm-6 col-lg-6">
               <div class="btn-group" style="float: right;">
-                <a href="/ranking" class="btn btn-primary">General</a>
+                <a href="/ranking" class="btn btn-info">General</a>
                 <a href="/firstRound" class="btn btn-info">Fase de Grupos</a>
-                <a href="/roundOf16" class="btn btn-info">2da fase</a>
+                <a href="/roundOf16" class="btn btn-primary">2da fase</a>
               </div>
             </div>
 
@@ -31,8 +30,10 @@
                 <% 
                 @counter = 1
                 @quinielas.each do |quiniela|
+
+                  @official_count = quiniela.points - quiniela.first_round_points
                 if @counter == 1
-                  @first_count = quiniela.points
+                  @first_count = @official_count
                 end
 
                 if quiniela.id != 17
@@ -40,12 +41,12 @@
                   <tr>
                   <td>#<%=@counter%></td>
                   <td><a href="/compare/<%= quiniela.id %>"><%=quiniela.name%></a></td>
-                  <td><%=quiniela.points%></td>
+                  <td><%=@official_count%></td>
                   <td style="color:rgb(213, 94, 94);">
-                    <% if @first_count == quiniela.points %>
+                    <% if @first_count == @official_count %>
                     <span style="color:#666;">-</span>
                     <% else %>      
-                      -<%= @first_count - quiniela.points %>
+                      -<%= @first_count - @official_count %>
                     <%end%>
                   </td>
                 </tr>  
@@ -75,10 +76,11 @@
                 @counter = 1
 		@first_count = 0;
                 @quinielas.each do |quiniela| 
+                  @official_count = quiniela.points - quiniela.first_round_points
                     if @counter == 1
                       @var1 = @primero
                       @fontsize = 'font-size: 20pt;'
-			@first_count = quiniela.points
+			                @first_count = @official_count
                     end
                     if @counter == 2
                        @var1 = @segundo
@@ -113,14 +115,14 @@ background: white;
  <% end %>
 </span></td>
                   <td><span class="stuart-middle"><a href="/compare/<%= quiniela.id %>"><%= quiniela.name %></a></span></td>
-                  <td><span class="stuart-middle"><%= quiniela.points ? quiniela.points : 0 %></span></td>
+                  <td><span class="stuart-middle"><%= @official_count ? @official_count : 0 %></span></td>
 			<td style="text-align:center;color:rgb(213, 94, 94);">
 
 			<span class="stuart-middle">
-<% if @first_count == quiniela.points %>
+<% if @first_count == @official_count %>
 <span style="color:#666;">-</span>
 <% else %>			
-	-<%= @first_count - quiniela.points %>
+	-<%= @first_count - @official_count %>
 <%end%>
 </span>
 
