@@ -39,15 +39,19 @@
               <tbody>
 
                 <tr>
-                  <td style="position:relative;">
+                  <td >
+<div style="position:relative;">
 
 <a href="/compare/compare_by_bet/<%= f.match.id%>" style="
     position: absolute;
     left: -30px;
     top: 11px;
 " title="Predicciones de los usuarios"><img src="https://cdn0.iconfinder.com/data/icons/16x16-free-toolbar-icons/16/11.png"></a>
+</div>
 
-<span class="flagsp flagsp_<%= f.team1.code %>" title=""> </span></td>
+<span class="flagsp flagsp_<%= f.team1.code %>" title=""> </span>
+
+</td>
                   <td class="col-ajust">
                   <div class="name-wrapper left">
                      <% if f.winner_id== f.team1_id%>
