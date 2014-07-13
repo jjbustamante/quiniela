@@ -111,7 +111,33 @@
 
 <% end %>
 
+
+
+ <div class="page-header">
+              <h1 id="tables"> Posiciones finales de la quiniela DBAccess 2014.</h1>
+            </div>
+
+<div class="container">
+
+<div class="row">
+
+<div class="col-sm-12  col-lg-12">
+
+<%= render :partial => "show_ranking" %>
+  
+</div>
+
+</div>
+
+</div>
+
+
+
+
+
 <% if DateTime.now > APP_CONFIG['deadline_2da_fase'].to_datetime%>
+
+
  <div class="page-header">
               <h1 id="tables"> Cerrada la segunda fase de la quiniela.</h1>
             </div>
@@ -131,6 +157,8 @@
 </div>
 
 </div>
+
+
 
 
 <% end%>
