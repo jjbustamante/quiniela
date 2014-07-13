@@ -124,7 +124,10 @@
 <div class="col-sm-12  col-lg-12">
 
 <%= render :partial => "show_ranking" %>
-  
+  <div style="width:100%; text-align:center;">
+  <a href="/ranking" class="btn btn-success btn-lg" style="font-style:italic;font-weight:bold;">Ir al ranking</a>
+
+    </div>
 </div>
 
 </div>
@@ -132,60 +135,6 @@
 </div>
 
 
-
-
-
-<% if DateTime.now > APP_CONFIG['deadline_2da_fase'].to_datetime%>
-
-
- <div class="page-header">
-              <h1 id="tables"> Cerrada la segunda fase de la quiniela.</h1>
-            </div>
-
-<div class="container">
-
-<div class="row">
-
-<div class="col-sm-12  col-lg-12">
-  <p class="lead game-rule blaki" style="font-weight: normal;">Se procedió al cierre de la edición de la segunda fase, <span style="
-    font-weight: bold;
-    color: #3498db;
-">¡MUCHA SUERTE A TODOS NUESTROS PARTICIPANTES!</span></p>
-  
-</div>
-
-</div>
-
-</div>
-
-
-
-
-<% end%>
-
- <div class="page-header">
-              <h1 id="tables">¡Lo último!</h1>
-            </div>
-
-<div class="container">
-
-<div class="row">
-
-<div class="col-sm-12  col-lg-12">
-  <p class="lead game-rule blaki" style="font-weight: normal;"><strong>Ahora puedes ver los rankings de 1ra y 2da fase del mundial</strong>, debes ir a la sección <a href="/ranking">"Ranking de Usuarios"</a> del menú principal y hacer click en el sub-menú que encontraras arriba de la tabla de posiciones.</p>
-
-<span style="color: #949494;">
-  <p class="lead game-rule blaki" style="font-weight: normal;"> Ahora puedes ver los puntos desglosados según las reglas de la quiniela, para esto debes ir a la opción "Ver" de una quiniela y hacer clic en los links de puntos ganados.</p>
-
-<p class="lead game-rule blaki" style="font-weight: normal;"> <strong>¡Mejoradas las vistas de la quiniela en teléfonos y tablets!</strong> desde ya puedes disfrutar de lo mejor de la quiniela desde tu celular.</p>
-  
-<p class="lead game-rule blaki" style="font-weight: normal;"> Ahora puedes ver las predicciones de todos los usuarios para un mismo partido cuando veas este icono. <img src="https://cdn0.iconfinder.com/data/icons/16x16-free-toolbar-icons/16/11.png"></p>
-</span>
-</div>
-
-</div>
-
-</div>
 
 
  <div class="page-header" style="margin-top: 0;">
@@ -198,7 +147,6 @@
 <% @acumulado = 2500 %>
 <div class="col-sm-8  col-lg-8">
   <table>
-    <tr><td><p class="lead game-rule blaki">Los premios que serán entregados al final del torneo.</p></td></tr>
     <tr><td><p class="lead game-rule sub-rule">1er premio: 60% del acumulado. <span style="font-weight:bold;"><%= (60*@acumulado)/100%> Bs</span></p></td></tr>
     <tr><td><p class="lead game-rule sub-rule">2do premio: 30% del acumulado. <span style="font-weight:bold;"><%= (30*@acumulado)/100%> Bs</span></p></td></tr>
     <tr><td><p class="lead game-rule sub-rule">3er premio: 10% del acumulado. <span style="font-weight:bold;"><%= (10*@acumulado)/100%> Bs</span></p></td></tr>
@@ -253,25 +201,6 @@
 
 </div>
 
-
- <div class="page-header">
-              <h1 id="tables">Información de pago</h1>
-            </div>
-
-<div class="container">
-
-<div class="row">
-
-<div class="col-sm-12  col-lg-12">
-  <p class="lead game-rule blaki" style="font-weight: normal;">Hacer un depósito o transferencia por el monto 100 Bs, a nombre de Emmanuel Pérez, C.I. 17.975.090 a la cuenta Provincial Nro. 0108-0035-81-0100292514.</p>
-  <p class="lead game-rule blaki" style="font-weight: normal;">Una vez que hagas el pago debes enviar un correo a emmanuel.perez@dbaccess.com con el número de transferencia o depósito.</p>
-
-
-</div>
-  
-</div>
-
-</div>
 
 
 
