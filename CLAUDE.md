@@ -23,7 +23,7 @@ Each subapp will have its own `CLAUDE.md` once scaffolded; this top-level file s
 
 ## Deploy target
 
-**Two Heroku apps**, both built with Cloud Native Buildpacks via `heroku/builder:24`:
+**Two Heroku apps**, both built with Cloud Native Buildpacks via `heroku/builder:26`:
 
 | App | Buildpack | What it runs |
 |---|---|---|
@@ -35,8 +35,8 @@ The monorepo is wired via [heroku-buildpack-monorepo](https://github.com/heroku/
 Local CNB testing (both apps build identically to prod):
 
 ```bash
-pack build quiniela-api --builder heroku/builder:24 --path backend/
-pack build quiniela-web --builder heroku/builder:24 --path frontend/
+pack build quiniela-api --builder heroku/builder:26 --path backend/
+pack build quiniela-web --builder heroku/builder:26 --path frontend/
 ```
 
 ## Auth
@@ -65,7 +65,7 @@ See `legacy/db/scripts/update_players_score_trigger.sql` for the original — re
 
 ## Tournament data
 
-Read-only sync from **API-Football (api-sports.io)**, free tier (100 req/day) sufficient for our polling cadence. Used for: initial fixture seeding (104 matches with dates/venues), live scores during matches, and knockout team assignment after group stage. Admin can manually override anything. football-data.org was considered and rejected because its coverage is too narrow for the multi-tournament future.
+Read-only sync from **football-data.org** (free tier, 10 req/min). Covers World Cup + UCL + top 5 European leagues — enough for 2026 and the planned UCL expansion. Used for: initial fixture seeding (104 matches with dates/venues), live scores during matches, and knockout team assignment after group stage. Admin can manually override anything. **Does not** cover CONMEBOL competitions (Copa Libertadores) — would need API-Football (api-sports.io) or another provider if those become target tournaments.
 
 ## Conventions
 
