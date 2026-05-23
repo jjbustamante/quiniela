@@ -83,14 +83,33 @@ Scoring trigger (`update_players_score`) will arrive in a later migration once `
 
 ## Heroku deploy
 
-The buildpack chain on `quiniela-api`:
+**Container deploy via Cloud Native Buildpacks.** We build the OCI image locally with `pack` and push it to Heroku's container registry. This is the only path that supports our monorepo while staying on CNB — Heroku Fir has no monorepo support, and the classic `heroku-buildpack-monorepo` doesn't run on CNB stacks.
+
+One-time setup (run by hand, with the `quiniela.panas.svp@gmail.com` Heroku account):
 
 ```bash
-heroku create quiniela-api --buildpack heroku-community/monorepo
-heroku buildpacks:add heroku/java --app quiniela-api
-heroku config:set APP_BASE=backend --app quiniela-api
-heroku addons:create heroku-postgresql:mini --app quiniela-api
-git push heroku master           # or set up GitHub auto-deploy
+heroku create quiniela-api --stack heroku-24            # or heroku-26 (GA 2026-05-20)
+heroku stack:set container --app quiniela-api          # switches to container deploys
+heroku addons:create heroku-postgresql:essential-0 --app quiniela-api
+# Heroku auto-sets DATABASE_URL / JDBC_DATABASE_URL config vars from the add-on
 ```
 
-The monorepo buildpack reads `APP_BASE=backend` and only builds from this directory. The Java buildpack then sees `pom.xml`, picks Java 25 from `<java.version>25</java.version>`, runs `./mvnw package`, and starts via `Procfile`.
+Per-release:
+
+```bash
+bin/deploy-backend.sh    # from repo root: pack build → docker push → heroku container:release
+```
+
+The script wraps:
+
+1. `pack build quiniela-api --builder heroku/builder:26 --path backend/`
+2. `docker tag quiniela-api registry.heroku.com/quiniela-api/web`
+3. `heroku container:login`
+4. `docker push registry.heroku.com/quiniela-api/web`
+5. `heroku container:release web --app quiniela-api`
+
+### How the image picks Java 25
+
+The `heroku/jvm` CNB buildpack reads `system.properties` (key `java.runtime.version`), **NOT** `pom.xml`. We have `backend/system.properties` containing `java.runtime.version=25`. Without it the buildpack falls back to the latest LTS default (currently 25, but pinning protects us from surprises). Supported majors: 8, 11, 17, 21, 25.
+
+Confirmed empirically — buildpack log shows: *"Using version string provided in `system.properties`. Selected major version `25` resolves to `25.0.3`."*

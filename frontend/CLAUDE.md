@@ -79,18 +79,34 @@ lib/
 
 ## Heroku deploy
 
-The buildpack chain on `quiniela-web`:
+**Container deploy via Cloud Native Buildpacks** — same model as the backend. See repo root `CLAUDE.md` for the rationale (Fir has no monorepo support; the classic monorepo buildpack isn't CNB-compatible).
+
+One-time setup:
 
 ```bash
-heroku create quiniela-web --stack heroku-24       # or heroku-26 if GA
-heroku buildpacks:add -i 1 heroku-community/monorepo --app quiniela-web
-heroku buildpacks:add -i 2 heroku/nodejs --app quiniela-web
-heroku config:set APP_BASE=frontend --app quiniela-web
+heroku create quiniela-web --stack heroku-24       # or heroku-26
+heroku stack:set container --app quiniela-web
 heroku config:set API_URL=https://quiniela-api.herokuapp.com --app quiniela-web
-git push heroku master
 ```
 
-The monorepo buildpack reads `APP_BASE=frontend` and only builds from this directory. The Node.js buildpack then sees `package.json`, picks Node 24 from `"engines": { "node": "24.x" }`, runs `npm ci && npm run build`, and starts via `Procfile` (`web: npm start` → `next start`, which reads `PORT`).
+Per-release:
+
+```bash
+bin/deploy-frontend.sh    # from repo root
+```
+
+The script wraps `pack build → docker push → heroku container:release`, same shape as the backend script.
+
+### How the image works
+
+The `heroku/nodejs-*` CNB buildpacks detect a Next.js app by the presence of `package.json` + a lockfile (`package-lock.json` here). They:
+
+1. Read `engines.node` (`"24.x"` → Node 24 LTS)
+2. Run `npm ci`
+3. Run the `build` script (`next build`)
+4. Set the launch process to the `web` line in `Procfile` (`npm start` → `next start`, which auto-reads `PORT` via Next.js 16's commander integration)
+
+No Next.js-specific buildpack adapter exists, so no standalone-output magic is needed — `next start` works out of the box.
 
 ## Tests
 

@@ -23,21 +23,30 @@ Each subapp will have its own `CLAUDE.md` once scaffolded; this top-level file s
 
 ## Deploy target
 
-**Two Heroku apps**, both built with Cloud Native Buildpacks via `heroku/builder:26`:
+**Two Heroku apps deployed via Cloud Native Buildpacks + Heroku's container registry.** This is the only path that combines a monorepo with CNB — Heroku Fir (the native-CNB platform) has no monorepo support yet, and the classic `heroku-buildpack-monorepo` is not CNB-compatible. So we build OCI images locally with `pack` and push them to Heroku.
 
-| App | Buildpack | What it runs |
+| App | CNB buildpacks | What it runs |
 |---|---|---|
-| `quiniela-api` | `heroku/java` | Spring Boot fat JAR |
-| `quiniela-web` | `heroku/nodejs` | Next.js standalone output |
+| `quiniela-api` | `heroku/jvm` + `heroku/maven` + `heroku/procfile` | Spring Boot fat JAR |
+| `quiniela-web` | `heroku/nodejs-*` + `heroku/procfile` | Next.js (`next start`) |
 
-The monorepo is wired via [heroku-buildpack-monorepo](https://github.com/heroku/heroku-buildpack-monorepo): each Heroku app sets `APP_BASE=backend` or `APP_BASE=frontend` so it only builds from its subdir. A single Heroku Postgres add-on (Mini for dev, Basic for the live tournament) is provisioned on the backend app.
+Each app is on the **`container` Heroku stack** (`heroku stack:set container`) so it accepts pre-built images instead of running its own buildpack build. A single **Heroku Postgres `essential-0`** add-on (the current entry tier; `mini` was retired) is provisioned on the backend app.
 
-Local CNB testing (both apps build identically to prod):
+Deploy is wrapped in two scripts at `bin/`:
+
+```bash
+bin/deploy-backend.sh    # pack build → docker push → heroku container:release
+bin/deploy-frontend.sh
+```
+
+Local CNB build (same image you'd push — useful for testing without releasing):
 
 ```bash
 pack build quiniela-api --builder heroku/builder:26 --path backend/
 pack build quiniela-web --builder heroku/builder:26 --path frontend/
 ```
+
+**JVM version detection:** the `heroku/jvm` CNB buildpack reads `backend/system.properties` (`java.runtime.version=25`), NOT `<java.version>` from `pom.xml`. Without `system.properties` it defaults to the latest LTS — happens to be 25 today, but pin it explicitly so a future buildpack release can't surprise us.
 
 ## Auth
 
