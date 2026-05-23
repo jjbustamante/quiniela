@@ -6,14 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A monorepo for a Spanish-language sports betting pool ("quiniela") web app, being rewritten for the **2026 FIFA World Cup** (kickoff 2026-06-11). The original 2014 Rails 3.2 implementation lives under `/legacy/` and is kept as a **reference spec only** — read it for the business rules, do not extend it.
 
-The new stack is **Spring Boot 4 + Java 25 (backend)** and **Next.js 15 + TypeScript (frontend)** as two independent apps in this same repo, deployed to two Heroku apps via Cloud Native Buildpacks. The schema is designed to be **multi-tournament from day one** (UEFA Champions League etc. planned for v2 after the 2026 tournament) — see "Domain model" below.
+The new stack is **Spring Boot 4 + Java 25 (backend)** and **Next.js 16 + TypeScript (frontend)** as two independent apps in this same repo, deployed to two Heroku apps via Cloud Native Buildpacks. The schema is designed to be **multi-tournament from day one** (UEFA Champions League etc. planned for v2 after the 2026 tournament) — see "Domain model" below.
 
 ## Repo layout
 
 ```
 /
 ├── backend/           Spring Boot 4 + Java 25 + Maven    (to be added — PR 2)
-├── frontend/          Next.js 15 + TS + Tailwind         (to be added — PR 3)
+├── frontend/          Next.js 16 + TS + Tailwind         (to be added — PR 3)
 ├── legacy/            Rails 3.2 app (2014) — spec only   ← see legacy/CLAUDE.md
 ├── docs/              Architecture + deploy notes        (added as needed)
 └── .github/workflows/ CI for backend + frontend          (rubyonrails.yml deleted)
