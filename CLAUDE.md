@@ -12,11 +12,14 @@ The new stack is **Spring Boot 4 + Java 25 (backend)** and **Next.js 16 + TypeSc
 
 ```
 /
-├── backend/           Spring Boot 4 + Java 25 + Maven    (to be added — PR 2)
-├── frontend/          Next.js 16 + TS + Tailwind         (to be added — PR 3)
+├── backend/           Spring Boot 4 + Java 25 + Maven
+├── frontend/          Next.js 16 + TS + Tailwind
+├── iac/               OpenTofu — provisions GCP resources for the planned
+│                      Cloud Run + Cloud SQL deploy (state in a GCS bucket)
 ├── legacy/            Rails 3.2 app (2014) — spec only   ← see legacy/CLAUDE.md
+├── bin/               deploy-backend.sh, deploy-frontend.sh (current: Heroku)
 ├── docs/              Architecture + deploy notes        (added as needed)
-└── .github/workflows/ CI for backend + frontend          (rubyonrails.yml deleted)
+└── .github/workflows/ CI for backend + frontend
 ```
 
 Each subapp will have its own `CLAUDE.md` once scaffolded; this top-level file stays focused on cross-cutting concerns and pointers.

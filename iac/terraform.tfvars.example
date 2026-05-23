@@ -1,0 +1,7 @@
+# Copy this file to terraform.tfvars and fill in. terraform.tfvars is gitignored.
+
+project_id  = "project-99f153c5-0682-4725-abd"
+region      = "us-central1"
+owner_email = "quiniela.panas.svp@gmail.com"
+
+# artifact_registry_repo = "apps"   # default; override only if you want a different name

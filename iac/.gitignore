@@ -1,0 +1,21 @@
+# OpenTofu local artifacts — never committed
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+crash.log
+crash.*.log
+
+# Real variable values (the .example is committed; this isn't)
+terraform.tfvars
+*.auto.tfvars
+
+# Optional override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI configuration
+.terraformrc
+terraform.rc
