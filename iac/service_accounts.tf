@@ -45,3 +45,67 @@ resource "google_project_iam_member" "deploy_sa_user" {
   role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:${google_service_account.deploy.email}"
 }
+
+# ─── Cloud Run runtime service accounts ─────────────────────────────────────
+# One SA per Cloud Run service so a compromise in the frontend can't reach
+# backend-only secrets, and vice versa. Each SA gets the minimum permissions
+# its service actually needs.
+
+resource "google_service_account" "api_runtime" {
+  project      = var.project_id
+  account_id   = "quiniela-api-runtime"
+  display_name = "Quiniela 2026 — backend runtime SA"
+  description  = "Identity that the quiniela-api Cloud Run service runs as."
+
+  depends_on = [google_project_service.enabled]
+}
+
+resource "google_service_account" "web_runtime" {
+  project      = var.project_id
+  account_id   = "quiniela-web-runtime"
+  display_name = "Quiniela 2026 — frontend runtime SA"
+  description  = "Identity that the quiniela-web Cloud Run service runs as."
+
+  depends_on = [google_project_service.enabled]
+}
+
+# ─── api_runtime: connect to Cloud SQL + read DB password ───────────────────
+
+resource "google_project_iam_member" "api_runtime_cloudsql_client" {
+  project = var.project_id
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${google_service_account.api_runtime.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "api_runtime_db_password" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.db_password.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_runtime.email}"
+}
+
+# ─── web_runtime: read NextAuth + Google OAuth secrets ──────────────────────
+
+resource "google_secret_manager_secret_iam_member" "web_runtime_nextauth" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.nextauth_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.web_runtime.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "web_runtime_google_oauth" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.google_oauth_client_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.web_runtime.email}"
+}
+
+# The API also needs nextauth-secret (to validate session tokens issued by
+# the frontend), assuming we use a shared signing key. If we end up with the
+# API issuing its own tokens after verifying Google's ID token, this can go.
+resource "google_secret_manager_secret_iam_member" "api_runtime_nextauth" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.nextauth_secret.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_runtime.email}"
+}

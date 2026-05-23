@@ -4,7 +4,16 @@ Provisions the GCP resources that host this project: Artifact Registry, Cloud Ru
 
 ## What lives here today
 
-Just the foundation — APIs enabled, Artifact Registry repo for our images, and a deploy service account. Cloud SQL, Secret Manager, and Cloud Run services come in subsequent PRs.
+- Enabled GCP APIs (Cloud Run, Cloud SQL, Artifact Registry, Secret Manager, IAM, ...)
+- Artifact Registry Docker repo `apps` for our images
+- **Cloud SQL Postgres** instance `quiniela-db` (db-f1-micro, ZONAL, deletion-protected) with database `quiniela` and app user `quiniela_app`
+- **Secret Manager** secrets: `database-password` (auto-generated), `nextauth-secret` (auto-generated), `google-oauth-client-secret` (empty placeholder — populated manually after creating the OAuth client in Console)
+- **Service accounts**:
+  - `quiniela-deploy` — used by CI / `bin/deploy-*.sh` to push images and deploy Cloud Run services
+  - `quiniela-api-runtime` — identity for the backend Cloud Run service; can connect to Cloud SQL and read DB password + NextAuth secret
+  - `quiniela-web-runtime` — identity for the frontend Cloud Run service; can read NextAuth + Google OAuth secrets
+
+Cloud Run services themselves come in the next PR (needs an image to deploy).
 
 ## First-time setup
 
