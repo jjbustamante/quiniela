@@ -1,6 +1,6 @@
 # CLAUDE.md (backend/)
 
-Spring Boot 4 + Java 25 backend for the Quiniela 2026 app. Deployed to Heroku app `quiniela-api` via Cloud Native Buildpacks. See repo root `CLAUDE.md` for the overall architecture and deploy story.
+Spring Boot 4 + Java 25 backend for the Quiniela 2026 app. Deployed to Heroku app `quiniela-panas-api` via Cloud Native Buildpacks. See repo root `CLAUDE.md` for the overall architecture and deploy story.
 
 All paths and commands below are relative to this `backend/` directory.
 
@@ -28,7 +28,7 @@ docker compose down -v                  # stop and wipe data
 curl http://localhost:8080/actuator/health
 
 # CNB build (matches what Heroku does on push)
-pack build quiniela-api --builder heroku/builder:26 --path .
+pack build quiniela-panas-api --builder heroku/builder:26 --path .
 
 # Database connection (local dev defaults)
 psql -h localhost -U quiniela -d quiniela    # password: dev
@@ -88,8 +88,8 @@ Scoring trigger (`update_players_score`) will arrive in a later migration once `
 One-time setup (run by hand, with the `quiniela.panas.svp@gmail.com` Heroku account):
 
 ```bash
-heroku create quiniela-api --stack container            # container-deploy from the start
-heroku addons:create heroku-postgresql:essential-0 --app quiniela-api
+heroku create quiniela-panas-api --stack container      # container-deploy from the start
+heroku addons:create heroku-postgresql:essential-0 --app quiniela-panas-api
 # Heroku auto-sets DATABASE_URL / JDBC_DATABASE_URL config vars from the add-on
 ```
 
@@ -103,11 +103,11 @@ bin/deploy-backend.sh    # from repo root: pack build → docker push → heroku
 
 The script wraps:
 
-1. `pack build quiniela-api --builder heroku/builder:26 --path backend/`
-2. `docker tag quiniela-api registry.heroku.com/quiniela-api/web`
+1. `pack build quiniela-panas-api --builder heroku/builder:26 --path backend/`
+2. `docker tag quiniela-panas-api registry.heroku.com/quiniela-panas-api/web`
 3. `heroku container:login`
-4. `docker push registry.heroku.com/quiniela-api/web`
-5. `heroku container:release web --app quiniela-api`
+4. `docker push registry.heroku.com/quiniela-panas-api/web`
+5. `heroku container:release web --app quiniela-panas-api`
 
 ### How the image picks Java 25
 

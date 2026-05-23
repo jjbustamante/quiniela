@@ -27,8 +27,8 @@ Each subapp will have its own `CLAUDE.md` once scaffolded; this top-level file s
 
 | App | CNB buildpacks | What it runs |
 |---|---|---|
-| `quiniela-api` | `heroku/jvm` + `heroku/maven` + `heroku/procfile` | Spring Boot fat JAR |
-| `quiniela-web` | `heroku/nodejs-*` + `heroku/procfile` | Next.js (`next start`) |
+| `quiniela-panas-api` | `heroku/jvm` + `heroku/maven` + `heroku/procfile` | Spring Boot fat JAR |
+| `panas-web` | `heroku/nodejs-*` + `heroku/procfile` | Next.js (`next start`) |
 
 Each app is on the **`container` Heroku stack** (`heroku stack:set container`) so it accepts pre-built images instead of running its own buildpack build. A single **Heroku Postgres `essential-0`** add-on (the current entry tier; `mini` was retired) is provisioned on the backend app.
 
@@ -42,8 +42,8 @@ bin/deploy-frontend.sh
 Local CNB build (same image you'd push — useful for testing without releasing):
 
 ```bash
-pack build quiniela-api --builder heroku/builder:26 --path backend/
-pack build quiniela-web --builder heroku/builder:26 --path frontend/
+pack build quiniela-panas-api --builder heroku/builder:26 --path backend/
+pack build panas-web --builder heroku/builder:26 --path frontend/
 ```
 
 **JVM version detection:** the `heroku/jvm` CNB buildpack reads `backend/system.properties` (`java.runtime.version=25`), NOT `<java.version>` from `pom.xml`. Without `system.properties` it defaults to the latest LTS — happens to be 25 today, but pin it explicitly so a future buildpack release can't surprise us.

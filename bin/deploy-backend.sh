@@ -6,14 +6,14 @@
 #   - docker running
 #   - pack CLI installed
 #   - heroku CLI authenticated (heroku login)
-#   - Heroku app already created with: heroku create quiniela-api --stack container
+#   - Heroku app already created with: heroku create quiniela-panas-api --stack container
 #
 # Usage: bin/deploy-backend.sh
 #
 set -euo pipefail
 
-APP_NAME=quiniela-api
-IMAGE_TAG=quiniela-api
+APP_NAME=quiniela-panas-api
+IMAGE_TAG=quiniela-panas-api
 PROJECT_PATH=backend
 BUILDER=heroku/builder:26
 
