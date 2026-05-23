@@ -19,7 +19,11 @@ resource "google_sql_database_instance" "main" {
   deletion_protection = true
 
   settings {
-    tier              = var.cloud_sql_tier
+    tier    = var.cloud_sql_tier
+    edition = "ENTERPRISE" # NOT Enterprise Plus — that edition doesn't support
+    # shared-core tiers (db-f1-micro, db-g1-small). Google
+    # defaults new instances to Enterprise Plus, so this is
+    # an explicit opt-in to the cheaper edition.
     availability_type = "ZONAL" # single-zone; REGIONAL doubles cost for HA we don't need
     disk_size         = 10      # GB; minimum for SSD
     disk_type         = "PD_SSD"
