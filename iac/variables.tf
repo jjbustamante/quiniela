@@ -54,3 +54,18 @@ variable "cloud_run_max_instances" {
   type        = number
   default     = 5
 }
+
+variable "web_service_url" {
+  description = <<-EOT
+    Public URL of the web Cloud Run service. Auth.js needs this for OAuth
+    callbacks. Set AFTER first apply when you know the actual URL (run
+    `tofu output web_service_url` after the service exists), add it to
+    terraform.tfvars, then re-run `tofu apply`. Leave empty on first apply.
+
+    Why a manual step: Cloud Run URLs follow one of two unpredictable
+    patterns depending on project age, AND a Cloud Run service can't
+    reference its own .uri inside its own env vars.
+  EOT
+  type        = string
+  default     = ""
+}

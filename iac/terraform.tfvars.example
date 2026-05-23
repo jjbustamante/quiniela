@@ -8,3 +8,7 @@ google_oauth_client_id = "760784205999-i5dl0qi25s9rnjpeai8fm0m1i0t8mt9h.apps.goo
 # artifact_registry_repo  = "apps"          # default
 # cloud_sql_tier          = "db-f1-micro"   # default; bump for more capacity
 # cloud_run_max_instances = 5               # default
+
+# Set AFTER first `tofu apply` — see variables.tf for the explanation.
+# Get the value with: tofu output -raw web_service_url
+# web_service_url = "https://quiniela-web-XXXXXXXXXX-uc.a.run.app"

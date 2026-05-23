@@ -9,19 +9,7 @@
 # Tofu owns: env vars, secrets, runtime SA, Cloud SQL connection, scaling.
 # Deploy script owns: image tag.
 
-data "google_project" "current" {
-  project_id = var.project_id
-}
-
 locals {
-  # Cloud Run v2 services get URLs in the form
-  #   https://<service>-<project-number>.<region>.run.app
-  # We know the project number and region, so we can predict the web URL
-  # before the service exists. This is needed because NEXTAUTH_URL must
-  # equal the actual public URL of the web service (Auth.js validates it),
-  # and a service can't reference its own .uri in an env var.
-  web_url = "https://quiniela-web-${data.google_project.current.number}.${var.region}.run.app"
-
   placeholder_image = "us-docker.pkg.dev/cloudrun/container/hello"
 }
 
@@ -168,10 +156,15 @@ resource "google_cloud_run_v2_service" "web" {
         name  = "API_URL"
         value = google_cloud_run_v2_service.api.uri
       }
-      # Auth.js needs to know its own canonical URL for OAuth callbacks.
-      env {
-        name  = "NEXTAUTH_URL"
-        value = local.web_url
+      # Auth.js needs its own canonical URL for OAuth callbacks. Conditional
+      # because we only know the actual URL after first apply — see the
+      # web_service_url variable for the workflow.
+      dynamic "env" {
+        for_each = var.web_service_url != "" ? [1] : []
+        content {
+          name  = "NEXTAUTH_URL"
+          value = var.web_service_url
+        }
       }
       env {
         name  = "AUTH_GOOGLE_ID"
