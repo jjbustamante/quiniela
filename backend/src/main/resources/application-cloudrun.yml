@@ -1,0 +1,25 @@
+# Active when SPRING_PROFILES_ACTIVE=cloudrun (set by the Cloud Run service
+# definition in iac/cloud_run.tf). Overrides the datasource so JDBC goes
+# through the Cloud SQL Auth Proxy via Unix socket instead of TCP.
+#
+# Env vars (all set on the Cloud Run service):
+#   DB_NAME                  → "quiniela"
+#   DB_USER                  → "quiniela_app"
+#   DATABASE_PASSWORD        ← Secret Manager (database-password)
+#   CLOUDSQL_CONNECTION_NAME → "<project>:<region>:<instance>"
+#
+# The SocketFactory class lives in com.google.cloud.sql:postgres-socket-factory
+# (declared as a runtime dep in pom.xml). It uses the runtime service account's
+# IAM credentials (quiniela-api-runtime, with roles/cloudsql.client) to open
+# an authenticated Unix socket at /cloudsql/<CONNECTION_NAME>; the Postgres
+# username/password is then used for in-DB authorization.
+
+spring:
+  datasource:
+    url: jdbc:postgresql:///${DB_NAME}
+    username: ${DB_USER}
+    password: ${DATABASE_PASSWORD}
+    hikari:
+      data-source-properties:
+        cloudSqlInstance: ${CLOUDSQL_CONNECTION_NAME}
+        socketFactory: com.google.cloud.sql.postgres.SocketFactory

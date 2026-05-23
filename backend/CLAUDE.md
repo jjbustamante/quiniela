@@ -36,7 +36,9 @@ psql -h localhost -U quiniela -d quiniela    # password: dev
 
 ## Configuration
 
-`src/main/resources/application.yml` is the single source. Environment-overridable via:
+`src/main/resources/application.yml` is the default (local dev + Heroku). When `SPRING_PROFILES_ACTIVE=cloudrun` is set (Cloud Run does this via the IaC-managed env), `application-cloudrun.yml` overlays it — switching the datasource to the Cloud SQL Auth Proxy via the `com.google.cloud.sql:postgres-socket-factory` JDBC SocketFactory. No code change in the rest of the app.
+
+Environment-overridable values:
 
 | Env var | Default | Purpose |
 |---|---|---|

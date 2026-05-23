@@ -41,6 +41,15 @@ resource "google_cloud_run_v2_service" "api" {
         startup_cpu_boost = true # faster Spring Boot cold start
       }
 
+      # CNB launcher (image ENTRYPOINT) needs this to know which platform
+      # API contract to use. Cloud Run injects env vars into ENTRYPOINT just
+      # fine (unlike Heroku Cedar container), so a config var works — no
+      # wrapper Dockerfile needed here. 0.15 is the highest version the
+      # heroku/builder:26 lifecycle supports.
+      env {
+        name  = "CNB_PLATFORM_API"
+        value = "0.15"
+      }
       env {
         name  = "SPRING_PROFILES_ACTIVE"
         value = "cloudrun"
@@ -147,6 +156,11 @@ resource "google_cloud_run_v2_service" "web" {
         startup_cpu_boost = true
       }
 
+      # Same CNB launcher requirement as the api service. See comment there.
+      env {
+        name  = "CNB_PLATFORM_API"
+        value = "0.15"
+      }
       env {
         name  = "NODE_ENV"
         value = "production"

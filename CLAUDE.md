@@ -17,7 +17,9 @@ The new stack is **Spring Boot 4 + Java 25 (backend)** and **Next.js 16 + TypeSc
 ├── iac/               OpenTofu — provisions GCP resources for the planned
 │                      Cloud Run + Cloud SQL deploy (state in a GCS bucket)
 ├── legacy/            Rails 3.2 app (2014) — spec only   ← see legacy/CLAUDE.md
-├── bin/               deploy-backend.sh, deploy-frontend.sh (current: Heroku)
+├── bin/               deploy-backend{,-gcp}.sh, deploy-frontend{,-gcp}.sh
+│                      (Heroku and GCP variants — Heroku kept as reference
+│                       during the migration; will be removed once GCP is verified)
 ├── docs/              Architecture + deploy notes        (added as needed)
 └── .github/workflows/ CI for backend + frontend
 ```
