@@ -43,3 +43,14 @@ variable "cloud_sql_app_user" {
   type        = string
   default     = "quiniela_app"
 }
+
+variable "google_oauth_client_id" {
+  description = "Google OAuth 2.0 Client ID (the .apps.googleusercontent.com value). Not a secret — ends up in browser-readable Next.js config."
+  type        = string
+}
+
+variable "cloud_run_max_instances" {
+  description = "Max Cloud Run instances per service. Friend pool needs ~1; 5 is breathing room without risk of runaway billing."
+  type        = number
+  default     = 5
+}

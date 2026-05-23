@@ -12,8 +12,15 @@ Provisions the GCP resources that host this project: Artifact Registry, Cloud Ru
   - `quiniela-deploy` — used by CI / `bin/deploy-*.sh` to push images and deploy Cloud Run services
   - `quiniela-api-runtime` — identity for the backend Cloud Run service; can connect to Cloud SQL and read DB password + NextAuth secret
   - `quiniela-web-runtime` — identity for the frontend Cloud Run service; can read NextAuth + Google OAuth secrets
+- **Cloud Run services** `quiniela-api` and `quiniela-web` (declared with a placeholder `hello` image; deploy script overrides — see "Image lifecycle" below). Both are publicly invocable; authn/authz happens at the app layer. The api service has the Cloud SQL Auth Proxy mounted as a sidecar.
 
-Cloud Run services themselves come in the next PR (needs an image to deploy).
+## Image lifecycle
+
+Cloud Run services need an image at creation time. We declare them with `us-docker.pkg.dev/cloudrun/container/hello` as a placeholder, and mark `template[0].containers[0].image` as `ignore_changes` so:
+
+1. First `tofu apply` creates the service running hello-world.
+2. Deploy script (`bin/deploy-*-gcp.sh`, future PR) pushes the real image and `gcloud run deploy --image=...` updates the service.
+3. Subsequent `tofu apply` runs don't touch the image — Tofu manages structure (env vars, secrets, scaling, runtime SA), deploy script manages releases.
 
 ## First-time setup
 

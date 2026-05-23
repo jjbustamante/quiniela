@@ -78,3 +78,25 @@ output "secret_id_google_oauth_client_secret" {
   description = "Secret Manager ID for the Google OAuth client secret (manually populated via Console after creating the OAuth client)."
   value       = google_secret_manager_secret.google_oauth_client_secret.secret_id
 }
+
+# ─── Cloud Run services ─────────────────────────────────────────────────────
+
+output "api_service_url" {
+  description = "Public URL of the backend Cloud Run service. Use as API_URL on the web service (already wired via Tofu)."
+  value       = google_cloud_run_v2_service.api.uri
+}
+
+output "web_service_url" {
+  description = "Public URL of the frontend Cloud Run service. Add this + '/api/auth/callback/google' as an Authorized Redirect URI in the Google OAuth client (Console → APIs & Services → Credentials)."
+  value       = google_cloud_run_v2_service.web.uri
+}
+
+output "api_service_name" {
+  description = "Cloud Run service name for the backend — used by deploy script."
+  value       = google_cloud_run_v2_service.api.name
+}
+
+output "web_service_name" {
+  description = "Cloud Run service name for the frontend — used by deploy script."
+  value       = google_cloud_run_v2_service.web.name
+}

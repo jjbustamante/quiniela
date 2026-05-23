@@ -1,7 +1,10 @@
 # Copy this file to terraform.tfvars and fill in. terraform.tfvars is gitignored.
 
-project_id  = "project-99f153c5-0682-4725-abd"
-region      = "us-central1"
-owner_email = "quiniela.panas.svp@gmail.com"
+project_id             = "project-99f153c5-0682-4725-abd"
+region                 = "us-central1"
+owner_email            = "quiniela.panas.svp@gmail.com"
+google_oauth_client_id = "760784205999-i5dl0qi25s9rnjpeai8fm0m1i0t8mt9h.apps.googleusercontent.com"
 
-# artifact_registry_repo = "apps"   # default; override only if you want a different name
+# artifact_registry_repo  = "apps"          # default
+# cloud_sql_tier          = "db-f1-micro"   # default; bump for more capacity
+# cloud_run_max_instances = 5               # default
