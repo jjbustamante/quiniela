@@ -84,10 +84,11 @@ lib/
 One-time setup:
 
 ```bash
-heroku create quiniela-web --stack heroku-24       # or heroku-26
-heroku stack:set container --app quiniela-web
+heroku create quiniela-web --stack container
 heroku config:set API_URL=https://quiniela-api.herokuapp.com --app quiniela-web
 ```
+
+Stack is `container` directly — the platform stack distinction (`heroku-24` vs `heroku-26`) doesn't apply to container deploys, since the OCI image we push carries its own Ubuntu 26.04 LTS base from `heroku/builder:26`.
 
 Per-release:
 

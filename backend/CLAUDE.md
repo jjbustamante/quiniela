@@ -88,11 +88,12 @@ Scoring trigger (`update_players_score`) will arrive in a later migration once `
 One-time setup (run by hand, with the `quiniela.panas.svp@gmail.com` Heroku account):
 
 ```bash
-heroku create quiniela-api --stack heroku-24            # or heroku-26 (GA 2026-05-20)
-heroku stack:set container --app quiniela-api          # switches to container deploys
+heroku create quiniela-api --stack container            # container-deploy from the start
 heroku addons:create heroku-postgresql:essential-0 --app quiniela-api
 # Heroku auto-sets DATABASE_URL / JDBC_DATABASE_URL config vars from the add-on
 ```
+
+The Heroku platform stack is set to `container` directly — no `heroku-24` / `heroku-26` choice to make, because the OCI image we push carries its own run-image base (Ubuntu 26.04 LTS from `heroku/heroku:26`, baked in by `heroku/builder:26`).
 
 Per-release:
 

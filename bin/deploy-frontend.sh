@@ -6,7 +6,7 @@
 #   - docker running
 #   - pack CLI installed
 #   - heroku CLI authenticated (heroku login)
-#   - Heroku app already created with: heroku stack:set container --app quiniela-web
+#   - Heroku app already created with: heroku create quiniela-web --stack container
 #   - heroku config:set API_URL=https://quiniela-api.herokuapp.com --app quiniela-web
 #
 # Usage: bin/deploy-frontend.sh

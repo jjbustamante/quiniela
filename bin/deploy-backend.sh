@@ -6,7 +6,7 @@
 #   - docker running
 #   - pack CLI installed
 #   - heroku CLI authenticated (heroku login)
-#   - Heroku app already created with: heroku stack:set container --app quiniela-api
+#   - Heroku app already created with: heroku create quiniela-api --stack container
 #
 # Usage: bin/deploy-backend.sh
 #
