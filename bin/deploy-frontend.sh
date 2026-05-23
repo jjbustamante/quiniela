@@ -2,40 +2,48 @@
 #
 # Deploy frontend/ to Heroku via Cloud Native Buildpacks + container registry.
 #
+# See bin/deploy-backend.sh for the rationale behind the two-stage build with
+# the wrapper Dockerfile. Same approach here.
+#
 # Prereqs:
 #   - docker running
 #   - pack CLI installed
 #   - heroku CLI authenticated (heroku login)
 #   - Heroku app already created with: heroku create quiniela-panas-web --stack container
-#   - CNB_PLATFORM_API config var set on the app (required for CNB-built images
-#     on Cedar container stack). Example:
-#       heroku config:set CNB_PLATFORM_API=0.15 --app quiniela-panas-web
-#   - heroku config:set API_URL=$(heroku apps:info quiniela-panas-api --json | jq -r .app.web_url | sed 's:/*$::') --app quiniela-panas-web
-#     (or set it manually — get the real URL from `heroku apps:info quiniela-panas-api`,
-#     since modern Heroku adds a random suffix to .herokuapp.com URLs)
+#   - API_URL config var set, e.g.:
+#       heroku config:set \
+#         API_URL=\$(heroku apps:info quiniela-panas-api --json | jq -r .app.web_url | sed 's:/*\$::') \
+#         --app quiniela-panas-web
+#     (modern Heroku adds a random suffix to .herokuapp.com URLs)
 #
 # Usage: bin/deploy-frontend.sh
 #
 set -euo pipefail
 
 APP_NAME=quiniela-panas-web
-IMAGE_TAG=quiniela-panas-web
+BASE_TAG=quiniela-panas-web:cnb
+REGISTRY_TAG=registry.heroku.com/$APP_NAME/web
 PROJECT_PATH=frontend
 BUILDER=heroku/builder:26
 
 cd "$(git rev-parse --show-toplevel)"
 
-echo "==> Building OCI image with pack (builder: $BUILDER)"
-pack build "$IMAGE_TAG" --builder "$BUILDER" --path "$PROJECT_PATH"
+echo "==> Building CNB base image (builder: $BUILDER)"
+pack build "$BASE_TAG" --builder "$BUILDER" --path "$PROJECT_PATH"
 
-echo "==> Tagging for Heroku container registry"
-docker tag "$IMAGE_TAG" "registry.heroku.com/$APP_NAME/web"
+echo "==> Wrapping with Heroku-compatible entrypoint"
+docker build -t "$REGISTRY_TAG" - <<EOF
+FROM $BASE_TAG
+ENV CNB_PLATFORM_API=0.15
+ENTRYPOINT []
+CMD ["/cnb/process/web"]
+EOF
 
 echo "==> Logging into Heroku container registry"
 heroku container:login
 
 echo "==> Pushing image"
-docker push "registry.heroku.com/$APP_NAME/web"
+docker push "$REGISTRY_TAG"
 
 echo "==> Releasing on $APP_NAME"
 heroku container:release web --app "$APP_NAME"

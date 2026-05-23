@@ -46,12 +46,10 @@ pack build quiniela-panas-api --builder heroku/builder:26 --path backend/
 pack build quiniela-panas-web --builder heroku/builder:26 --path frontend/
 ```
 
-### Two non-obvious Heroku config vars both apps need
+### Two Heroku gotchas the deploy scripts handle
 
-Both are part of the **one-time setup** (see `backend/CLAUDE.md` + `frontend/CLAUDE.md`), not something the deploy scripts re-set:
-
-- **`CNB_PLATFORM_API=0.15`** — required on Cedar container stack because the CNB launcher (image entrypoint) reads this at startup. On Heroku Fir it's auto-set; on Cedar container it isn't, and the launcher exits with status 11 (*"failed to get platform API version"*). `0.15` is the latest platform API the `heroku/builder:26` lifecycle supports.
-- **`JDBC_DATABASE_URL`** — needs manual setup (or runtime translation from `DATABASE_URL`). The classic Heroku Java buildpack used to derive this from `DATABASE_URL` via a profile.d script at runtime. Container deploys don't run buildpacks at runtime, so only `DATABASE_URL` is set. Our Spring app currently reads `JDBC_DATABASE_URL`; we'll either set it manually or refactor the Spring config to parse `DATABASE_URL` directly.
+- **CNB launcher needs `CNB_PLATFORM_API` baked into the image** — Heroku's container runtime injects config vars into `CMD` (shell-wrapped) but NOT into `ENTRYPOINT` (exec'd raw). The launcher is the natural ENTRYPOINT, and it errors with status 11 if `CNB_PLATFORM_API` is unset. The deploy scripts (`bin/deploy-*.sh`) handle this with a tiny wrapper Dockerfile that adds `ENV CNB_PLATFORM_API=0.15` and moves the launcher from ENTRYPOINT to CMD. Side effect: future Heroku config vars (`DATABASE_URL`, `ADMIN_EMAILS`, etc.) now reach the Java/Node process too. Heroku Fir would handle all of this natively, but Fir has no monorepo support — see the section above.
+- **`JDBC_DATABASE_URL` is not auto-set on container deploys** — the classic Heroku Java buildpack used to derive it from `DATABASE_URL` via a runtime profile.d script. Container deploys skip buildpack runtime, so only `DATABASE_URL` is set. Our Spring app currently reads `JDBC_DATABASE_URL`; we'll either set it manually or refactor the Spring config to parse `DATABASE_URL` directly. (Not solved yet — next thing on the list.)
 
 **JVM version detection:** the `heroku/jvm` CNB buildpack reads `backend/system.properties` (`java.runtime.version=25`), NOT `<java.version>` from `pom.xml`. Without `system.properties` it defaults to the latest LTS — happens to be 25 today, but pin it explicitly so a future buildpack release can't surprise us.
 

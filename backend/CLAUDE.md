@@ -89,17 +89,13 @@ One-time setup (run by hand, with the `quiniela.panas.svp@gmail.com` Heroku acco
 
 ```bash
 heroku create quiniela-panas-api --stack container      # container-deploy from the start
-
-# Required: CNB launcher needs the platform API version explicitly on Cedar
-# (Fir sets it automatically; container-stack Cedar does not). 0.15 is the
-# latest version supported by heroku/builder:26's lifecycle.
-heroku config:set CNB_PLATFORM_API=0.15 --app quiniela-panas-api
-
 heroku addons:create heroku-postgresql:essential-0 --app quiniela-panas-api
 # Heroku auto-sets DATABASE_URL (postgres:// form). The Spring app reads
 # JDBC_DATABASE_URL — which is NOT auto-set for container deploys (only
 # the classic Java buildpack at runtime would derive it). See below.
 ```
+
+**Note:** `CNB_PLATFORM_API` does NOT need to be a Heroku config var. It's baked into the deploy image directly (via the wrapper Dockerfile in `bin/deploy-backend.sh`) because Heroku's container runtime doesn't inject config vars into `ENTRYPOINT` — and the CNB launcher is the ENTRYPOINT.
 
 The Heroku platform stack is set to `container` directly — no `heroku-24` / `heroku-26` choice to make, because the OCI image we push carries its own run-image base (Ubuntu 26.04 LTS from `heroku/heroku:26`, baked in by `heroku/builder:26`).
 
@@ -109,13 +105,26 @@ Per-release:
 bin/deploy-backend.sh    # from repo root: pack build → docker push → heroku container:release
 ```
 
-The script wraps:
+The script does two builds:
 
-1. `pack build quiniela-panas-api --builder heroku/builder:26 --path backend/`
-2. `docker tag quiniela-panas-api registry.heroku.com/quiniela-panas-api/web`
-3. `heroku container:login`
-4. `docker push registry.heroku.com/quiniela-panas-api/web`
-5. `heroku container:release web --app quiniela-panas-api`
+1. `pack build quiniela-panas-api:cnb --builder heroku/builder:26 --path backend/` — produces a CNB-native image with `/cnb/process/web` as ENTRYPOINT
+2. `docker build` a tiny wrapper on top that bakes `ENV CNB_PLATFORM_API=0.15` and moves the launcher from `ENTRYPOINT` to `CMD` — see "Heroku launcher gotcha" below
+3. `heroku container:login` → `docker push registry.heroku.com/quiniela-panas-api/web`
+4. `heroku container:release web --app quiniela-panas-api`
+
+### Heroku launcher gotcha
+
+The CNB launcher (`/cnb/process/web`) is the image's natural ENTRYPOINT. But:
+
+- Heroku's container runtime **only injects config vars into `CMD`** (which it shell-wraps), not into `ENTRYPOINT` (which it execs raw). See the [Container Registry & Runtime docs](https://devcenter.heroku.com/articles/container-registry-and-runtime).
+- The launcher needs `CNB_PLATFORM_API` in its environment or it exits with status 11 (*"failed to get platform API version"*).
+- Therefore: a Heroku `config:set CNB_PLATFORM_API=...` does NOT reach the launcher.
+
+The wrapper Dockerfile fixes this in two complementary ways:
+1. `ENV CNB_PLATFORM_API=0.15` — image-level env, always present regardless of how Heroku starts the container
+2. `ENTRYPOINT [] / CMD ["/cnb/process/web"]` — moves the launcher to CMD so any other Heroku config vars (`DATABASE_URL`, future `ADMIN_EMAILS`, etc.) actually reach the Java process
+
+Heroku Fir wouldn't need this — it's the CNB-native platform and handles all of this automatically. But Fir has no monorepo support, so we're on Cedar container instead. See the repo root `CLAUDE.md`.
 
 ### How the image picks Java 25
 
