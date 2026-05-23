@@ -2,7 +2,7 @@
 
 # CLAUDE.md (frontend/)
 
-Next.js 16 + TypeScript + Tailwind 4 + App Router frontend for the Quiniela 2026 app. Deployed to Heroku app `panas-web` via Cloud Native Buildpacks. See repo root `CLAUDE.md` for the overall architecture.
+Next.js 16 + TypeScript + Tailwind 4 + App Router frontend for the Quiniela 2026 app. Deployed to Heroku app `quiniela-panas-web` via Cloud Native Buildpacks. See repo root `CLAUDE.md` for the overall architecture.
 
 > The `@AGENTS.md` import above pulls in the Next.js team's per-version agent guidance, which warns that **APIs and conventions in Next.js 16 differ from older training data**. Before writing anything non-trivial, check `node_modules/next/dist/docs/` for the relevant guide.
 
@@ -31,7 +31,7 @@ npm start                                # honors $PORT env var (default 3000)
 npm run lint
 
 # Local CNB build (matches what Heroku does on push)
-pack build panas-web --builder heroku/builder:26 --path .
+pack build quiniela-panas-web --builder heroku/builder:26 --path .
 ```
 
 ## Configuration
@@ -84,12 +84,12 @@ lib/
 One-time setup:
 
 ```bash
-heroku create panas-web --stack container
+heroku create quiniela-panas-web --stack container
 # Modern Heroku adds a random suffix to .herokuapp.com URLs, so fetch the
 # real backend URL instead of guessing it:
 heroku config:set \
   API_URL=$(heroku apps:info quiniela-panas-api --json | jq -r .app.web_url | sed 's:/*$::') \
-  --app panas-web
+  --app quiniela-panas-web
 ```
 
 Stack is `container` directly — the platform stack distinction (`heroku-24` vs `heroku-26`) doesn't apply to container deploys, since the OCI image we push carries its own Ubuntu 26.04 LTS base from `heroku/builder:26`.

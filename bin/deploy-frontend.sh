@@ -6,8 +6,8 @@
 #   - docker running
 #   - pack CLI installed
 #   - heroku CLI authenticated (heroku login)
-#   - Heroku app already created with: heroku create panas-web --stack container
-#   - heroku config:set API_URL=$(heroku apps:info quiniela-panas-api --json | jq -r .app.web_url | sed 's:/*$::') --app panas-web
+#   - Heroku app already created with: heroku create quiniela-panas-web --stack container
+#   - heroku config:set API_URL=$(heroku apps:info quiniela-panas-api --json | jq -r .app.web_url | sed 's:/*$::') --app quiniela-panas-web
 #     (or set it manually — get the real URL from `heroku apps:info quiniela-panas-api`,
 #     since modern Heroku adds a random suffix to .herokuapp.com URLs)
 #
@@ -15,8 +15,8 @@
 #
 set -euo pipefail
 
-APP_NAME=panas-web
-IMAGE_TAG=panas-web
+APP_NAME=quiniela-panas-web
+IMAGE_TAG=quiniela-panas-web
 PROJECT_PATH=frontend
 BUILDER=heroku/builder:26
 
