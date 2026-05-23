@@ -46,6 +46,13 @@ pack build quiniela-panas-api --builder heroku/builder:26 --path backend/
 pack build quiniela-panas-web --builder heroku/builder:26 --path frontend/
 ```
 
+### Two non-obvious Heroku config vars both apps need
+
+Both are part of the **one-time setup** (see `backend/CLAUDE.md` + `frontend/CLAUDE.md`), not something the deploy scripts re-set:
+
+- **`CNB_PLATFORM_API=0.15`** — required on Cedar container stack because the CNB launcher (image entrypoint) reads this at startup. On Heroku Fir it's auto-set; on Cedar container it isn't, and the launcher exits with status 11 (*"failed to get platform API version"*). `0.15` is the latest platform API the `heroku/builder:26` lifecycle supports.
+- **`JDBC_DATABASE_URL`** — needs manual setup (or runtime translation from `DATABASE_URL`). The classic Heroku Java buildpack used to derive this from `DATABASE_URL` via a profile.d script at runtime. Container deploys don't run buildpacks at runtime, so only `DATABASE_URL` is set. Our Spring app currently reads `JDBC_DATABASE_URL`; we'll either set it manually or refactor the Spring config to parse `DATABASE_URL` directly.
+
 **JVM version detection:** the `heroku/jvm` CNB buildpack reads `backend/system.properties` (`java.runtime.version=25`), NOT `<java.version>` from `pom.xml`. Without `system.properties` it defaults to the latest LTS — happens to be 25 today, but pin it explicitly so a future buildpack release can't surprise us.
 
 ## Auth

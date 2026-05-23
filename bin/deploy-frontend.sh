@@ -7,6 +7,9 @@
 #   - pack CLI installed
 #   - heroku CLI authenticated (heroku login)
 #   - Heroku app already created with: heroku create quiniela-panas-web --stack container
+#   - CNB_PLATFORM_API config var set on the app (required for CNB-built images
+#     on Cedar container stack). Example:
+#       heroku config:set CNB_PLATFORM_API=0.15 --app quiniela-panas-web
 #   - heroku config:set API_URL=$(heroku apps:info quiniela-panas-api --json | jq -r .app.web_url | sed 's:/*$::') --app quiniela-panas-web
 #     (or set it manually — get the real URL from `heroku apps:info quiniela-panas-api`,
 #     since modern Heroku adds a random suffix to .herokuapp.com URLs)

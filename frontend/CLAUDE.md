@@ -85,6 +85,12 @@ One-time setup:
 
 ```bash
 heroku create quiniela-panas-web --stack container
+
+# Required: CNB launcher needs the platform API version explicitly on Cedar
+# (Fir sets it automatically; container-stack Cedar does not). 0.15 is the
+# latest version supported by heroku/builder:26's lifecycle.
+heroku config:set CNB_PLATFORM_API=0.15 --app quiniela-panas-web
+
 # Modern Heroku adds a random suffix to .herokuapp.com URLs, so fetch the
 # real backend URL instead of guessing it:
 heroku config:set \

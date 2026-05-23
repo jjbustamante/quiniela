@@ -7,6 +7,10 @@
 #   - pack CLI installed
 #   - heroku CLI authenticated (heroku login)
 #   - Heroku app already created with: heroku create quiniela-panas-api --stack container
+#   - CNB_PLATFORM_API config var set on the app (required for CNB-built images
+#     on Cedar container stack; Fir auto-sets it but Fir doesn't support our
+#     monorepo). Example:
+#       heroku config:set CNB_PLATFORM_API=0.15 --app quiniela-panas-api
 #
 # Usage: bin/deploy-backend.sh
 #

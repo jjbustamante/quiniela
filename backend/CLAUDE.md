@@ -89,8 +89,16 @@ One-time setup (run by hand, with the `quiniela.panas.svp@gmail.com` Heroku acco
 
 ```bash
 heroku create quiniela-panas-api --stack container      # container-deploy from the start
+
+# Required: CNB launcher needs the platform API version explicitly on Cedar
+# (Fir sets it automatically; container-stack Cedar does not). 0.15 is the
+# latest version supported by heroku/builder:26's lifecycle.
+heroku config:set CNB_PLATFORM_API=0.15 --app quiniela-panas-api
+
 heroku addons:create heroku-postgresql:essential-0 --app quiniela-panas-api
-# Heroku auto-sets DATABASE_URL / JDBC_DATABASE_URL config vars from the add-on
+# Heroku auto-sets DATABASE_URL (postgres:// form). The Spring app reads
+# JDBC_DATABASE_URL — which is NOT auto-set for container deploys (only
+# the classic Java buildpack at runtime would derive it). See below.
 ```
 
 The Heroku platform stack is set to `container` directly — no `heroku-24` / `heroku-26` choice to make, because the OCI image we push carries its own run-image base (Ubuntu 26.04 LTS from `heroku/heroku:26`, baked in by `heroku/builder:26`).
