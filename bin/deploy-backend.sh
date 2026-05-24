@@ -39,17 +39,21 @@ if ! git diff --quiet HEAD 2>/dev/null || ! git diff --quiet --cached 2>/dev/nul
 fi
 
 IMAGE_REF="${REPO_URL}/${SERVICE_NAME}:${GIT_SHA}"
-BUILDER=heroku/builder:26
 
 echo "==> Project:  $PROJECT_ID"
 echo "==> Region:   $REGION"
 echo "==> Service:  $SERVICE_NAME"
 echo "==> Image:    $IMAGE_REF"
-echo "==> Builder:  $BUILDER"
 echo
 
+# `--descriptor backend/project.toml` carries the builder + JVM + Maven
+# build args. `--volume` reuses the host's ~/.m2 so dependencies don't
+# re-download on every local pack build.
 echo "==> Building OCI image with pack"
-pack build "$IMAGE_REF" --builder "$BUILDER" --path backend/
+pack build "$IMAGE_REF" \
+  --descriptor backend/project.toml \
+  --path backend/ \
+  --volume "${HOME}/.m2/repository:/home/cnb/.m2/repository:rw"
 
 echo "==> Authenticating Docker with Artifact Registry"
 gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
