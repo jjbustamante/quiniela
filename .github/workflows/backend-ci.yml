@@ -73,9 +73,24 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
+
+      # NVD database is ~1.5 GB and takes 10-15 min to download cold.
+      # Cache it across all CI runs (no hashFiles in key — bump `v1` to `v2`
+      # to force a full refresh after an OWASP DC major version upgrade).
+      - name: Cache OWASP Dependency-Check NVD data
+        uses: actions/cache@v4
+        with:
+          path: ~/.dependency-check/data
+          key: dependency-check-nvd-v1-${{ runner.os }}
+
       - name: Run dependency-check
         working-directory: ./backend
-        run: ./mvnw dependency-check:check
+        env:
+          # Optional — register at https://nvd.nist.gov/developers/request-an-api-key
+          # and save as repo secret. Raises NVD rate limit 5/30s → 50/30s (10×).
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: ./mvnw dependency-check:check ${NVD_API_KEY:+-DnvdApiKey=$NVD_API_KEY}
+
       - uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
