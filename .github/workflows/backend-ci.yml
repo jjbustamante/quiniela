@@ -118,12 +118,14 @@ jobs:
         # --descriptor reads backend/project.toml (builder, BP_JVM_VERSION,
         # BP_JVM_TYPE=JRE, BP_MAVEN_BUILD_ARGUMENTS that skip tests +
         # Spotless + OWASP DC since CI ran them in separate jobs already).
-        # --volume reuses the cached ~/.m2 populated by setup-java's cache.
+        # No --volume mount: Paketo's non-root user model rejects the
+        # docker-created /home/cnb/.m2 parent; pack's internal cache
+        # layer covers single-run builds. (Cross-run caching via
+        # --cache-image is a follow-up once OIDC push is wired.)
         run: |
           pack build "${IMAGE_NAME}:${{ steps.tag.outputs.tag }}" \
             --descriptor backend/project.toml \
-            --path backend/ \
-            --volume "${HOME}/.m2/repository:/home/cnb/.m2/repository:rw"
+            --path backend/
 
       # The trivy-action wrapper silently drops `severity` and other inputs
       # on at least v0.36.0 (treats it like scan-all-severities), so we

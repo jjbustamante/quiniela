@@ -47,13 +47,13 @@ echo "==> Image:    $IMAGE_REF"
 echo
 
 # `--descriptor backend/project.toml` carries the builder + JVM + Maven
-# build args. `--volume` reuses the host's ~/.m2 so dependencies don't
-# re-download on every local pack build.
+# build args. We previously mounted ~/.m2 from the host but Paketo's
+# stricter non-root user model rejects the docker-created parent dir;
+# rely on pack's internal cache layer instead.
 echo "==> Building OCI image with pack"
 pack build "$IMAGE_REF" \
   --descriptor backend/project.toml \
-  --path backend/ \
-  --volume "${HOME}/.m2/repository:/home/cnb/.m2/repository:rw"
+  --path backend/
 
 echo "==> Authenticating Docker with Artifact Registry"
 gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
