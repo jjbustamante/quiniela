@@ -147,17 +147,25 @@ jobs:
             --builder "${CNB_BUILDER}" \
             --path frontend/
 
-      - name: Trivy image scan
-        uses: aquasecurity/trivy-action@v0.36.0
-        # Pin a stable tag — @master ships breaking input contract changes
-        # (e.g. silently drops the `severity` input, scanning all severities).
+      # The trivy-action wrapper silently drops `severity` and other inputs
+      # on at least v0.36.0 (treats it like scan-all-severities), so we
+      # install Trivy via setup-trivy and call the CLI directly. Stable,
+      # debuggable, all flags reach Trivy verbatim.
+      - uses: aquasecurity/setup-trivy@v0.2.6
         with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }}
-          format: sarif
-          output: trivy.sarif
-          severity: CRITICAL,HIGH
-          exit-code: '1'
-          ignore-unfixed: true
+          version: v0.70.0
+          cache: true
+
+      - name: Trivy image scan
+        run: |
+          trivy image \
+            --format sarif \
+            --output trivy.sarif \
+            --severity CRITICAL,HIGH \
+            --exit-code 1 \
+            --ignore-unfixed \
+            --scanners vuln \
+            "${IMAGE_NAME}:${{ steps.tag.outputs.tag }}"
 
       - uses: github/codeql-action/upload-sarif@v3
         if: always()
