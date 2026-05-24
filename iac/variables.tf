@@ -65,7 +65,34 @@ variable "web_service_url" {
     Why a manual step: Cloud Run URLs follow one of two unpredictable
     patterns depending on project age, AND a Cloud Run service can't
     reference its own .uri inside its own env vars.
+
+    Once the custom domain (var.custom_domain) is provisioned and the
+    managed TLS cert is ready, you can switch this to
+    "https://<your custom domain>" for cleaner OAuth callbacks.
   EOT
   type        = string
   default     = ""
+}
+
+# ─── Cloudflare / custom domain ─────────────────────────────────────────────
+
+variable "cloudflare_api_token" {
+  description = <<-EOT
+    Cloudflare API token with Zone:Read + DNS:Edit permissions, scoped to
+    the zone in var.custom_domain. Create at:
+    https://dash.cloudflare.com/profile/api-tokens
+    Use the "Edit zone DNS" template and limit to the specific zone.
+  EOT
+  type        = string
+  sensitive   = true
+}
+
+variable "cloudflare_zone_id" {
+  description = "Cloudflare zone ID for var.custom_domain. Find it on the zone's Overview page in the Cloudflare dashboard (right-hand side)."
+  type        = string
+}
+
+variable "custom_domain" {
+  description = "Apex domain for the web app, e.g. `quiniela.dpdns.org`. The api service gets `api.<this>` automatically."
+  type        = string
 }

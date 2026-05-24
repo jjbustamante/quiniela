@@ -12,3 +12,11 @@ google_oauth_client_id = "760784205999-i5dl0qi25s9rnjpeai8fm0m1i0t8mt9h.apps.goo
 # Set AFTER first `tofu apply` — see variables.tf for the explanation.
 # Get the value with: tofu output -raw web_service_url
 # web_service_url = "https://quiniela-web-XXXXXXXXXX-uc.a.run.app"
+
+# ─── Custom domain (Cloudflare DNS + Cloud Run domain mapping) ──────────────
+custom_domain      = "quiniela.dpdns.org"
+cloudflare_zone_id = "FILL_ME_IN"       # find on the zone's Overview page in Cloudflare
+# cloudflare_api_token is sensitive — better to set via env var instead of
+# committing it here. Example:
+#   export TF_VAR_cloudflare_api_token="cf_token_..."
+# (terraform.tfvars is gitignored, so putting it here is also acceptable for solo use.)

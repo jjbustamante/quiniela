@@ -100,3 +100,15 @@ output "web_service_name" {
   description = "Cloud Run service name for the frontend — used by deploy script."
   value       = google_cloud_run_v2_service.web.name
 }
+
+# ─── Custom domain ──────────────────────────────────────────────────────────
+
+output "web_custom_url" {
+  description = "Public custom URL for the web service. Active once Cloud Run's managed TLS cert is provisioned (~15-60 min after first apply)."
+  value       = "https://${var.custom_domain}"
+}
+
+output "api_custom_url" {
+  description = "Public custom URL for the api service. Active once Cloud Run's managed TLS cert is provisioned."
+  value       = "https://api.${var.custom_domain}"
+}
