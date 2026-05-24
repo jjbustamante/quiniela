@@ -1,0 +1,56 @@
+# IaC CI — OpenTofu validation for iac/.
+#
+# Path-filtered: runs only on iac/ changes. When iac changes, neither
+# backend-ci nor frontend-ci runs (and vice versa) — the three workflows
+# split monorepo changes by area, EZPB-style.
+#
+# Wave 1: tofu fmt + init -backend=false + validate (offline-safe).
+# Wave 2 (deferred): tofu plan against a real state bucket via OIDC,
+# posted as a PR comment.
+
+name: IaC CI
+
+on:
+  push:
+    branches: [main, 'v*.x']
+    paths:
+      - 'iac/**'
+      - '.github/workflows/iac-ci.yml'
+  pull_request:
+    paths:
+      - 'iac/**'
+      - '.github/workflows/iac-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write   # for Wave 2 plan-comment
+
+env:
+  TOFU_VERSION: '1.10.6'
+
+jobs:
+
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./iac
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ env.TOFU_VERSION }}
+
+      - name: tofu fmt
+        run: tofu fmt -check -recursive
+
+      # `-backend=false` skips connecting to the GCS state bucket. Providers
+      # (google, cloudflare, random) still get downloaded, which is all that
+      # `validate` needs.
+      - name: tofu init (no backend)
+        run: tofu init -backend=false
+
+      - name: tofu validate
+        run: tofu validate -no-color
