@@ -134,7 +134,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: buildpacks/github-actions/setup-pack@v5
+      - uses: buildpacks/github-actions/setup-pack@v5.12.3
+        # Pin a specific tag — buildpacks/github-actions doesn't publish a floating v5 tag.
 
       - name: Compute image tag
         id: tag
