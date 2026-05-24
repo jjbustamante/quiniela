@@ -2,7 +2,7 @@
 #
 # Deploy frontend/ to GCP Cloud Run via Cloud Native Buildpacks + Artifact Registry.
 #
-# See bin/deploy-backend-gcp.sh for notes on the CNB-on-Cloud-Run story
+# See bin/deploy-backend.sh for notes on the CNB-on-Cloud-Run story
 # (no wrapper Dockerfile needed, unlike Heroku Cedar container).
 #
 # Prereqs:
@@ -11,7 +11,7 @@
 #   - gcloud CLI authenticated as the project owner
 #   - The IaC has been applied (creates Artifact Registry repo + Cloud Run service)
 #
-# Usage: bin/deploy-frontend-gcp.sh
+# Usage: bin/deploy-frontend.sh
 #
 set -euo pipefail
 

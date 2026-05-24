@@ -13,7 +13,7 @@
 #   - gcloud CLI authenticated as the project owner
 #   - The IaC has been applied (creates Artifact Registry repo + Cloud Run service)
 #
-# Usage: bin/deploy-backend-gcp.sh
+# Usage: bin/deploy-backend.sh
 #
 set -euo pipefail
 

@@ -27,7 +27,7 @@ docker compose down -v                  # stop and wipe data
 # Smoke-check the running API
 curl http://localhost:8080/actuator/health
 
-# CNB build (same image bin/deploy-backend-gcp.sh pushes to Artifact Registry)
+# CNB build (same image bin/deploy-backend.sh pushes to Artifact Registry)
 pack build quiniela-api --builder heroku/builder:26 --path .
 
 # Database connection (local dev defaults)
@@ -90,7 +90,7 @@ Scoring trigger (`update_players_score`) will arrive in a later migration once `
 Per-release:
 
 ```bash
-bin/deploy-backend-gcp.sh   # from repo root: pack build → push to AR → gcloud run deploy
+bin/deploy-backend.sh   # from repo root: pack build → push to AR → gcloud run deploy
 ```
 
 The script reads `tofu output` for project ID, region, registry URL, and service name — single source of truth. Image tags include the git SHA (+ `-dirty` if working tree is unclean) so every release is traceable and rollback-friendly.

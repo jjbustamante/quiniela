@@ -17,7 +17,7 @@ The new stack is **Spring Boot 4 + Java 25 (backend)** and **Next.js 16 + TypeSc
 ├── iac/               OpenTofu — provisions GCP resources for the planned
 │                      Cloud Run + Cloud SQL deploy (state in a GCS bucket)
 ├── legacy/            Rails 3.2 app (2014) — spec only   ← see legacy/CLAUDE.md
-├── bin/               deploy-backend-gcp.sh, deploy-frontend-gcp.sh
+├── bin/               deploy-backend.sh, deploy-frontend.sh
 │                      (Cloud Run deploy via pack build → Artifact Registry)
 ├── docs/              Architecture + deploy notes        (added as needed)
 └── .github/workflows/ CI for backend + frontend
@@ -39,8 +39,8 @@ Single shared **Cloud SQL Postgres** instance (`quiniela-db`, db-f1-micro Enterp
 Deploy:
 
 ```bash
-bin/deploy-backend-gcp.sh    # pack build → docker push to Artifact Registry → gcloud run deploy
-bin/deploy-frontend-gcp.sh
+bin/deploy-backend.sh    # pack build → docker push to Artifact Registry → gcloud run deploy
+bin/deploy-frontend.sh
 ```
 
 Local CNB build (same image the deploy script pushes — useful for testing without releasing):

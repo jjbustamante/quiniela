@@ -30,7 +30,7 @@ npm start                                # honors $PORT env var (default 3000)
 # Lint
 npm run lint
 
-# Local CNB build (same image bin/deploy-frontend-gcp.sh pushes to Artifact Registry)
+# Local CNB build (same image bin/deploy-frontend.sh pushes to Artifact Registry)
 pack build quiniela-web --builder heroku/builder:26 --path .
 ```
 
@@ -84,7 +84,7 @@ lib/
 Per-release:
 
 ```bash
-bin/deploy-frontend-gcp.sh   # from repo root: pack build → push to AR → gcloud run deploy
+bin/deploy-frontend.sh   # from repo root: pack build → push to AR → gcloud run deploy
 ```
 
 The script reads `tofu output` for project ID, region, registry URL, and service name. Image tags include the git SHA (+ `-dirty` if unclean working tree) so every release is traceable.
