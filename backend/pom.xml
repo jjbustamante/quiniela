@@ -216,6 +216,11 @@
                          rely on the NVD as the primary CVE data source.
                          Enable with auth if we want OSS Index back. -->
                     <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                    <!-- Stable path so GitHub Actions can cache the NVD
+                         database (~1.5 GB) across runs. NVD API key is
+                         passed via -DnvdApiKey from CI when the
+                         NVD_API_KEY secret is set. -->
+                    <dataDirectory>${user.home}/.dependency-check/data</dataDirectory>
                 </configuration>
             </plugin>
         </plugins>
