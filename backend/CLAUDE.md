@@ -1,6 +1,6 @@
 # CLAUDE.md (backend/)
 
-Spring Boot 4 + Java 25 backend for the Quiniela 2026 app. Deployed to Heroku app `quiniela-panas-api` via Cloud Native Buildpacks. See repo root `CLAUDE.md` for the overall architecture and deploy story.
+Spring Boot 4 + Java 25 backend for the Quiniela 2026 app. Deployed to GCP Cloud Run service `quiniela-api` via Cloud Native Buildpacks (built locally with `pack`, pushed to Artifact Registry). See repo root `CLAUDE.md` for the overall architecture and deploy story.
 
 All paths and commands below are relative to this `backend/` directory.
 
@@ -27,8 +27,8 @@ docker compose down -v                  # stop and wipe data
 # Smoke-check the running API
 curl http://localhost:8080/actuator/health
 
-# CNB build (matches what Heroku does on push)
-pack build quiniela-panas-api --builder heroku/builder:26 --path .
+# CNB build (same image bin/deploy-backend-gcp.sh pushes to Artifact Registry)
+pack build quiniela-api --builder heroku/builder:26 --path .
 
 # Database connection (local dev defaults)
 psql -h localhost -U quiniela -d quiniela    # password: dev
@@ -36,17 +36,17 @@ psql -h localhost -U quiniela -d quiniela    # password: dev
 
 ## Configuration
 
-`src/main/resources/application.yml` is the default (local dev + Heroku). When `SPRING_PROFILES_ACTIVE=cloudrun` is set (Cloud Run does this via the IaC-managed env), `application-cloudrun.yml` overlays it — switching the datasource to the Cloud SQL Auth Proxy via the `com.google.cloud.sql:postgres-socket-factory` JDBC SocketFactory. No code change in the rest of the app.
+`src/main/resources/application.yml` is the default — used for local dev. When `SPRING_PROFILES_ACTIVE=cloudrun` is set (Cloud Run does this via the IaC-managed env), `application-cloudrun.yml` overlays it — switching the datasource to the Cloud SQL Auth Proxy via the `com.google.cloud.sql:postgres-socket-factory` JDBC SocketFactory. No code change in the rest of the app.
 
 Environment-overridable values:
 
-| Env var | Default | Purpose |
+| Env var | Default | Source |
 |---|---|---|
-| `JDBC_DATABASE_URL` | `jdbc:postgresql://localhost:5432/quiniela` | DB URL. **Heroku sets this automatically** when you provision a Postgres add-on. |
-| `JDBC_DATABASE_USERNAME` / `_PASSWORD` | `quiniela` / `dev` | Local dev. Heroku encodes these into the URL. |
-| `PORT` | `8080` | Heroku sets this. Spring binds to it. |
-
-Note the use of `JDBC_DATABASE_URL` (not `DATABASE_URL`). Heroku Postgres provides both: `DATABASE_URL` is in `postgres://...` form (no JDBC prefix), while the Java buildpack also exposes `JDBC_DATABASE_URL` in the canonical JDBC form. Always use the JDBC variant from Spring.
+| `JDBC_DATABASE_URL` | `jdbc:postgresql://localhost:5432/quiniela` | Local dev override. Not used in Cloud Run (the `cloudrun` profile takes over completely). |
+| `JDBC_DATABASE_USERNAME` / `_PASSWORD` | `quiniela` / `dev` | Local dev override. |
+| `PORT` | `8080` | Cloud Run sets this. Spring binds to it. |
+| `DB_NAME` / `DB_USER` / `CLOUDSQL_CONNECTION_NAME` | — | Set by Cloud Run (from IaC). Used only by `application-cloudrun.yml`. |
+| `DATABASE_PASSWORD` / `NEXTAUTH_SECRET` | — | Mounted from Secret Manager onto the Cloud Run service. |
 
 ## Architecture (so far)
 
@@ -83,53 +83,29 @@ Scoring trigger (`update_players_score`) will arrive in a later migration once `
 - `QuinielaApiApplicationTests` — context-loads smoke test using **H2 in PostgreSQL-compatible mode**, with Flyway disabled. This is fast (no Docker) and only verifies Spring wiring.
 - **Integration tests** (Testcontainers against real Postgres) will arrive when there are repositories/services to exercise. Don't run real DB tests against H2 — its PostgreSQL emulation drifts on anything non-trivial (and is useless for the PL/pgSQL trigger).
 
-## Heroku deploy
+## GCP deploy
 
-**Container deploy via Cloud Native Buildpacks.** We build the OCI image locally with `pack` and push it to Heroku's container registry. This is the only path that supports our monorepo while staying on CNB — Heroku Fir has no monorepo support, and the classic `heroku-buildpack-monorepo` doesn't run on CNB stacks.
-
-One-time setup (run by hand, with the `quiniela.panas.svp@gmail.com` Heroku account):
-
-```bash
-heroku create quiniela-panas-api --stack container      # container-deploy from the start
-heroku addons:create heroku-postgresql:essential-0 --app quiniela-panas-api
-# Heroku auto-sets DATABASE_URL (postgres:// form). The Spring app reads
-# JDBC_DATABASE_URL — which is NOT auto-set for container deploys (only
-# the classic Java buildpack at runtime would derive it). See below.
-```
-
-**Note:** `CNB_PLATFORM_API` does NOT need to be a Heroku config var. It's baked into the deploy image directly (via the wrapper Dockerfile in `bin/deploy-backend.sh`) because Heroku's container runtime doesn't inject config vars into `ENTRYPOINT` — and the CNB launcher is the ENTRYPOINT.
-
-The Heroku platform stack is set to `container` directly — no `heroku-24` / `heroku-26` choice to make, because the OCI image we push carries its own run-image base (Ubuntu 26.04 LTS from `heroku/heroku:26`, baked in by `heroku/builder:26`).
+**Cloud Run service `quiniela-api`**, built locally with CNB and pushed to Artifact Registry. All infra (Cloud Run service definition, Cloud SQL instance, Secret Manager bindings, runtime service account) is provisioned by OpenTofu in `iac/` — see `iac/README.md`.
 
 Per-release:
 
 ```bash
-bin/deploy-backend.sh    # from repo root: pack build → docker push → heroku container:release
+bin/deploy-backend-gcp.sh   # from repo root: pack build → push to AR → gcloud run deploy
 ```
 
-The script does two builds:
-
-1. `pack build quiniela-panas-api:cnb --builder heroku/builder:26 --path backend/` — produces a CNB-native image with `/cnb/process/web` as ENTRYPOINT
-2. `docker build` a tiny wrapper on top that bakes `ENV CNB_PLATFORM_API=0.15` and moves the launcher from `ENTRYPOINT` to `CMD` — see "Heroku launcher gotcha" below
-3. `heroku container:login` → `docker push registry.heroku.com/quiniela-panas-api/web`
-4. `heroku container:release web --app quiniela-panas-api`
-
-### Heroku launcher gotcha
-
-The CNB launcher (`/cnb/process/web`) is the image's natural ENTRYPOINT. But:
-
-- Heroku's container runtime **only injects config vars into `CMD`** (which it shell-wraps), not into `ENTRYPOINT` (which it execs raw). See the [Container Registry & Runtime docs](https://devcenter.heroku.com/articles/container-registry-and-runtime).
-- The launcher needs `CNB_PLATFORM_API` in its environment or it exits with status 11 (*"failed to get platform API version"*).
-- Therefore: a Heroku `config:set CNB_PLATFORM_API=...` does NOT reach the launcher.
-
-The wrapper Dockerfile fixes this in two complementary ways:
-1. `ENV CNB_PLATFORM_API=0.15` — image-level env, always present regardless of how Heroku starts the container
-2. `ENTRYPOINT [] / CMD ["/cnb/process/web"]` — moves the launcher to CMD so any other Heroku config vars (`DATABASE_URL`, future `ADMIN_EMAILS`, etc.) actually reach the Java process
-
-Heroku Fir wouldn't need this — it's the CNB-native platform and handles all of this automatically. But Fir has no monorepo support, so we're on Cedar container instead. See the repo root `CLAUDE.md`.
+The script reads `tofu output` for project ID, region, registry URL, and service name — single source of truth. Image tags include the git SHA (+ `-dirty` if working tree is unclean) so every release is traceable and rollback-friendly.
 
 ### How the image picks Java 25
 
 The `heroku/jvm` CNB buildpack reads `system.properties` (key `java.runtime.version`), **NOT** `pom.xml`. We have `backend/system.properties` containing `java.runtime.version=25`. Without it the buildpack falls back to the latest LTS default (currently 25, but pinning protects us from surprises). Supported majors: 8, 11, 17, 21, 25.
 
 Confirmed empirically — buildpack log shows: *"Using version string provided in `system.properties`. Selected major version `25` resolves to `25.0.3`."*
+
+### How Spring connects to Cloud SQL
+
+`application-cloudrun.yml` (active when `SPRING_PROFILES_ACTIVE=cloudrun`, which the IaC sets on the Cloud Run service) overlays the default datasource with:
+- `url: jdbc:postgresql:///${DB_NAME}` (no host — uses Unix socket)
+- Hikari data-source-properties pointing at `com.google.cloud.sql.postgres.SocketFactory`
+- `cloudSqlInstance: ${CLOUDSQL_CONNECTION_NAME}` (resolves to the project:region:instance string)
+
+The Cloud SQL Auth Proxy runs as a Cloud Run sidecar (declared by `volumes.cloud_sql_instance` in `iac/cloud_run.tf`), creating the socket at `/cloudsql/<connection-name>`. The runtime SA `quiniela-api-runtime` has `roles/cloudsql.client` for IAM-authenticated connections. The Postgres user/password (mounted from Secret Manager) is used for in-DB authorization.

@@ -1,4 +1,4 @@
-# Docker image registry. Replaces Heroku's registry.heroku.com.
+# Docker image registry that holds our Cloud Run images.
 #
 # Final image URIs look like:
 #   us-central1-docker.pkg.dev/<project>/apps/quiniela-api:latest

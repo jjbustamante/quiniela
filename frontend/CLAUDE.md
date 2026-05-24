@@ -2,7 +2,7 @@
 
 # CLAUDE.md (frontend/)
 
-Next.js 16 + TypeScript + Tailwind 4 + App Router frontend for the Quiniela 2026 app. Deployed to Heroku app `quiniela-panas-web` via Cloud Native Buildpacks. See repo root `CLAUDE.md` for the overall architecture.
+Next.js 16 + TypeScript + Tailwind 4 + App Router frontend for the Quiniela 2026 app. Deployed to GCP Cloud Run service `quiniela-web` via Cloud Native Buildpacks (built locally with `pack`, pushed to Artifact Registry). See repo root `CLAUDE.md` for the overall architecture.
 
 > The `@AGENTS.md` import above pulls in the Next.js team's per-version agent guidance, which warns that **APIs and conventions in Next.js 16 differ from older training data**. Before writing anything non-trivial, check `node_modules/next/dist/docs/` for the relevant guide.
 
@@ -30,8 +30,8 @@ npm start                                # honors $PORT env var (default 3000)
 # Lint
 npm run lint
 
-# Local CNB build (matches what Heroku does on push)
-pack build quiniela-panas-web --builder heroku/builder:26 --path .
+# Local CNB build (same image bin/deploy-frontend-gcp.sh pushes to Artifact Registry)
+pack build quiniela-web --builder heroku/builder:26 --path .
 ```
 
 ## Configuration
@@ -40,8 +40,8 @@ pack build quiniela-panas-web --builder heroku/builder:26 --path .
 
 | Env var | Default | Where set | Purpose |
 |---|---|---|---|
-| `API_URL` | `http://localhost:8080` | `.env.local` / Heroku config | Backend base URL for server-side fetches |
-| `PORT` | `3000` | Heroku sets it | Next.js auto-reads via `next start` |
+| `API_URL` | `http://localhost:8080` | `.env.local` (local) / Cloud Run env (prod, set by IaC) | Backend base URL for server-side fetches |
+| `PORT` | `3000` | Cloud Run sets it | Next.js auto-reads via `next start` |
 | `NEXT_PUBLIC_*` | — | — | Anything exposed to the browser must be prefixed `NEXT_PUBLIC_` |
 
 `API_URL` is **server-only** — only Server Components / Route Handlers can read it. The browser must not know about the backend URL except via Next.js API routes we proxy. If we ever need direct browser→backend calls, add `NEXT_PUBLIC_API_URL` (different variable).
@@ -77,37 +77,21 @@ lib/
 - **Geist** sans + mono (default fonts from `create-next-app`, kept)
 - **shadcn/ui** will be added in PR 4 for form/dialog/button primitives — don't reach for a heavier component library
 
-## Heroku deploy
+## GCP deploy
 
-**Container deploy via Cloud Native Buildpacks** — same model as the backend. See repo root `CLAUDE.md` for the rationale (Fir has no monorepo support; the classic monorepo buildpack isn't CNB-compatible).
-
-One-time setup:
-
-```bash
-heroku create quiniela-panas-web --stack container
-
-# Modern Heroku adds a random suffix to .herokuapp.com URLs, so fetch the
-# real backend URL instead of guessing it:
-heroku config:set \
-  API_URL=$(heroku apps:info quiniela-panas-api --json | jq -r .app.web_url | sed 's:/*$::') \
-  --app quiniela-panas-web
-```
-
-**Note:** `CNB_PLATFORM_API` does NOT need to be a Heroku config var. It's baked into the deploy image directly (via the wrapper Dockerfile in `bin/deploy-frontend.sh`). See `backend/CLAUDE.md` → "Heroku launcher gotcha" for the full explanation.
-
-Stack is `container` directly — the platform stack distinction (`heroku-24` vs `heroku-26`) doesn't apply to container deploys, since the OCI image we push carries its own Ubuntu 26.04 LTS base from `heroku/builder:26`.
+**Cloud Run service `quiniela-web`**, built locally with CNB and pushed to Artifact Registry. The service definition (env vars, runtime SA, secret mounts, scaling) lives in `iac/cloud_run.tf`. See `iac/README.md` for setup.
 
 Per-release:
 
 ```bash
-bin/deploy-frontend.sh    # from repo root
+bin/deploy-frontend-gcp.sh   # from repo root: pack build → push to AR → gcloud run deploy
 ```
 
-The script wraps `pack build → docker push → heroku container:release`, same shape as the backend script.
+The script reads `tofu output` for project ID, region, registry URL, and service name. Image tags include the git SHA (+ `-dirty` if unclean working tree) so every release is traceable.
 
 ### How the image works
 
-The `heroku/nodejs-*` CNB buildpacks detect a Next.js app by the presence of `package.json` + a lockfile (`package-lock.json` here). They:
+The `heroku/nodejs-*` CNB buildpacks (same builder image we use even though we no longer deploy to Heroku) detect a Next.js app by the presence of `package.json` + a lockfile (`package-lock.json` here). They:
 
 1. Read `engines.node` (`"24.x"` → Node 24 LTS)
 2. Run `npm ci`

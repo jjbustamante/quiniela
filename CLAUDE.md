@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A monorepo for a Spanish-language sports betting pool ("quiniela") web app, being rewritten for the **2026 FIFA World Cup** (kickoff 2026-06-11). The original 2014 Rails 3.2 implementation lives under `/legacy/` and is kept as a **reference spec only** — read it for the business rules, do not extend it.
 
-The new stack is **Spring Boot 4 + Java 25 (backend)** and **Next.js 16 + TypeScript (frontend)** as two independent apps in this same repo, deployed to two Heroku apps via Cloud Native Buildpacks. The schema is designed to be **multi-tournament from day one** (UEFA Champions League etc. planned for v2 after the 2026 tournament) — see "Domain model" below.
+The new stack is **Spring Boot 4 + Java 25 (backend)** and **Next.js 16 + TypeScript (frontend)** as two independent apps in this same repo, deployed to **GCP Cloud Run** via Cloud Native Buildpacks, backed by **Cloud SQL Postgres**. Infrastructure is provisioned by **OpenTofu** in `iac/`. The schema is designed to be **multi-tournament from day one** (UEFA Champions League etc. planned for v2 after the 2026 tournament) — see "Domain model" below.
 
 ## Repo layout
 
@@ -17,9 +17,8 @@ The new stack is **Spring Boot 4 + Java 25 (backend)** and **Next.js 16 + TypeSc
 ├── iac/               OpenTofu — provisions GCP resources for the planned
 │                      Cloud Run + Cloud SQL deploy (state in a GCS bucket)
 ├── legacy/            Rails 3.2 app (2014) — spec only   ← see legacy/CLAUDE.md
-├── bin/               deploy-backend{,-gcp}.sh, deploy-frontend{,-gcp}.sh
-│                      (Heroku and GCP variants — Heroku kept as reference
-│                       during the migration; will be removed once GCP is verified)
+├── bin/               deploy-backend-gcp.sh, deploy-frontend-gcp.sh
+│                      (Cloud Run deploy via pack build → Artifact Registry)
 ├── docs/              Architecture + deploy notes        (added as needed)
 └── .github/workflows/ CI for backend + frontend
 ```
@@ -28,35 +27,36 @@ Each subapp will have its own `CLAUDE.md` once scaffolded; this top-level file s
 
 ## Deploy target
 
-**Two Heroku apps deployed via Cloud Native Buildpacks + Heroku's container registry.** This is the only path that combines a monorepo with CNB — Heroku Fir (the native-CNB platform) has no monorepo support yet, and the classic `heroku-buildpack-monorepo` is not CNB-compatible. So we build OCI images locally with `pack` and push them to Heroku.
+**Two GCP Cloud Run services**, both built locally with Cloud Native Buildpacks and pushed to Artifact Registry. The whole GCP infra (Cloud SQL, Artifact Registry, Secret Manager, IAM, Cloud Run services) is provisioned by **OpenTofu** in `iac/`.
 
-| App | CNB buildpacks | What it runs |
+| Service | Cloud Run | What it runs |
 |---|---|---|
-| `quiniela-panas-api` | `heroku/jvm` + `heroku/maven` + `heroku/procfile` | Spring Boot fat JAR |
-| `quiniela-panas-web` | `heroku/nodejs-*` + `heroku/procfile` | Next.js (`next start`) |
+| `quiniela-api` | runtime SA: `quiniela-api-runtime` | Spring Boot fat JAR, connects to Cloud SQL via Auth Proxy sidecar |
+| `quiniela-web` | runtime SA: `quiniela-web-runtime` | Next.js (`next start`) |
 
-Each app is on the **`container` Heroku stack** (`heroku stack:set container`) so it accepts pre-built images instead of running its own buildpack build. A single **Heroku Postgres `essential-0`** add-on (the current entry tier; `mini` was retired) is provisioned on the backend app.
+Single shared **Cloud SQL Postgres** instance (`quiniela-db`, db-f1-micro Enterprise edition) for the backend. Secrets (DB password, NextAuth secret, Google OAuth client secret) live in Secret Manager and are mounted into the Cloud Run services as env vars.
 
-Deploy is wrapped in two scripts at `bin/`:
-
-```bash
-bin/deploy-backend.sh    # pack build → docker push → heroku container:release
-bin/deploy-frontend.sh
-```
-
-Local CNB build (same image you'd push — useful for testing without releasing):
+Deploy:
 
 ```bash
-pack build quiniela-panas-api --builder heroku/builder:26 --path backend/
-pack build quiniela-panas-web --builder heroku/builder:26 --path frontend/
+bin/deploy-backend-gcp.sh    # pack build → docker push to Artifact Registry → gcloud run deploy
+bin/deploy-frontend-gcp.sh
 ```
 
-### Two Heroku gotchas the deploy scripts handle
+Local CNB build (same image the deploy script pushes — useful for testing without releasing):
 
-- **CNB launcher needs `CNB_PLATFORM_API` baked into the image** — Heroku's container runtime injects config vars into `CMD` (shell-wrapped) but NOT into `ENTRYPOINT` (exec'd raw). The launcher is the natural ENTRYPOINT, and it errors with status 11 if `CNB_PLATFORM_API` is unset. The deploy scripts (`bin/deploy-*.sh`) handle this with a tiny wrapper Dockerfile that adds `ENV CNB_PLATFORM_API=0.15` and moves the launcher from ENTRYPOINT to CMD. Side effect: future Heroku config vars (`DATABASE_URL`, `ADMIN_EMAILS`, etc.) now reach the Java/Node process too. Heroku Fir would handle all of this natively, but Fir has no monorepo support — see the section above.
-- **`JDBC_DATABASE_URL` is not auto-set on container deploys** — the classic Heroku Java buildpack used to derive it from `DATABASE_URL` via a runtime profile.d script. Container deploys skip buildpack runtime, so only `DATABASE_URL` is set. Our Spring app currently reads `JDBC_DATABASE_URL`; we'll either set it manually or refactor the Spring config to parse `DATABASE_URL` directly. (Not solved yet — next thing on the list.)
+```bash
+pack build quiniela-api --builder heroku/builder:26 --path backend/
+pack build quiniela-web --builder heroku/builder:26 --path frontend/
+```
 
-**JVM version detection:** the `heroku/jvm` CNB buildpack reads `backend/system.properties` (`java.runtime.version=25`), NOT `<java.version>` from `pom.xml`. Without `system.properties` it defaults to the latest LTS — happens to be 25 today, but pin it explicitly so a future buildpack release can't surprise us.
+We still use the `heroku/builder:26` image to *build* — it's a high-quality CNB builder and works fine on Cloud Run (Cloud Run is a generic container runtime, doesn't care which CNB builder produced the image). The Heroku platform itself is no longer in the picture.
+
+### CNB on Cloud Run notes
+
+- **No wrapper Dockerfile needed** (unlike Heroku Cedar container, which had ENTRYPOINT-vs-CMD config-var injection quirks). Cloud Run injects env vars into ENTRYPOINT cleanly, so `CNB_PLATFORM_API=0.15` set on the service via Tofu reaches the launcher.
+- **JVM version pinning:** the `heroku/jvm` CNB buildpack reads `backend/system.properties` (`java.runtime.version=25`), NOT `<java.version>` from `pom.xml`. Default falls back to the latest LTS — happens to be 25 today, but pin it explicitly.
+- **Cloud SQL connection:** the api service mounts the Cloud SQL Auth Proxy as a sidecar (declared in `iac/cloud_run.tf` via `volumes.cloud_sql_instance`). Spring Boot's `cloudrun` profile (`backend/src/main/resources/application-cloudrun.yml`) reaches it through the `com.google.cloud.sql:postgres-socket-factory` JDBC SocketFactory.
 
 ## Auth
 

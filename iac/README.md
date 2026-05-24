@@ -84,7 +84,7 @@ iac/
 ## What's NOT in OpenTofu (yet)
 
 - **The Google OAuth client** is managed in the Console (manual; was set up before IaC existed)
-- **Heroku resources** — we're migrating away; nothing here is Heroku-aware
+- **Cloud Run public URLs** — these are auto-assigned by GCP. `web_service_url` is a tfvar set manually after first apply (see variables.tf).
 
 ## Conventions
 
