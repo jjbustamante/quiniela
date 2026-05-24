@@ -1,0 +1,80 @@
+# Trivy ignore file for the frontend container image.
+#
+# All entries MUST include an `expired_at` date. When the date passes,
+# Trivy drops the suppression and CI re-fires — same discipline as the
+# backend's OWASP DC .dependency-check-suppressions.xml.
+#
+# Re-evaluate on or before each expiration. If heroku/builder:26 has
+# shipped a refresh by then, the CVE may have disappeared upstream.
+#
+# See brain/plugins/tech/nextjs-cicd/security/scanning.md.
+
+vulnerabilities:
+
+  # ─── Ubuntu base image (heroku/builder:26 → Ubuntu 22.04) ──────────────
+
+  - id: CVE-2026-29518
+    statement: "rsync TOCTOU symlink race — Ubuntu base in heroku/builder:26. App-level fix not possible; waits on Heroku builder refresh."
+    expired_at: 2026-06-23
+
+  - id: CVE-2026-43618
+    statement: "rsync remote memory disclosure via integer overflow — Ubuntu base in heroku/builder:26. Waits on Heroku builder refresh."
+    expired_at: 2026-06-23
+
+  # ─── Buildpack tooling layer (heroku-buildpacks-nodejs internals) ──────
+  # Our app's lockfile already has minimatch@9.0.9 + picomatch@4.0.4 +
+  # no tar dep (verified via pnpm-lock.yaml). These versions are in the
+  # buildpack's own /layers/ — fixed when the next heroku/buildpacks-nodejs
+  # release lands and propagates into heroku/builder:26.
+
+  - id: CVE-2026-26996
+    statement: "minimatch DoS — in heroku/buildpacks-nodejs tooling, not our app deps."
+    expired_at: 2026-06-23
+  - id: CVE-2026-27903
+    statement: "minimatch DoS — buildpack tooling."
+    expired_at: 2026-06-23
+  - id: CVE-2026-27904
+    statement: "minimatch DoS — buildpack tooling."
+    expired_at: 2026-06-23
+  - id: CVE-2026-33671
+    statement: "picomatch ReDoS — buildpack tooling."
+    expired_at: 2026-06-23
+
+  - id: CVE-2026-23745
+    statement: "node-tar arbitrary file overwrite — buildpack tooling (our app has no tar dep)."
+    expired_at: 2026-06-23
+  - id: CVE-2026-23950
+    statement: "node-tar Unicode path collision — buildpack tooling."
+    expired_at: 2026-06-23
+  - id: CVE-2026-24842
+    statement: "node-tar hardlink path traversal bypass — buildpack tooling."
+    expired_at: 2026-06-23
+  - id: CVE-2026-26960
+    statement: "node-tar hardlink read/write — buildpack tooling."
+    expired_at: 2026-06-23
+  - id: CVE-2026-29786
+    statement: "node-tar drive-relative linkpath traversal — buildpack tooling."
+    expired_at: 2026-06-23
+  - id: CVE-2026-31802
+    statement: "tar drive-relative symlink traversal — buildpack tooling."
+    expired_at: 2026-06-23
+
+  # ─── CNB lifecycle (/usr/bin/pebble) Go stdlib ─────────────────────────
+  # Built into the heroku/builder:26 lifecycle binary. Updates when Heroku
+  # rebuilds the lifecycle with a newer Go toolchain.
+
+  - id: CVE-2026-33811
+    statement: "Go stdlib LookupCNAME — in /usr/bin/pebble (CNB lifecycle binary). Not invoked at runtime; waits on builder refresh."
+    expired_at: 2026-06-23
+  - id: CVE-2026-33814
+    statement: "Go stdlib HTTP/2 SETTINGS infinite loop — pebble lifecycle binary."
+    expired_at: 2026-06-23
+  - id: CVE-2026-39820
+    statement: "Go stdlib ParseAddress — pebble lifecycle binary."
+    expired_at: 2026-06-23
+  - id: CVE-2026-39836
+    statement: "Go stdlib Dial NUL byte panic — pebble lifecycle binary."
+    expired_at: 2026-06-23
+  - id: CVE-2026-42499
+    statement: "Go stdlib consumePhrase DoS — pebble lifecycle binary."
+    expired_at: 2026-06-23
