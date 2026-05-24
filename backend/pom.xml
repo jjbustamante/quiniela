@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.0</version>
+        <version>4.0.6</version>
         <relativePath/>
     </parent>
 
@@ -22,7 +22,53 @@
     <properties>
         <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Override Spring Boot's managed versions for security patches that
+             haven't yet landed in a SB release. Bump in sync with each SB
+             4.0.x release; remove the override when SB catches up. -->
+        <tomcat.version>11.0.22</tomcat.version>
+        <postgresql.version>42.7.11</postgresql.version>
+
+        <!-- Explicit dep + transitive overrides -->
+        <postgres-socket-factory.version>1.28.3</postgres-socket-factory.version>
+        <grpc.version>1.79.0</grpc.version>
+        <protobuf.version>4.34.2</protobuf.version>
+
+        <!-- Build-plugin versions (externalized for visibility + atomic bumps) -->
+        <spotless.version>2.46.1</spotless.version>
+        <google-java-format.version>1.28.0</google-java-format.version>
+        <jacoco.version>0.8.13</jacoco.version>
+        <dependency-check.version>11.1.1</dependency-check.version>
     </properties>
+
+    <!-- Force newer versions of transitive deps pulled in by
+         postgres-socket-factory (grpc 1.70.0 / protobuf 4.33-34 ship CVEs).
+         Remove these overrides when postgres-socket-factory upgrades them
+         on its own. -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-api</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-context</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -49,7 +95,7 @@
         <dependency>
             <groupId>com.google.cloud.sql</groupId>
             <artifactId>postgres-socket-factory</artifactId>
-            <version>1.20.0</version>
+            <version>${postgres-socket-factory.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -79,6 +125,98 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless.version}</version>
+                <configuration>
+                    <java>
+                        <googleJavaFormat>
+                            <version>${google-java-format.version}</version>
+                            <style>GOOGLE</style>
+                        </googleJavaFormat>
+                        <removeUnusedImports/>
+                        <trimTrailingWhitespace/>
+                        <endWithNewline/>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals><goal>check</goal></goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/*IT.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*IT.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>${dependency-check.version}</version>
+                <configuration>
+                    <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <suppressionFiles>
+                        <suppressionFile>.dependency-check-suppressions.xml</suppressionFile>
+                    </suppressionFiles>
+                    <formats>
+                        <format>HTML</format>
+                        <format>SARIF</format>
+                    </formats>
+                    <nvdValidForHours>24</nvdValidForHours>
+                    <!-- Sonatype OSS Index rate-limits anonymous queries; we
+                         rely on the NVD as the primary CVE data source.
+                         Enable with auth if we want OSS Index back. -->
+                    <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                </configuration>
             </plugin>
         </plugins>
     </build>

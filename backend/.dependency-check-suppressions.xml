@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OWASP Dependency-Check suppressions for the quiniela backend.
+
+  Every suppression MUST include an `until` attribute. Without an expiration
+  date, suppressions accumulate forever and the scan becomes theatre. When
+  the date passes, OWASP DC drops the suppression and forces re-review.
+
+  See brain/plugins/tech/spring-boot-cicd/security/scanning.md.
+-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+  <!-- CVE-2026-33186 on grpc-api / grpc-context. Reported as affecting all
+       1.x versions; we're already at the latest (1.79.0) and no upstream
+       patch exists yet. Comes transitively from postgres-socket-factory →
+       Cloud SQL connector. Re-evaluate when grpc 2.x ships or a 1.79.x
+       patch lands. -->
+  <suppress until="2026-08-24Z">
+    <notes>grpc-api / grpc-context — no patched version available; at latest 1.79.0.</notes>
+    <packageUrl regex="true">^pkg:maven/io\.grpc/grpc-(api|context)@.*$</packageUrl>
+    <cve>CVE-2026-33186</cve>
+  </suppress>
+
+  <!-- CVE-2026-0994 on protobuf-java / protobuf-java-util. Already at the
+       latest version (4.34.2); upstream patch pending. Same transitive
+       chain (postgres-socket-factory). -->
+  <suppress until="2026-08-24Z">
+    <notes>protobuf-java — no patched version available; at latest 4.34.2.</notes>
+    <packageUrl regex="true">^pkg:maven/com\.google\.protobuf/protobuf-java(-util)?@.*$</packageUrl>
+    <cve>CVE-2026-0994</cve>
+  </suppress>
+
+  <!-- CVE-2025-7962 on angus-activation. The 2.0.x line is the latest
+       stable; 2.1.0-M1 exists but is a milestone (preview), not a stable
+       release. Comes transitively via Spring Boot's Jakarta Mail support
+       (or similar). -->
+  <suppress until="2026-08-24Z">
+    <notes>angus-activation 2.0.3 is the latest stable; no patched release yet.</notes>
+    <packageUrl regex="true">^pkg:maven/org\.eclipse\.angus/angus-activation@.*$</packageUrl>
+    <cve>CVE-2025-7962</cve>
+  </suppress>
+
+</suppressions>
