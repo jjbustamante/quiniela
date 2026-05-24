@@ -13,7 +13,7 @@ Provisions the GCP resources that host this project: Artifact Registry, Cloud Ru
   - `quiniela-api-runtime` — identity for the backend Cloud Run service; can connect to Cloud SQL and read DB password + NextAuth secret
   - `quiniela-web-runtime` — identity for the frontend Cloud Run service; can read NextAuth + Google OAuth secrets
 - **Cloud Run services** `quiniela-api` and `quiniela-web` (declared with a placeholder `hello` image; deploy script overrides — see "Image lifecycle" below). Both are publicly invocable; authn/authz happens at the app layer. The api service has the Cloud SQL Auth Proxy mounted as a sidecar.
-- **Custom domain** via Cloudflare DNS + Cloud Run domain mappings: `quiniela.dpdns.org` → web service, `api.quiniela.dpdns.org` → api service. DNS-only mode (no Cloudflare proxy) so Cloud Run can provision its own managed TLS cert. First-time cert provisioning takes ~15-60 min after `tofu apply`.
+- **Custom domain** via Cloudflare DNS + Cloud Run domain mapping: `quiniela.dpdns.org` → web service only. DNS-only mode (no Cloudflare proxy) so Cloud Run can provision its own managed TLS cert. First-time cert provisioning takes ~15-60 min after `tofu apply`. The api service is intentionally not mapped to a custom domain — see `iac/custom_domain.tf` for the dpdns.org delegation reason.
 
 ## Image lifecycle
 

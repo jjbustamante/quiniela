@@ -108,7 +108,6 @@ output "web_custom_url" {
   value       = "https://${var.custom_domain}"
 }
 
-output "api_custom_url" {
-  description = "Public custom URL for the api service. Active once Cloud Run's managed TLS cert is provisioned."
-  value       = "https://api.${var.custom_domain}"
-}
+# Note: no api_custom_url output. The api service is intentionally not mapped
+# to a custom domain — see iac/custom_domain.tf for why. Use the
+# api_service_url output (the .run.app URL) instead.

@@ -1,8 +1,15 @@
-# Custom domain — Cloudflare DNS + Cloud Run domain mappings.
+# Custom domain — Cloudflare DNS + Cloud Run domain mapping.
 #
 # Layout:
-#   var.custom_domain               → web service  (apex of the zone)
-#   "api.${var.custom_domain}"      → api service
+#   var.custom_domain  → web service  (apex of the zone)
+#
+# The api service is intentionally NOT mapped to a custom domain. It's only
+# called server-side by the web service (which uses the .run.app URL via the
+# API_URL env var), so a friendly hostname adds no user value. We previously
+# tried `api.${var.custom_domain}` but dpdns.org's nameservers are
+# inconsistent on subdomain delegation — some serve the Cloudflare NS
+# referral, others return NXDOMAIN — which broke Cloud Run's ACME validator.
+# Not worth fighting; api stays on .run.app.
 #
 # Flow:
 #   1. google_cloud_run_domain_mapping creates the mapping. Cloud Run starts
@@ -19,12 +26,12 @@
 # ─── Cloud Run side ─────────────────────────────────────────────────────────
 
 resource "cloudflare_dns_record" "google_site_verification" {
-    zone_id = var.cloudflare_zone_id
-    name    = var.custom_domain
-    type    = "TXT"
-    content = "\"google-site-verification=UJfUU_SgkRFf-uF8o1PGmr5BnIS0skBnjC777HoGXl0\""  # quotes are part of TXT format
-    ttl     = 1
-  } 
+  zone_id = var.cloudflare_zone_id
+  name    = var.custom_domain
+  type    = "TXT"
+  content = "\"google-site-verification=UJfUU_SgkRFf-uF8o1PGmr5BnIS0skBnjC777HoGXl0\"" # quotes are part of TXT format
+  ttl     = 1
+}
 
 
 resource "google_cloud_run_domain_mapping" "web" {
@@ -41,20 +48,6 @@ resource "google_cloud_run_domain_mapping" "web" {
   }
 }
 
-resource "google_cloud_run_domain_mapping" "api" {
-  project  = var.project_id
-  location = var.region
-  name     = "api.${var.custom_domain}"
-
-  metadata {
-    namespace = var.project_id
-  }
-
-  spec {
-    route_name = google_cloud_run_v2_service.api.name
-  }
-}
-
 # ─── Cloudflare DNS side ────────────────────────────────────────────────────
 
 resource "cloudflare_dns_record" "web" {
@@ -67,12 +60,3 @@ resource "cloudflare_dns_record" "web" {
   comment = "Managed by OpenTofu — see iac/custom_domain.tf"
 }
 
-resource "cloudflare_dns_record" "api" {
-  zone_id = var.cloudflare_zone_id
-  name    = "api.${var.custom_domain}"
-  type    = "CNAME"
-  content = "ghs.googlehosted.com"
-  proxied = false
-  ttl     = 1
-  comment = "Managed by OpenTofu — see iac/custom_domain.tf"
-}
