@@ -11,24 +11,25 @@ All paths and commands below are relative to this `frontend/` directory.
 ## Prerequisites
 
 - **Node.js 24** (active LTS). Use `nvm use` (it reads `.nvmrc`).
-- **npm 11+** (ships with Node 24).
+- **pnpm 9+** via Corepack: `corepack enable && corepack prepare pnpm@9.15.0 --activate`. The `packageManager` field in `package.json` pins the exact version Corepack will fetch.
 - **pack** (optional) — for local CNB build testing.
 
 ## Commands
 
 ```bash
 # Install
-npm install
+pnpm install
 
 # Dev (Turbopack on by default in Next 16)
-npm run dev                              # http://localhost:3000
+pnpm dev                                 # http://localhost:3000
 
 # Build & serve production
-npm run build
-npm start                                # honors $PORT env var (default 3000)
+pnpm build
+pnpm start                               # honors $PORT env var (default 3000)
 
-# Lint
-npm run lint
+# Lint + typecheck
+pnpm lint
+pnpm typecheck
 
 # Local CNB build (same image bin/deploy-frontend.sh pushes to Artifact Registry)
 pack build quiniela-web --builder heroku/builder:26 --path .
@@ -91,15 +92,57 @@ The script reads `tofu output` for project ID, region, registry URL, and service
 
 ### How the image works
 
-The `heroku/nodejs-*` CNB buildpacks (same builder image we use even though we no longer deploy to Heroku) detect a Next.js app by the presence of `package.json` + a lockfile (`package-lock.json` here). They:
+The `heroku/nodejs-*` CNB buildpacks (same builder image we use even though we no longer deploy to Heroku) detect a Next.js app by the presence of `package.json` + a lockfile (`pnpm-lock.yaml`). They:
 
 1. Read `engines.node` (`"24.x"` → Node 24 LTS)
-2. Run `npm ci`
-3. Run the `build` script (`next build`)
-4. Set the launch process to the `web` line in `Procfile` (`npm start` → `next start`, which auto-reads `PORT` via Next.js 16's commander integration)
+2. Read `packageManager` (`pnpm@9.15.0` → activates pnpm via Corepack)
+3. Run `pnpm install --frozen-lockfile` (the `heroku/nodejs-pnpm-install` buildpack handles this)
+4. Run the `build` script (`next build`)
+5. Set the launch process to the `web` line in `Procfile` (`node node_modules/.bin/next start` — calls Next.js directly without depending on a package manager at runtime)
 
 No Next.js-specific buildpack adapter exists, so no standalone-output magic is needed — `next start` works out of the box.
 
 ## Tests
 
-None yet — Vitest + React Testing Library will land alongside the first non-trivial component (likely the bet entry form in PR 5 or 6). For server logic, prefer integration tests on the backend over duplicating the test in the frontend.
+**Unit + component (Vitest + React Testing Library + MSW v2):**
+
+```bash
+pnpm test                 # one-shot run
+pnpm test:watch           # watch mode
+pnpm test:coverage        # with coverage (v8 provider)
+```
+
+Config: `vitest.config.ts` (jsdom env, globals, alias `@` → project root). Setup: `vitest.setup.ts` wires `jest-dom` matchers + MSW lifecycle. API mocks live in `mocks/handlers.ts`. `onUnhandledRequest: 'error'` is on — every fetched URL needs an explicit handler.
+
+Co-locate `*.test.tsx` next to the component under test. For server logic that touches the backend, prefer an integration test on the backend over duplicating it here.
+
+**E2E + a11y (Playwright + axe-core):**
+
+```bash
+pnpm e2e                  # build + start production server + run tests
+pnpm exec playwright test --ui   # interactive mode (local)
+```
+
+Config: `playwright.config.ts`. Tests live in `e2e/*.e2e.ts`. **Tests run against the production server (`next start`), never `next dev`** — dev-mode HMR and dev-only overlays produce false signals.
+
+The current smoke test (`e2e/smoke.e2e.ts`) checks the landing page renders + has zero WCAG 2 AA violations. Add a spec per route group as pages land.
+
+## CI/CD
+
+This frontend applies the personal CI/CD plugin at `brain/plugins/tech/nextjs-cicd/`.
+
+**Wave 1 applied 2026-05-24** (platform-independent):
+- Vitest + RTL + MSW v2 wired into `package.json` scripts + `vitest.config.ts` + `vitest.setup.ts` + `mocks/`
+- Playwright + `@axe-core/playwright` wired into `playwright.config.ts` + `e2e/`
+- `.github/workflows/frontend-ci.yml`: path-filtered to `frontend/**`; jobs = lint+typecheck → unit-tests + e2e-tests + npm-audit (parallel) → build-and-scan-image (`pack build` local + Trivy SARIF). No image push yet.
+- Dependabot npm `/frontend` entry already wired into `.github/dependabot.yml`
+- Dependabot auto-merge workflow already wired (shared with backend)
+
+**Deviations from plugin defaults** (all intentional):
+| Plugin default | Quiniela frontend | Why |
+|----------------|-------------------|-----|
+| Node 22 LTS | Node 24 LTS | Newer active LTS; pinned via `engines.node: 24.x` + `.nvmrc` |
+| `output: 'standalone'` | bare `next.config.ts` | Trust `next start` for CNB build (smaller-image standalone optimization deferred) |
+| `Procfile: node .next/standalone/server.js` | `Procfile: node node_modules/.bin/next start` | Non-standalone variant of the no-package-manager-at-runtime pattern |
+
+**Wave 2 deferred** until `quiniela.dpdns.org` is responding: Artifact Registry push (via OIDC federation) + `gcloud run deploy` step. See `brain/plugins/tech/nextjs-cicd/deployment/gcp-cloud-run.md` for the canonical recipe + the three Cloud Run gotchas (`HOSTNAME=0.0.0.0`, `PORT`, `next/image` memory).
