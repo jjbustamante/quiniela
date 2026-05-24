@@ -32,6 +32,9 @@ if ! git diff --quiet HEAD 2>/dev/null || ! git diff --quiet --cached 2>/dev/nul
 fi
 
 IMAGE_REF="${REPO_URL}/${SERVICE_NAME}:${GIT_SHA}"
+# heroku/builder:26 (not Paketo) because Paketo's Node CNB stack has no
+# pnpm support — only npm-install and yarn-install. heroku/buildpacks-nodejs
+# has heroku/nodejs-pnpm-install and ships frequently (~3-7 day cadence).
 BUILDER=heroku/builder:26
 
 echo "==> Project:  $PROJECT_ID"
