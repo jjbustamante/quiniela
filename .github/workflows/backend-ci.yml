@@ -134,16 +134,33 @@ jobs:
           version: v0.70.0
           cache: true
 
-      - name: Trivy image scan
+      - name: Trivy image scan (one scan, table + sarif outputs)
         run: |
+          IMAGE="${IMAGE_NAME}:${{ steps.tag.outputs.tag }}"
+
+          # One scan → JSON (no gate). Convert to table (for CI log
+          # visibility) + sarif (for GH Security tab). Final --exit-code
+          # gate uses the same JSON so a single scan covers all three.
           trivy image \
-            --format sarif \
-            --output trivy.sarif \
+            --format json \
+            --output trivy.json \
             --severity CRITICAL,HIGH \
-            --exit-code 1 \
             --ignore-unfixed \
             --scanners vuln \
-            "${IMAGE_NAME}:${{ steps.tag.outputs.tag }}"
+            "$IMAGE"
+
+          echo "::group::Trivy findings (Critical/High, fixed)"
+          trivy convert --format table trivy.json
+          echo "::endgroup::"
+
+          trivy convert --format sarif --output trivy.sarif trivy.json
+
+          # Gate on findings. --ignore-unfixed already filtered to fixed-available.
+          COUNT=$(jq '[.Results[]?.Vulnerabilities? // []] | flatten | length' trivy.json)
+          if [ "$COUNT" -gt 0 ]; then
+            echo "::error::Trivy found $COUNT Critical/High unfixed-in-this-image CVE(s). See table above + GH Security tab."
+            exit 1
+          fi
 
       - uses: github/codeql-action/upload-sarif@v3
         if: always()
