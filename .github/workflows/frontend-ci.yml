@@ -148,7 +148,7 @@ jobs:
             --path frontend/
 
       - name: Trivy image scan
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         # Pin a stable tag — @master ships breaking input contract changes
         # (e.g. silently drops the `severity` input, scanning all severities).
         with:
