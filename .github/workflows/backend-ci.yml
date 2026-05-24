@@ -126,7 +126,9 @@ jobs:
             --volume "${HOME}/.m2/repository:/home/cnb/.m2/repository:rw"
 
       - name: Trivy image scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.36.0
+        # Pin a stable tag — @master ships breaking input contract changes
+        # (e.g. silently drops the `severity` input, scanning all severities).
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }}
           format: sarif
