@@ -18,6 +18,15 @@
 
 # ─── Cloud Run side ─────────────────────────────────────────────────────────
 
+resource "cloudflare_dns_record" "google_site_verification" {
+    zone_id = var.cloudflare_zone_id
+    name    = var.custom_domain
+    type    = "TXT"
+    content = "\"google-site-verification=UJfUU_SgkRFf-uF8o1PGmr5BnIS0skBnjC777HoGXl0\""  # quotes are part of TXT format
+    ttl     = 1
+  } 
+
+
 resource "google_cloud_run_domain_mapping" "web" {
   project  = var.project_id
   location = var.region
