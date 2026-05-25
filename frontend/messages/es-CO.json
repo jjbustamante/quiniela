@@ -7,9 +7,7 @@
   },
   "landing": {
     "title": "Quiniela 2026",
-    "subtitle": "La quiniela de los panas para el Mundial. ⚽ Pitazo inicial: 11 de junio.",
-    "backendUp": "Backend operando",
-    "backendDown": "Backend no disponible"
+    "subtitle": "La quiniela de los panas para el Mundial. ⚽ Pitazo inicial: 11 de junio."
   },
   "invite": {
     "invitedBy": "{name} te invitó a la Quiniela Panas",

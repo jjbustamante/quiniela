@@ -7,9 +7,7 @@
   },
   "landing": {
     "title": "Quiniela 2026",
-    "subtitle": "The friends-and-family bracket for the World Cup. ⚽ Kickoff: June 11.",
-    "backendUp": "Backend up",
-    "backendDown": "Backend unavailable"
+    "subtitle": "The friends-and-family bracket for the World Cup. ⚽ Kickoff: June 11."
   },
   "invite": {
     "invitedBy": "{name} invited you to Quiniela Panas",
