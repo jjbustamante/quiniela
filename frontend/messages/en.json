@@ -36,6 +36,12 @@
     "matches": "Matches",
     "compare": "Compare"
   },
+  "placeholder": {
+    "comingSoon": "Coming soon",
+    "rankingHelp": "Standings appear once the tournament kicks off.",
+    "matchesHelp": "Matches appear once the World Cup fixture is loaded.",
+    "compareHelp": "Compare your bracket against your friends."
+  },
   "invite_sheet": {
     "title": "Invite a friend",
     "linkLabel": "Your personal link",

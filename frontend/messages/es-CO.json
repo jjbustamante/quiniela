@@ -36,6 +36,12 @@
     "matches": "Partidos",
     "compare": "Comparar"
   },
+  "placeholder": {
+    "comingSoon": "Próximamente",
+    "rankingHelp": "La tabla de posiciones aparece cuando arranca el torneo.",
+    "matchesHelp": "Los partidos aparecen cuando se cargue el fixture del Mundial.",
+    "compareHelp": "Compara tu quiniela contra la de tus amigos."
+  },
   "invite_sheet": {
     "title": "Invita a un amigo",
     "linkLabel": "Tu enlace personal",
