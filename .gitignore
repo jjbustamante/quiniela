@@ -43,3 +43,6 @@ frontend/next-env.d.ts
 
 # Brainstorming companion sessions
 .superpowers/
+
+# Worktrees
+.worktrees/
