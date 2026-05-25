@@ -31,6 +31,8 @@ class InvitePathGeneratorTest {
   void capsSlugLengthAt32CharsBeforeSuffix() {
     String veryLong = "abcdefghijklmnopqrstuvwxyz0123456789ABC";
     String path = gen.generate(veryLong);
-    assertThat(path.split("-")[0].length()).isLessThanOrEqualTo(32);
+    String slugPart = path.substring(0, path.lastIndexOf('-'));
+    assertThat(slugPart).isNotEmpty();
+    assertThat(slugPart.length()).isLessThanOrEqualTo(32);
   }
 }
