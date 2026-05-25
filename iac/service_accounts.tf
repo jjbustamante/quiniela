@@ -109,3 +109,12 @@ resource "google_secret_manager_secret_iam_member" "api_runtime_nextauth" {
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.api_runtime.email}"
 }
+
+# football-data.org API key — consumed by the API service at startup
+# (FootballDataLoader) to seed teams + matches.
+resource "google_secret_manager_secret_iam_member" "api_runtime_football_data" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.football_data_api_key.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_runtime.email}"
+}
