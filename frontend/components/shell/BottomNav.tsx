@@ -17,7 +17,7 @@ export function BottomNav({ activeKey }: { activeKey?: BottomNavKey }) {
       aria-label="primary"
       className="fixed inset-x-0 bottom-0 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-header)]"
     >
-      <div className="mx-auto flex w-full max-w-md sm:max-w-2xl lg:max-w-4xl">
+      <div className="mx-auto flex w-full max-w-md">
         {NAV.map(({ key, href }) => {
           const isActive = key === activeKey;
           return (
