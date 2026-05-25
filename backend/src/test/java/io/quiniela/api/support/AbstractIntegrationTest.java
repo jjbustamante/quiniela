@@ -34,4 +34,14 @@ public abstract class AbstractIntegrationTest {
     r.add("spring.datasource.password", postgres::getPassword);
     r.add("spring.flyway.enabled", () -> "true");
   }
+
+  @org.springframework.beans.factory.annotation.Autowired
+  private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
+  @org.junit.jupiter.api.BeforeEach
+  void cleanWritableTables() {
+    // Order matters: pool_membership.user_id FK → users.id.
+    jdbcTemplate.execute("DELETE FROM pool_membership");
+    jdbcTemplate.execute("DELETE FROM users");
+  }
 }

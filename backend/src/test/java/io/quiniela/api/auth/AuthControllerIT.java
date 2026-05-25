@@ -3,6 +3,7 @@ package io.quiniela.api.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -35,7 +36,7 @@ class AuthControllerIT extends AbstractIntegrationTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
+    mockMvc = MockMvcBuilders.webAppContextSetup(wac).apply(springSecurity()).build();
   }
 
   @Test
@@ -121,5 +122,8 @@ class AuthControllerIT extends AbstractIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.role").value("CAPTAIN"))
         .andExpect(jsonPath("$.invitePath").isNotEmpty());
+
+    var captain = users.findByEmail("andres@example.com").orElseThrow();
+    assertThat(memberships.existsByPoolIdAndUserId(1L, captain.getId())).isTrue();
   }
 }
