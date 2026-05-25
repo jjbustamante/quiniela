@@ -40,7 +40,9 @@ public abstract class AbstractIntegrationTest {
 
   @org.junit.jupiter.api.BeforeEach
   void cleanWritableTables() {
-    // Order matters: pool_membership.user_id FK → users.id.
+    // Order matters: bet → quiniela → pool_membership → users (FK chain).
+    jdbcTemplate.execute("DELETE FROM bet");
+    jdbcTemplate.execute("DELETE FROM quiniela");
     jdbcTemplate.execute("DELETE FROM pool_membership");
     jdbcTemplate.execute("DELETE FROM users");
   }
