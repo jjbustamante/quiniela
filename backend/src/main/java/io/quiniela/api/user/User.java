@@ -132,38 +132,6 @@ public class User {
     return updatedAt;
   }
 
-  // ── Compatibility bridges for AuthController / JwtService ────────────────
-  // TODO(Task 5): remove when AuthController + JwtService are rewritten to use UserRole.
-
-  /**
-   * @deprecated use {@link #User(String, String, String, String, UserRole)} instead; removed in
-   *     Task 5.
-   */
-  @Deprecated
-  public User(String googleSub, String email, String displayName, String avatarUrl, boolean admin) {
-    this(googleSub, email, displayName, avatarUrl, admin ? UserRole.ADMIN : UserRole.PLAYER);
-  }
-
-  /**
-   * @deprecated use {@link #getRole()} instead; removed in Task 5.
-   */
-  @Deprecated
-  public boolean isAdmin() {
-    return role == UserRole.ADMIN;
-  }
-
-  /**
-   * @deprecated use {@link #setRole(UserRole)} instead; removed in Task 5.
-   */
-  @Deprecated
-  public void setAdmin(boolean admin) {
-    if (!admin) {
-      throw new UnsupportedOperationException(
-          "setAdmin(false) is not supported; use setRole(UserRole) — bridge removed in Task 5");
-    }
-    this.role = UserRole.ADMIN;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

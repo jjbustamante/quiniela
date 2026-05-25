@@ -1,0 +1,6 @@
+app:
+  admin-emails: admin@example.com
+  google:
+    oauth-client-id: test-placeholder.apps.googleusercontent.com
+  security:
+    jwt-secret: test-only-jwt-secret-must-be-at-least-32-chars-long
