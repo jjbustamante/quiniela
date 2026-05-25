@@ -53,3 +53,9 @@ app:
     # Same value Auth.js uses for its own session cookie signing (NEXTAUTH_SECRET).
     # Local dev gets a long throwaway placeholder; prod reads from Secret Manager.
     jwt-secret: ${NEXTAUTH_SECRET:dev-only-jwt-secret-must-be-at-least-32-chars-long}
+
+  football-data:
+    enabled: ${APP_FOOTBALL_DATA_ENABLED:false}     # default off; opt-in
+    base-url: ${APP_FOOTBALL_DATA_BASE_URL:https://api.football-data.org/v4}
+    api-key: ${APP_FOOTBALL_DATA_API_KEY:}          # required when enabled
+    competition-code: ${APP_FOOTBALL_DATA_COMPETITION:WC}  # FIFA World Cup
