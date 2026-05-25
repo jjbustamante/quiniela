@@ -23,26 +23,28 @@ export default async function HomePage() {
     <main className="flex min-h-screen flex-col pb-20">
       <TopBar title={t("title")} meta={`${me.displayName} · 0/104`} />
 
-      <div className="flex flex-wrap gap-2 px-3 py-3">
-        <CountdownChip />
-        <PotChip potCents={0} paidCount={0} />
+      <div className="mx-auto w-full max-w-md">
+        <div className="flex flex-wrap gap-2 px-3 py-3">
+          <CountdownChip />
+          <PotChip potCents={0} paidCount={0} />
+        </div>
+
+        <section className="px-3 space-y-1">
+          <span className="chrome-label">{t("groupsHeading")}</span>
+          {GROUP_LETTERS.map((letter) => (
+            <GroupCardSkeleton key={letter} letter={letter} />
+          ))}
+        </section>
+
+        <section className="px-3 py-3 space-y-1">
+          <span className="chrome-label">{t("knockoutsHeading")}</span>
+          <KnockoutLockedCard />
+        </section>
+
+        <section className="px-3 py-3 space-y-2">
+          <InviteFriendsButton role={me.role} invitePath={me.invitePath} />
+        </section>
       </div>
-
-      <section className="px-3 space-y-1">
-        <span className="chrome-label">{t("groupsHeading")}</span>
-        {GROUP_LETTERS.map((letter) => (
-          <GroupCardSkeleton key={letter} letter={letter} />
-        ))}
-      </section>
-
-      <section className="px-3 py-3 space-y-1">
-        <span className="chrome-label">{t("knockoutsHeading")}</span>
-        <KnockoutLockedCard />
-      </section>
-
-      <section className="px-3 py-3 space-y-2">
-        <InviteFriendsButton role={me.role} invitePath={me.invitePath} />
-      </section>
 
       <BottomNav activeKey="myQuiniela" />
     </main>

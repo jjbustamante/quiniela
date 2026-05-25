@@ -19,7 +19,7 @@ export default async function JoinPage({
     return (
       <main className="flex min-h-screen flex-col">
         <TopBar />
-        <section className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+        <section className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
           <h1 className="text-2xl font-semibold text-[var(--color-state-bad)]">
             {t("invalid")}
           </h1>
@@ -36,7 +36,7 @@ export default async function JoinPage({
   return (
     <main className="flex min-h-screen flex-col">
       <TopBar />
-      <section className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
+      <section className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold text-[var(--color-text-primary)]">
             {t("invitedBy", { name: resolution.inviterDisplayName })}

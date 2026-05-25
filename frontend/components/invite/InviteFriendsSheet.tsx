@@ -34,12 +34,12 @@ export function InviteFriendsSheet({
       aria-modal="true"
       aria-label={t("title")}
       lang={locale}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-t-xl border-t-2 border-[var(--color-border-accent)] bg-[var(--color-bg-elevated)] p-5 space-y-4"
+        className="w-full max-w-md rounded-t-xl border-t-2 border-[var(--color-border-accent)] bg-[var(--color-bg-elevated)] p-5 space-y-4 shadow-2xl shadow-[var(--color-accent-cyan)]/10 sm:rounded-xl sm:border-t-0 sm:border-2"
       >
         <h2 className="chrome-label text-[var(--color-accent-cyan)]">{t("title")}</h2>
         <div>

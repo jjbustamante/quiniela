@@ -24,10 +24,10 @@ export function BottomNav({ activeKey }: { activeKey?: BottomNavKey }) {
             key={key}
             href={href}
             aria-current={isActive ? "page" : undefined}
-            className={`chrome-label flex flex-1 justify-center py-3 ${
+            className={`chrome-label flex flex-1 justify-center border-t-2 py-3 ${
               isActive
-                ? "text-[var(--color-accent-cyan)]"
-                : "text-[var(--color-text-muted)]"
+                ? "border-[var(--color-accent-cyan)] font-bold text-[var(--color-accent-cyan)]"
+                : "border-transparent text-[var(--color-text-muted)]"
             }`}
           >
             {t(key)}
