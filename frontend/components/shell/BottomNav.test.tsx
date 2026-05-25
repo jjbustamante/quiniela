@@ -8,7 +8,7 @@ const messages = {
     myQuiniela: "Mi Quiniela",
     ranking: "Tabla",
     matches: "Partidos",
-    compare: "vs",
+    compare: "Comparar",
   },
 };
 
@@ -22,7 +22,7 @@ describe("BottomNav", () => {
     expect(screen.getByRole("link", { name: /mi quiniela/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /tabla/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /partidos/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /vs/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /comparar/i })).toBeInTheDocument();
   });
 
   it("marks the active tab with aria-current", () => {
