@@ -4,19 +4,28 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
+/**
+ * Base class for integration tests that need a real Postgres database.
+ *
+ * <p>Uses the Testcontainers singleton-container pattern: the container is started once for the
+ * entire test JVM and stopped on JVM exit via Ryuk, not per-test-class lifecycle. This avoids the
+ * Spring context cache invalidation that occurs when {@code @Testcontainers + @Container} restarts
+ * the container between IT test classes.
+ */
 @SpringBootTest
-@Testcontainers
 public abstract class AbstractIntegrationTest {
 
-  @Container
-  static PostgreSQLContainer<?> postgres =
-      new PostgreSQLContainer<>("postgres:16-alpine")
-          .withDatabaseName("quiniela_test")
-          .withUsername("quiniela")
-          .withPassword("test");
+  static final PostgreSQLContainer<?> postgres;
+
+  static {
+    postgres =
+        new PostgreSQLContainer<>("postgres:16-alpine")
+            .withDatabaseName("quiniela_test")
+            .withUsername("quiniela")
+            .withPassword("test");
+    postgres.start();
+  }
 
   @DynamicPropertySource
   static void datasource(DynamicPropertyRegistry r) {
