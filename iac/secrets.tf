@@ -74,3 +74,24 @@ resource "google_secret_manager_secret" "google_oauth_client_secret" {
 # Note: NO google_secret_manager_secret_version here. The first version gets
 # created out-of-band when you paste in the real OAuth client secret. Tofu
 # does not manage that version's content (it's a manually-rotated value).
+
+# ─── football-data-api-key ───────────────────────────────────────────────────
+# API key for football-data.org (free tier, 10 req/min). Sourced manually
+# after sign-up at football-data.org/client/register. The quiniela-api
+# Cloud Run service reads this on startup to seed teams + matches via
+# FootballDataLoader (opt-in via APP_FOOTBALL_DATA_ENABLED=true).
+#
+# Populate after `tofu apply`:
+#   echo -n "$YOUR_API_KEY" | gcloud secrets versions add \
+#     football-data-api-key --data-file=-
+
+resource "google_secret_manager_secret" "football_data_api_key" {
+  project   = var.project_id
+  secret_id = "football-data-api-key"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.enabled]
+}

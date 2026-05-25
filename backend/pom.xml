@@ -36,6 +36,7 @@
         <google-api-client.version>2.7.0</google-api-client.version>
         <jjwt.version>0.12.7</jjwt.version>
         <testcontainers.version>1.21.4</testcontainers.version>
+        <wiremock.version>3.10.0</wiremock.version>
 
         <!-- Build-plugin versions (externalized for visibility + atomic bumps) -->
         <spotless.version>2.46.1</spotless.version>
@@ -192,6 +193,12 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>${wiremock.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

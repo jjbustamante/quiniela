@@ -7,7 +7,7 @@ Provisions the GCP resources that host this project: Artifact Registry, Cloud Ru
 - Enabled GCP APIs (Cloud Run, Cloud SQL, Artifact Registry, Secret Manager, IAM, ...)
 - Artifact Registry Docker repo `apps` for our images
 - **Cloud SQL Postgres** instance `quiniela-db` (db-f1-micro, ZONAL, deletion-protected) with database `quiniela` and app user `quiniela_app`
-- **Secret Manager** secrets: `database-password` (auto-generated), `nextauth-secret` (auto-generated), `google-oauth-client-secret` (empty placeholder — populated manually after creating the OAuth client in Console)
+- **Secret Manager** secrets: `database-password` (auto-generated), `nextauth-secret` (auto-generated), `google-oauth-client-secret` (empty placeholder — populated manually after creating the OAuth client in Console), `football-data-api-key` (empty placeholder — populated manually after signing up at football-data.org)
 - **Service accounts**:
   - `quiniela-deploy` — used by CI / `bin/deploy-*.sh` to push images and deploy Cloud Run services
   - `quiniela-api-runtime` — identity for the backend Cloud Run service; can connect to Cloud SQL and read DB password + NextAuth secret
@@ -91,6 +91,21 @@ iac/
 ├── outputs.tf                  Values for deploy scripts to read
 └── .gitignore                  Local state, .terraform/, real tfvars
 ```
+
+## Secret Manager values to populate manually
+
+Two secrets are declared by Tofu but their values are never written by Tofu (manually-rotated or externally-sourced):
+
+- **`google-oauth-client-secret`** — created in Google Cloud Console (APIs & Services → Credentials → OAuth 2.0 Client). Paste the client secret with:
+  ```bash
+  echo -n "$YOUR_CLIENT_SECRET" | gcloud secrets versions add google-oauth-client-secret --data-file=-
+  ```
+
+- **`football-data-api-key`** — sign up at [football-data.org/client/register](https://www.football-data.org/client/register) (free tier, 10 req/min). The API key appears on your profile page. Paste it with:
+  ```bash
+  echo -n "$YOUR_API_KEY" | gcloud secrets versions add football-data-api-key --data-file=-
+  ```
+  Once populated, the backend `quiniela-api` Cloud Run service will fetch real teams + matches from football-data.org on its first startup (when the team table is empty). Set `APP_FOOTBALL_DATA_ENABLED=false` to disable loading without removing the secret.
 
 ## What's NOT in OpenTofu (yet)
 

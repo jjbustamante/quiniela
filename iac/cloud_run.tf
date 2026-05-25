@@ -101,6 +101,19 @@ resource "google_cloud_run_v2_service" "api" {
           }
         }
       }
+      env {
+        name  = "APP_FOOTBALL_DATA_ENABLED"
+        value = "true"
+      }
+      env {
+        name = "APP_FOOTBALL_DATA_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.football_data_api_key.secret_id
+            version = "latest"
+          }
+        }
+      }
 
       ports {
         container_port = 8080
@@ -132,6 +145,9 @@ resource "google_cloud_run_v2_service" "api" {
     google_project_service.enabled,
     google_secret_manager_secret_version.db_password,
     google_secret_manager_secret_version.nextauth_secret,
+    # football_data_api_key has no Tofu-managed version (populated
+    # manually via gcloud), so we depend on the secret resource itself.
+    google_secret_manager_secret.football_data_api_key,
   ]
 }
 

@@ -1,6 +1,17 @@
+spring:
+  flyway:
+    # Pick up both prod migrations (classpath:db/migration) and the
+    # test-only fixture seed (classpath:db/test-migration) that restores
+    # teams + matches removed from V006.
+    locations:
+      - classpath:db/migration
+      - classpath:db/test-migration
+
 app:
   admin-emails: admin@example.com
   google:
     oauth-client-id: test-placeholder.apps.googleusercontent.com
   security:
     jwt-secret: test-only-jwt-secret-must-be-at-least-32-chars-long
+  football-data:
+    enabled: false
