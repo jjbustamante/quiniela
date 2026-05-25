@@ -24,10 +24,5 @@ public abstract class AbstractIntegrationTest {
     r.add("spring.datasource.username", postgres::getUsername);
     r.add("spring.datasource.password", postgres::getPassword);
     r.add("spring.flyway.enabled", () -> "true");
-    // Disable Hibernate schema validation: migration tests verify schema
-    // via information_schema JDBC queries, not via Hibernate entity mapping.
-    // The User entity still references is_admin (fixed in Task 2); without
-    // this override, Hibernate's ddl-auto=validate would abort context load.
-    r.add("spring.jpa.hibernate.ddl-auto", () -> "none");
   }
 }
