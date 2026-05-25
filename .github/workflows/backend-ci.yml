@@ -10,7 +10,7 @@ name: Backend CI
 
 on:
   push:
-    branches: [main, 'v*.x']
+    branches: [master, 'v*.x']
     paths:
       - 'backend/**'
       - '.github/workflows/backend-ci.yml'
@@ -177,7 +177,7 @@ jobs:
   # ─────────────────────────────────────────────────────────────────────────
   publish-and-deploy:
     needs: build-and-scan-image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     permissions:
       contents: read

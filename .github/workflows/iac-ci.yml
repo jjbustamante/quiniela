@@ -12,7 +12,7 @@ name: IaC CI
 
 on:
   push:
-    branches: [main, 'v*.x']
+    branches: [master, 'v*.x']
     paths:
       - 'iac/**'
       - '.github/workflows/iac-ci.yml'
