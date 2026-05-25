@@ -37,7 +37,7 @@ export default async function Home() {
           Quiniela 2026
         </h1>
         <p className="text-lg text-zinc-600 dark:text-zinc-400">
-          La quiniela de los panas para el Mundial.
+          La quiniela de los panas para el Mundial. ⚽ Pitazo inicial: 11 de junio.
         </p>
       </div>
 
