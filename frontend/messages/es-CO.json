@@ -36,6 +36,14 @@
     "matches": "Partidos",
     "compare": "Comparar"
   },
+  "auth_error": {
+    "title": "No pudimos iniciar tu sesión",
+    "noInvite": "Necesitas una invitación válida para unirte a la quiniela. Pídele a un amigo que te comparta su enlace personal.",
+    "backendError": "El servidor tuvo un problema. Intenta de nuevo en un momento.",
+    "backendUnreachable": "No pudimos contactar al servidor. Verifica tu conexión e intenta de nuevo.",
+    "generic": "Algo salió mal al iniciar sesión. Intenta de nuevo.",
+    "backToHome": "Volver al inicio"
+  },
   "placeholder": {
     "comingSoon": "Próximamente",
     "rankingHelp": "La tabla de posiciones aparece cuando arranca el torneo.",

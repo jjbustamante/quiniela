@@ -36,6 +36,14 @@
     "matches": "Matches",
     "compare": "Compare"
   },
+  "auth_error": {
+    "title": "We couldn't sign you in",
+    "noInvite": "You need a valid invitation to join the pool. Ask a friend to share their personal link with you.",
+    "backendError": "The server had a problem. Try again in a moment.",
+    "backendUnreachable": "We couldn't reach the server. Check your connection and try again.",
+    "generic": "Something went wrong signing in. Please try again.",
+    "backToHome": "Back to home"
+  },
   "placeholder": {
     "comingSoon": "Coming soon",
     "rankingHelp": "Standings appear once the tournament kicks off.",
