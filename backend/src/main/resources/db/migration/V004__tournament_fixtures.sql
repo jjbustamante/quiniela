@@ -20,7 +20,6 @@ CREATE TABLE team (
     UNIQUE (tournament_id, code)
 );
 
-CREATE INDEX idx_team_tournament ON team(tournament_id);
 CREATE INDEX idx_team_group ON team(tournament_id, group_code);
 
 CREATE TABLE round (
@@ -32,8 +31,6 @@ CREATE TABLE round (
     UNIQUE (tournament_id, code),
     UNIQUE (tournament_id, sequence)
 );
-
-CREATE INDEX idx_round_tournament ON round(tournament_id);
 
 CREATE TABLE match (
     id                  BIGSERIAL PRIMARY KEY,
