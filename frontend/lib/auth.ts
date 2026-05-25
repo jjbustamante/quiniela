@@ -20,22 +20,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ idToken: account.id_token, invitePath }),
           });
-          if (res.ok) {
-            const data = (await res.json()) as {
-              token: string;
-              userId: number;
-              role: "ADMIN" | "CAPTAIN" | "PLAYER";
-              invitePath: string | null;
-            };
-            token.backendToken = data.token;
-            token.userId = data.userId;
-            token.role = data.role;
-            token.invitePath = data.invitePath;
-          } else {
+          if (!res.ok) {
             console.error("Backend /auth/google rejected:", res.status, await res.text());
+            return null;
           }
+          const data = (await res.json()) as {
+            token: string;
+            userId: number;
+            role: "ADMIN" | "CAPTAIN" | "PLAYER";
+            invitePath: string | null;
+          };
+          token.backendToken = data.token;
+          token.userId = data.userId;
+          token.role = data.role;
+          token.invitePath = data.invitePath;
         } catch (err) {
           console.error("Backend /auth/google call failed:", err);
+          return null;
         }
       }
       return token;

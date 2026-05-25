@@ -16,9 +16,6 @@ export default defineConfig({
       reporter: ['text', 'html', 'lcov'],
     },
     exclude: ['node_modules', 'e2e/**', '.next/**'],
-    // Greenfield: don't exit 1 just because no tests exist yet. Drop this
-    // once there's at least one *.test.{ts,tsx} in the repo.
-    passWithNoTests: true,
   },
   resolve: {
     alias: {
