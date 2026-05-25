@@ -23,22 +23,26 @@ export default async function HomePage() {
     <main className="flex min-h-screen flex-col pb-20">
       <TopBar title={t("title")} meta={`${me.displayName} · 0/104`} />
 
-      <div className="mx-auto w-full max-w-md">
+      <div className="mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-4xl">
         <div className="flex flex-wrap gap-2 px-3 py-3">
           <CountdownChip />
           <PotChip potCents={0} paidCount={0} />
         </div>
 
-        <section className="px-3 space-y-1">
+        <section className="px-3">
           <span className="chrome-label">{t("groupsHeading")}</span>
-          {GROUP_LETTERS.map((letter) => (
-            <GroupCardSkeleton key={letter} letter={letter} />
-          ))}
+          <div className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2 sm:gap-2 lg:grid-cols-3">
+            {GROUP_LETTERS.map((letter) => (
+              <GroupCardSkeleton key={letter} letter={letter} />
+            ))}
+          </div>
         </section>
 
-        <section className="px-3 py-3 space-y-1">
+        <section className="px-3 py-3">
           <span className="chrome-label">{t("knockoutsHeading")}</span>
-          <KnockoutLockedCard />
+          <div className="mt-2">
+            <KnockoutLockedCard />
+          </div>
         </section>
 
         <section className="px-3 py-3 space-y-2">
