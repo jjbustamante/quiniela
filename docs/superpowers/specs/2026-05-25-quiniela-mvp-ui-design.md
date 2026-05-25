@@ -14,6 +14,7 @@ Ship a phone-first web app by 2026-06-11 that lets a small group of friends and 
 - **Players:** friends and family. Spanish-speaking primary, English-speaking minority. Mixed tech literacy — power users alongside people who'd rather use Excel.
 - **Pool size:** single pool for v1, ~20-50 players, real-money payout settled offline.
 - **Money:** USD entry fee, USD prizes. Payments themselves happen off-platform (Zelle / cash / transfer); the app tracks who has paid, the running pot, and the configurable prize split (default 80% / 15% / 5% for the top 3).
+- **Roles and invite tree:** three roles, two levels deep. The admin invites `captain`s (closest friends — the first wave). Each captain can invite `player`s (their own friends). Players cannot invite further. Captains are responsible for collecting their sub-group's entry fees and reconciling with the admin offline; the app reflects that responsibility by grouping the payments ledger by captain.
 - **Primary device:** phone. Laptop is a fallback layout.
 - **Deadline:** hard. Group-stage bets lock at kickoff (single deadline for the full group stage, per legacy rules). Knockout-round bets unlock after group stage finishes.
 
@@ -22,7 +23,7 @@ Ship a phone-first web app by 2026-06-11 that lets a small group of friends and 
 ### In scope for v1 (must ship by 2026-06-11)
 
 1. Google sign-in via Auth.js
-2. Invite-only access via `/join/:code` route
+2. Invite-only access via personal links (`/join/:inviterHandle-:token`) — admin invites captains, captains invite players, players cannot invite further. Self-serve redemption (no admin approval). "Invitar amigos" CTA in the lobby is visible only to admin and captains.
 3. Lobby (home) showing group + knockout cards with completion state and countdown
 4. Group drill-in to fill 6 match-score predictions per group
 5. Knockout drill-in (6 sub-cards: R32, R16, QF, SF, 3°, Final), unlocks after group stage
@@ -62,7 +63,7 @@ Ship a phone-first web app by 2026-06-11 that lets a small group of friends and 
 ```
 quiniela.dpdns.org
 ├── /                          → landing (signed-out) | redirect to /home (signed-in)
-├── /join/:code                → invite landing — Google sign-in CTA, accepts code
+├── /join/:invitePath          → invite landing — Google sign-in CTA, accepts personal-link path (e.g. /join/juan-abc123)
 ├── /home                      → lobby (Mi Quiniela)
 │   ├── /group/:groupId        → group drill-in (e.g. /group/B)
 │   └── /knockout/:roundId     → knockout drill-in (R32, R16, QF, SF, P3, FINAL)
@@ -83,9 +84,9 @@ quiniela.dpdns.org
 
 ### First-time invite
 
-`https://quiniela.dpdns.org/join/abc123` →
-"Te invitaron a Quiniela Panas. Inicia sesión con Google para unirte." →
-Google OAuth → user row created, `invite_code` consumed (single-use or N-use TBD in plan) → redirect to `/home` empty lobby.
+`https://quiniela.dpdns.org/join/juan-abc123` →
+"Andrés te invitó a Quiniela Panas. Inicia sesión con Google para unirte." (inviter's name resolved from the path) →
+Google OAuth → user row created with `invited_by_user_id` set, role assigned by inviter's role (admin → captain, captain → player) → redirect to `/home` empty lobby.
 
 ### Fill bracket (the bulk of v1's work)
 
@@ -111,15 +112,15 @@ Open app → bottom nav → **Partidos** → "Hoy" tab → see today's fixtures 
 
 | Screen | Route | Purpose | Key elements |
 |--------|-------|---------|--------------|
-| Invite landing | `/join/:code` | First-time entry | Pool name, "Te invitaron a…", Google sign-in button |
-| Lobby | `/home` | Pick screen entry + progress | Countdown chip (T-Nd HH:MM), pot chip ("Pot: $480 · 24 pagas"), 12 group cards with progress bars, 6 knockout sub-cards (locked until group stage ends), "🐙 Paul llena todo" CTA, "Descargar/Subir XLSX" secondary actions, "sin pagar" pill on the user's own profile chip if they haven't been marked paid |
+| Invite landing | `/join/:invitePath` | First-time entry | Pool name, inviter's display name ("Andrés te invitó a…"), Google sign-in button. Invalid/unknown path = friendly error + no sign-in CTA. |
+| Lobby | `/home` | Pick screen entry + progress | Countdown chip (T-Nd HH:MM), pot chip ("Pot: $480 · 24 pagas"), 12 group cards with progress bars, 6 knockout sub-cards (locked until group stage ends), "🐙 Paul llena todo" CTA, "Descargar/Subir XLSX" secondary actions, "sin pagar" pill on the user's own profile chip if they haven't been marked paid, "Invitar amigos" CTA visible only to admin + captains |
 | Group drill-in | `/group/:groupId` | Fill 6 match scores | Header with back arrow, group label, 6 match rows (team-team + score boxes + 🐙 icon), tap-to-numpad behavior, "Guardar y volver" + "Siguiente: Grupo C →" |
 | Knockout drill-in | `/knockout/:roundId` | Fill knockout round picks | Same pattern as group drill-in; number of matches varies by round |
 | Ranking | `/ranking` | Standings | Tabs General / Por jornada, prize-split header strip ("Pot $480 · 1° 80% · 2° 15% · 3° 5%"), rank pos with medal colors for top 3, estimated payout chip ($-amount) next to top 3, trend arrow (▲/▼/─), points, "you" row highlighted |
 | Schedule + results | `/matches` | Match calendar | Tabs Pasados / Hoy / Próximos, day labels, match rows with kick-off time, live indicator (pulsing dot), score or "— : —", user's pick + ✓/✗ |
 | Compare | `/compare/:opponent?` | Head-to-head picks | Player picker, point gap chip, tabs Diferencias / Todo, 4-column table (match / you / them / actual) |
 | Admin results | `/admin/results` | Enter actual match results | Same chrome as schedule, score fields editable, save per match, fires the existing PL/pgSQL scoring trigger |
-| Admin payments | `/admin/payments` | Track money in, configure prizes | Two stacked sections: (1) prize-split editor — three percentage inputs that must sum to 100, "Frozen at kickoff" badge after lock; (2) ledger — table of players with paid toggle, amount, paid-at timestamp, free-text note (e.g. "Zelle ref 8821"), running total chip at top, CSV export button |
+| Admin payments | `/admin/payments` | Track money in, configure prizes | Three stacked sections: (1) prize-split editor — three percentage inputs that must sum to 100, "Frozen at kickoff" badge after lock; (2) ledger grouped by captain — each captain shows their sub-group expanded (captain row + invitee rows beneath), per-captain subtotal of expected vs. collected, captain marked as "responsible for $X"; (3) admin's own row + any orphans (e.g. an admin direct invitee with no further invitees). Paid toggle, amount, paid-at timestamp, free-text note (e.g. "Zelle ref 8821"). Running pot chip at the top, CSV export button. |
 
 ## Visual design system
 
@@ -156,6 +157,50 @@ Open app → bottom nav → **Partidos** → "Hoy" tab → see today's fixtures 
 - Cards: dark elevated background, 3px left border (gray idle, cyan when "done" / active)
 - Score chips and ranking numbers always monospace
 
+## Roles and invite tree
+
+### Three roles, max depth 2
+
+- **`admin`** (Juan) — seeded directly via Flyway / SQL, not via the invite flow. Can do everything: invite anyone, edit results, mark payments, edit prize split.
+- **`captain`** — anyone the admin invited. Captains are trusted friends, expected to bring their own circle. Can submit picks, can invite players, and are responsible offline for collecting money from their invitees and remitting to the admin.
+- **`player`** — anyone a captain invited. Can submit picks. Cannot invite further. The tree dead-ends here.
+
+### Rule
+
+The invitee's role is fully determined by the inviter's role at sign-up time:
+
+```
+admin invites    → captain
+captain invites  → player
+player invites   → blocked (no invite UI shown)
+```
+
+`user.role` (enum) and `user.invited_by_user_id` (nullable FK) capture this. The role is set once at sign-up and is not editable by anyone except the admin via SQL (kept out of UI for v1).
+
+### Invite UI
+
+- Admin and captains see an **"Invitar amigos"** button on the lobby. Tapping it opens a sheet showing their personal invite URL (`/join/juan-abc123`), a "Copiar" button, and a "Compartir por WhatsApp" deep-link.
+- The personal URL is stable per user — minted once at sign-up, infinite uses, never rotated unless the admin revokes (admin-only, edge case for v1). The admin's URL is minted by the same Flyway seed that creates the admin row, so the admin has a shareable link from day zero with no chicken-and-egg.
+- Players don't see the button. The route to mint a link returns 403 for them.
+- The invite landing page resolves the inviter's display name from the path for the "X te invitó" copy. Bad/expired paths render a friendly fallback with no CTA.
+
+### Payment responsibility
+
+The admin payments ledger groups by captain to mirror real-world accountability:
+
+```
+▾ Captain A — 3 invitees — paid 3/4 — $60 / $80
+    A himself                  paid    $20
+    A's invitee 1              paid    $20
+    A's invitee 2              paid    $20
+    A's invitee 3              pendiente  —
+▾ Captain B — 1 invitee — paid 2/2 — $40 / $40
+    ...
+▸ Admin (Juan)                 paid    $20
+```
+
+The admin can mark any row paid (single source of truth), but the grouping makes it obvious which captain still owes money and for whom. v1.1 may let captains mark their own sub-group paid; v1 keeps that write capability admin-only.
+
 ## Payments and prizes
 
 ### Model
@@ -181,7 +226,7 @@ Ties on points share rank (already specified above). For prize money: the tied p
 - Mark paid: toggle on the player row; sets `paid_at = now()`, `amount_cents = pool.entry_fee_cents` (overridable for partial / over payments).
 - Unmark paid: toggle off; sets `paid_at = null`. Audit-logged (`payment_history` table or `updated_at` + `updated_by`).
 - Refund: not a v1 button. Admin un-marks paid and notes the refund in the free-text payment note. v1.1 can formalize this.
-- Add a player who isn't on the invite list: not supported via this screen. Players must come in via `/join/:code`.
+- Add a player who isn't on the invite list: not supported via this screen. Players must come in via a personal invite link (`/join/:invitePath`).
 
 ## Internationalization
 
@@ -221,14 +266,16 @@ Ties on points share rank (already specified above). For prize money: the tied p
 
 ## Open questions to resolve during planning
 
-1. **Invite code single-use vs N-use?** Single-use is safer; N-use is easier for a "share in the WhatsApp" flow. Pick one in the plan.
-2. **Locale auto-detection from browser?** Or always default to `es-CO` and let users switch manually?
-3. **What does Paul actually use?** GPT-4-ish via Anthropic/OpenAI? Cached suggestions to avoid per-match LLM calls × 50 players? Plan-stage decision.
-4. **Knockout fixture population:** is the admin entering "Spain advanced as A1" manually, or pulling from a public results feed? Affects admin UI scope.
-5. **Pool name:** "Quiniela Panas" hardcoded or configurable? Affects landing copy.
-6. **Avatar source:** Google profile pictures from Auth.js, or initials? Profile pictures need DOMAIN allowlisting in `next.config.ts`.
-7. **Entry fee setup:** seeded via SQL/Flyway, or set in a one-time pool-creation screen? v1 has a single pool so a Flyway seed is fine, but it locks in $20 (or whatever) unless we add a config row to edit.
-8. **Payment audit log:** is `payments.updated_at + updated_by` enough, or do we want a separate `payment_history` table with full event log (paid → un-paid → paid)? Affects refund/dispute traceability.
+1. **Locale auto-detection from browser?** Or always default to `es-CO` and let users switch manually?
+2. **What does Paul actually use?** GPT-4-ish via Anthropic/OpenAI? Cached suggestions to avoid per-match LLM calls × 50 players? Plan-stage decision.
+3. **Knockout fixture population:** is the admin entering "Spain advanced as A1" manually, or pulling from a public results feed? Affects admin UI scope.
+4. **Pool name:** "Quiniela Panas" hardcoded or configurable? Affects landing copy.
+5. **Avatar source:** Google profile pictures from Auth.js, or initials? Profile pictures need DOMAIN allowlisting in `next.config.ts`.
+6. **Entry fee setup:** seeded via SQL/Flyway, or set in a one-time pool-creation screen? v1 has a single pool so a Flyway seed is fine, but it locks in $20 (or whatever) unless we add a config row to edit.
+7. **Payment audit log:** is `payments.updated_at + updated_by` enough, or do we want a separate `payment_history` table with full event log (paid → un-paid → paid)? Affects refund/dispute traceability.
+8. **Captain self-mark-paid in v1.1:** when v1.1 lets captains mark their own sub-group paid, do they also gain visibility into who owes them money? Likely a dedicated "/team" screen for captains. Out of scope for v1, just flagging.
+9. **Personal invite URL slug format:** human-readable (`/join/juan-abc123`) is nicer but leaks identity to anyone with the link. Alternative: opaque token (`/join/k4nx9z`). Trade readability for privacy. Probably fine to leak identity in this audience but worth confirming.
+10. **Orphan handling:** if a captain leaves the pool mid-tournament, what happens to their invitees? Admin takeover is the obvious move; out of v1 scope but worth thinking about before v1.1.
 
 ## Risks
 
