@@ -17,17 +17,18 @@ The new stack is **Spring Boot 4 + Java 25 (backend)** and **Next.js 16 + TypeSc
 ├── iac/               OpenTofu — provisions GCP resources for the planned
 │                      Cloud Run + Cloud SQL deploy (state in a GCS bucket)
 ├── legacy/            Rails 3.2 app (2014) — spec only   ← see legacy/CLAUDE.md
-├── bin/               deploy-backend.sh, deploy-frontend.sh
-│                      (Cloud Run deploy via pack build → Artifact Registry)
+├── bin/               deploy-backend.sh, deploy-frontend.sh, dev-*.sh
+│                      (manual deploy mirrors CI: pack build → AR → Cloud Run)
 ├── docs/              Architecture + deploy notes        (added as needed)
-└── .github/workflows/ CI for backend + frontend
+└── .github/workflows/ CI for backend + frontend + IaC; on push to master,
+                       both app workflows also push images and deploy
 ```
 
 Each subapp will have its own `CLAUDE.md` once scaffolded; this top-level file stays focused on cross-cutting concerns and pointers.
 
 ## Deploy target
 
-**Two GCP Cloud Run services**, both built locally with Cloud Native Buildpacks and pushed to Artifact Registry. The whole GCP infra (Cloud SQL, Artifact Registry, Secret Manager, IAM, Cloud Run services) is provisioned by **OpenTofu** in `iac/`.
+**Two GCP Cloud Run services**, both built with Cloud Native Buildpacks and pushed to Artifact Registry. The whole GCP infra (Cloud SQL, Artifact Registry, Secret Manager, IAM, Cloud Run services) is provisioned by **OpenTofu** in `iac/`.
 
 | Service | Cloud Run | What it runs |
 |---|---|---|
@@ -36,26 +37,36 @@ Each subapp will have its own `CLAUDE.md` once scaffolded; this top-level file s
 
 Single shared **Cloud SQL Postgres** instance (`quiniela-db`, db-f1-micro Enterprise edition) for the backend. Secrets (DB password, NextAuth secret, Google OAuth client secret) live in Secret Manager and are mounted into the Cloud Run services as env vars.
 
-Deploy:
+**Primary deploy path: CI/CD on push to `master`.** Both `.github/workflows/backend-ci.yml` and `frontend-ci.yml` build → Trivy-scan → push to Artifact Registry (via OIDC / Workload Identity Federation, no long-lived keys) → `gcloud run deploy`. PRs build + scan only; no push, no deploy.
+
+Manual deploy is the same pipeline minus CI — useful for ad-hoc pushes or recovery:
 
 ```bash
 bin/deploy-backend.sh    # pack build → docker push to Artifact Registry → gcloud run deploy
 bin/deploy-frontend.sh
 ```
 
-Local CNB build (same image the deploy script pushes — useful for testing without releasing):
+Both scripts read `tofu output` as single source of truth for project/region/repo/service names. Image tags are git-SHA-based with a `-dirty` suffix when the working tree is unclean.
+
+### CNB builder split
+
+- **Backend:** Paketo (`paketobuildpacks/builder-jammy-base:latest`) — Spring-team-aligned default, weekly refresh, smaller base with aggressive CVE patching. Pulled from `backend/project.toml`.
+- **Frontend:** `heroku/builder:26` — kept deliberately because Paketo has no pnpm-install buildpack and the Node story on Heroku's builder is more mature for Next.js + Turbopack.
+
+Local CNB build (same image the CI and deploy scripts push):
 
 ```bash
-pack build quiniela-api --builder heroku/builder:26 --path backend/
-pack build quiniela-web --builder heroku/builder:26 --path frontend/
+pack build quiniela-api --descriptor backend/project.toml --path backend/
+pack build quiniela-web --builder heroku/builder:26       --path frontend/
 ```
 
-We still use the `heroku/builder:26` image to *build* — it's a high-quality CNB builder and works fine on Cloud Run (Cloud Run is a generic container runtime, doesn't care which CNB builder produced the image). The Heroku platform itself is no longer in the picture.
+The Heroku *platform* is no longer in the picture; only the frontend image *builder* is Heroku-branded. CNB output is portable — Cloud Run is a generic container runtime and doesn't care which builder produced the image.
 
 ### CNB on Cloud Run notes
 
-- **No wrapper Dockerfile needed** (unlike Heroku Cedar container, which had ENTRYPOINT-vs-CMD config-var injection quirks). Cloud Run injects env vars into ENTRYPOINT cleanly, so `CNB_PLATFORM_API=0.15` set on the service via Tofu reaches the launcher.
-- **JVM version pinning:** the `heroku/jvm` CNB buildpack reads `backend/system.properties` (`java.runtime.version=25`), NOT `<java.version>` from `pom.xml`. Default falls back to the latest LTS — happens to be 25 today, but pin it explicitly.
+- **No wrapper Dockerfile needed** (unlike Heroku Cedar container, which had ENTRYPOINT-vs-CMD config-var injection quirks). Cloud Run injects env vars into ENTRYPOINT cleanly, so `CNB_PLATFORM_API=0.15` set on both services via Tofu reaches the launcher.
+- **Backend launch:** Paketo's `spring-boot` buildpack provides the launch command directly — no `backend/Procfile` (was removed once we switched off the Heroku builder). Frontend still has a `Procfile` because the Heroku Node buildpack relies on it.
+- **JVM version pinning:** Paketo reads `BP_JVM_VERSION=25` and `BP_JVM_TYPE=JRE` from `backend/project.toml`. `backend/system.properties` is kept in sync (`java.runtime.version=25`) for any tool that still consults the Heroku-style file.
 - **Cloud SQL connection:** the api service mounts the Cloud SQL Auth Proxy as a sidecar (declared in `iac/cloud_run.tf` via `volumes.cloud_sql_instance`). Spring Boot's `cloudrun` profile (`backend/src/main/resources/application-cloudrun.yml`) reaches it through the `com.google.cloud.sql:postgres-socket-factory` JDBC SocketFactory.
 
 ## Auth
