@@ -29,7 +29,7 @@ resource "cloudflare_dns_record" "google_site_verification" {
   zone_id = var.cloudflare_zone_id
   name    = var.custom_domain
   type    = "TXT"
-  content = "\"google-site-verification=UJfUU_SgkRFf-uF8o1PGmr5BnIS0skBnjC777HoGXl0\"" # quotes are part of TXT format
+  content = "\"google-site-verification=zp7PgufoVGxWF9WceOe4Q0G-vXksK1UG3QUxBRBvX4M\"" # quotes are part of TXT format
   ttl     = 1
 }
 

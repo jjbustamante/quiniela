@@ -5,6 +5,10 @@ region                 = "us-central1"
 owner_email            = "quiniela.panas.svp@gmail.com"
 google_oauth_client_id = "760784205999-i5dl0qi25s9rnjpeai8fm0m1i0t8mt9h.apps.googleusercontent.com"
 
+# Workload Identity Federation — pins CI access to this exact GitHub repo.
+# Used by iac/workload_identity.tf to build the impersonation principalSet.
+github_repository = "jjbustamante/quiniela"
+
 # artifact_registry_repo  = "apps"          # default
 # cloud_sql_tier          = "db-f1-micro"   # default; bump for more capacity
 # cloud_run_max_instances = 5               # default

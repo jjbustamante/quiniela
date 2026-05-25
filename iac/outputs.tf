@@ -22,8 +22,13 @@ output "artifact_registry_repo_url" {
 }
 
 output "deploy_service_account_email" {
-  description = "Email of the deploy service account. Use with `gcloud iam service-accounts keys create` or Workload Identity Federation for CI."
+  description = "Email of the deploy service account. Set this as repo secret WIF_SA in GitHub Actions."
   value       = google_service_account.deploy.email
+}
+
+output "workload_identity_provider" {
+  description = "Full resource name of the WIF provider for GitHub Actions. Set this as repo secret WIF_PROVIDER in GitHub Actions."
+  value       = google_iam_workload_identity_pool_provider.github.name
 }
 
 # ─── Cloud SQL ──────────────────────────────────────────────────────────────

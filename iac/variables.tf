@@ -14,6 +14,15 @@ variable "owner_email" {
   type        = string
 }
 
+variable "github_repository" {
+  description = <<-EOT
+    GitHub repository in <owner>/<name> form, e.g. jjbustamante/quiniela.
+    Workload Identity Federation uses this to scope CI access — only OIDC
+    tokens claiming this exact repository can impersonate the deploy SA.
+  EOT
+  type        = string
+}
+
 variable "artifact_registry_repo" {
   description = "Name of the Artifact Registry Docker repository that holds our images. Becomes `<region>-docker.pkg.dev/<project>/<repo>/<image>`."
   type        = string

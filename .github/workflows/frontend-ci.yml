@@ -190,3 +190,57 @@ jobs:
         with:
           sarif_file: trivy.sarif
           category: trivy-frontend
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Wave 2: publish image to Artifact Registry + deploy to Cloud Run.
+  # Runs only on push to main (not PRs).
+  # OIDC federation via google-github-actions/auth — no long-lived JSON keys.
+  # ─────────────────────────────────────────────────────────────────────────
+  publish-and-deploy:
+    needs: build-and-scan-image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write        # required for the GitHub OIDC token exchange
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: buildpacks/github-actions/setup-pack@v5.12.3
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Compute image ref
+        id: image
+        run: |
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          REF="${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GCP_AR_REPO }}/${{ env.IMAGE_NAME }}:${SHORT_SHA}"
+          echo "ref=${REF}" >> "$GITHUB_OUTPUT"
+
+      - name: pack build + publish
+        run: |
+          pack build "${{ steps.image.outputs.ref }}" \
+            --builder "${CNB_BUILDER}" \
+            --path frontend/ \
+            --publish
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "${{ vars.GCP_WEB_SERVICE }}" \
+            --image="${{ steps.image.outputs.ref }}" \
+            --region="${{ vars.GCP_REGION }}" \
+            --project="${{ vars.GCP_PROJECT_ID }}" \
+            --quiet
+
+          URL=$(gcloud run services describe "${{ vars.GCP_WEB_SERVICE }}" \
+            --region="${{ vars.GCP_REGION }}" --project="${{ vars.GCP_PROJECT_ID }}" \
+            --format='value(status.url)')
+          echo "::notice::Frontend deployed to ${URL}"
