@@ -1,0 +1,47 @@
+{
+  "common": {
+    "appName": "Quiniela Panas",
+    "signIn": "Sign in with Google",
+    "signOut": "Sign out",
+    "loading": "Loading…"
+  },
+  "landing": {
+    "title": "Quiniela 2026",
+    "subtitle": "The friends-and-family bracket for the World Cup. ⚽ Kickoff: June 11.",
+    "backendUp": "Backend up",
+    "backendDown": "Backend unavailable"
+  },
+  "invite": {
+    "invitedBy": "{name} invited you to Quiniela Panas",
+    "joinPrompt": "Sign in with Google to join.",
+    "invalid": "Invalid invite",
+    "invalidHelp": "Double-check the link with whoever sent it."
+  },
+  "lobby": {
+    "title": "My bracket",
+    "potChip": "Pot: {pot} · {paid} paid",
+    "countdown": "{days} days to first match",
+    "groupsHeading": "Group stage",
+    "knockoutsHeading": "Knockouts",
+    "knockoutsLocked": "Unlocks after group stage",
+    "askPaulFillAll": "🐙 Let Paul fill everything",
+    "downloadXlsx": "⬇ Download template",
+    "uploadXlsx": "⬆ Upload template",
+    "inviteFriends": "Invite friends",
+    "unpaidPill": "Unpaid"
+  },
+  "nav": {
+    "myQuiniela": "My Bracket",
+    "ranking": "Ranking",
+    "matches": "Matches",
+    "compare": "vs"
+  },
+  "invite_sheet": {
+    "title": "Invite a friend",
+    "linkLabel": "Your personal link",
+    "copy": "Copy",
+    "copied": "Copied",
+    "whatsapp": "Share via WhatsApp",
+    "whatsappMessage": "Join my Quiniela Panas bracket for World Cup 2026 ⚽ {url}"
+  }
+}
