@@ -12,7 +12,14 @@ type Props =
 export function NumpadScoreInput(props: Props) {
   const t = useTranslations("numpad");
   const locale = useLocale();
+
+  // Single-side mode uses one value. Both-mode tracks t1 + t2 + which cell
+  // is currently active (digit taps fill the active cell, then the active
+  // cell advances).
   const [val, setVal] = useState<number | null>(null);
+  const [t1Val, setT1Val] = useState<number | null>(null);
+  const [t2Val, setT2Val] = useState<number | null>(null);
+  const [active, setActive] = useState<"t1" | "t2">("t1");
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -29,11 +36,31 @@ export function NumpadScoreInput(props: Props) {
     else props.onConfirm(b);
   }
 
-  function confirmDigit() {
-    if (val == null) return;
-    if (props.side === "both") props.onConfirm({ t1: val, t2: 0 });
-    else props.onConfirm(val);
+  function tapDigit(n: number) {
+    if (props.side === "both") {
+      if (active === "t1") {
+        setT1Val(n);
+        setActive("t2"); // advance to t2 after t1 is set
+      } else {
+        setT2Val(n);
+      }
+    } else {
+      setVal(n);
+    }
   }
+
+  function confirm() {
+    if (props.side === "both") {
+      if (t1Val == null || t2Val == null) return;
+      props.onConfirm({ t1: t1Val, t2: t2Val });
+    } else {
+      if (val == null) return;
+      props.onConfirm(val);
+    }
+  }
+
+  const canConfirm =
+    props.side === "both" ? t1Val != null && t2Val != null : val != null;
 
   return (
     <div
@@ -69,16 +96,36 @@ export function NumpadScoreInput(props: Props) {
         <div className="mt-4">
           <div
             aria-live="polite"
-            className="mb-2 text-center font-mono-num text-3xl font-bold text-[var(--color-accent-cyan)]"
+            className="mb-2 text-center font-mono-num text-3xl font-bold"
           >
-            {val ?? "_"}
+            {props.side === "both" ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setActive("t1")}
+                  className={`px-3 ${active === "t1" ? "text-[var(--color-accent-cyan)] underline underline-offset-4" : "text-[var(--color-text-muted)]"}`}
+                >
+                  {t1Val ?? "_"}
+                </button>
+                <span className="text-[var(--color-text-muted)]">-</span>
+                <button
+                  type="button"
+                  onClick={() => setActive("t2")}
+                  className={`px-3 ${active === "t2" ? "text-[var(--color-accent-cyan)] underline underline-offset-4" : "text-[var(--color-text-muted)]"}`}
+                >
+                  {t2Val ?? "_"}
+                </button>
+              </>
+            ) : (
+              <span className="text-[var(--color-accent-cyan)]">{val ?? "_"}</span>
+            )}
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
               <button
                 key={n}
                 type="button"
-                onClick={() => setVal(n)}
+                onClick={() => tapDigit(n)}
                 className="rounded-md bg-[var(--color-bg-primary)] py-3 font-mono-num text-lg text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]"
               >
                 {n}
@@ -93,15 +140,15 @@ export function NumpadScoreInput(props: Props) {
             </button>
             <button
               type="button"
-              onClick={() => setVal(0)}
+              onClick={() => tapDigit(0)}
               className="rounded-md bg-[var(--color-bg-primary)] py-3 font-mono-num text-lg text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]"
             >
               0
             </button>
             <button
               type="button"
-              onClick={confirmDigit}
-              disabled={val == null}
+              onClick={confirm}
+              disabled={!canConfirm}
               className="rounded-md bg-[var(--color-accent-cyan)] py-3 text-sm font-bold text-black disabled:opacity-50"
             >
               {t("confirm")}

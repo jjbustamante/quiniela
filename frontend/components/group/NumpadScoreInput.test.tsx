@@ -38,4 +38,17 @@ describe("NumpadScoreInput", () => {
     fireEvent.click(screen.getByRole("button", { name: "2-1" }));
     expect(onConfirm).toHaveBeenCalledWith({ t1: 2, t2: 1 });
   });
+
+  it("both-mode digit entry advances active cell and confirms with both values", () => {
+    const onConfirm = vi.fn();
+    render(
+      <NextIntlClientProvider locale="es-CO" messages={messages}>
+        <NumpadScoreInput side="both" onConfirm={onConfirm} onCancel={() => {}} />
+      </NextIntlClientProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "3" })); // t1 = 3, auto-advance to t2
+    fireEvent.click(screen.getByRole("button", { name: "2" })); // t2 = 2
+    fireEvent.click(screen.getByRole("button", { name: /confirmar/i }));
+    expect(onConfirm).toHaveBeenCalledWith({ t1: 3, t2: 2 });
+  });
 });

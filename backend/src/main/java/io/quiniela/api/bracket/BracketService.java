@@ -97,7 +97,7 @@ public class BracketService {
 
     List<KnockoutRoundView> ko = new ArrayList<>();
     boolean unlocked = false; // toggled true by the lock logic once group stage closes.
-    for (Round r : rounds.findAll()) {
+    for (Round r : rounds.findByTournamentIdOrderBySequenceAsc(DEFAULT_TOURNAMENT_ID)) {
       if ("GROUP".equals(r.getCode())) continue;
       List<Match> ms =
           matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(DEFAULT_TOURNAMENT_ID, r.getId());
