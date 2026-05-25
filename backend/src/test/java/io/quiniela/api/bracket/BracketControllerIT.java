@@ -51,4 +51,65 @@ class BracketControllerIT extends AbstractIntegrationTest {
   void getMeBracketRequiresAuth() throws Exception {
     mockMvc.perform(get("/api/bracket/me")).andExpect(status().isUnauthorized());
   }
+
+  @Autowired javax.sql.DataSource dataSource;
+
+  @Test
+  void saveBetUpsertsAndReturns200() throws Exception {
+    var u = new User("g-br2", "br2@example.com", "BR2", null, UserRole.CAPTAIN);
+    u.setInvitePath("br2-abc");
+    u = users.save(u);
+    String token = jwt.issue(u);
+
+    // Group-stage match id=1 (first seeded).
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                    "/api/bracket/bet")
+                .header("Authorization", "Bearer " + token)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"matchId\":1,\"scoreT1\":2,\"scoreT2\":1}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.matchId").value(1))
+        .andExpect(jsonPath("$.scoreT1").value(2))
+        .andExpect(jsonPath("$.scoreT2").value(1));
+
+    // Second POST overwrites.
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                    "/api/bracket/bet")
+                .header("Authorization", "Bearer " + token)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"matchId\":1,\"scoreT1\":3,\"scoreT2\":2}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.scoreT1").value(3));
+  }
+
+  @Test
+  void saveBetRejectsAfterGroupStageDeadline() throws Exception {
+    // Move the deadline into the past for this test by direct SQL.
+    org.springframework.jdbc.core.JdbcTemplate jdbc =
+        new org.springframework.jdbc.core.JdbcTemplate(dataSource);
+    jdbc.update(
+        "UPDATE tournament SET group_stage_deadline = NOW() - INTERVAL '1 hour' WHERE id = 1");
+
+    var u = new User("g-br3", "br3@example.com", "BR3", null, UserRole.CAPTAIN);
+    u.setInvitePath("br3-abc");
+    u = users.save(u);
+    String token = jwt.issue(u);
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                    "/api/bracket/bet")
+                .header("Authorization", "Bearer " + token)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("{\"matchId\":1,\"scoreT1\":2,\"scoreT2\":1}"))
+        .andExpect(status().isLocked()); // 423 Locked
+
+    // Restore for other tests.
+    jdbc.update(
+        "UPDATE tournament SET group_stage_deadline = TIMESTAMPTZ '2026-06-11 17:00 UTC' WHERE id = 1");
+  }
 }
