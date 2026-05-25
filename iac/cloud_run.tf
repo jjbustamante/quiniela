@@ -148,6 +148,11 @@ resource "google_cloud_run_v2_service" "api" {
     # football_data_api_key has no Tofu-managed version (populated
     # manually via gcloud), so we depend on the secret resource itself.
     google_secret_manager_secret.football_data_api_key,
+    # IAM binding must exist + propagate before Cloud Run can mount the
+    # secret. Without this depends_on, Tofu can apply the revision in
+    # parallel with the binding and the new revision fails with
+    # "Permission denied on secret".
+    google_secret_manager_secret_iam_member.api_runtime_football_data,
   ]
 }
 
