@@ -29,7 +29,7 @@ export async function AuthButton() {
             />
           )}
           <span>{session.user.name ?? session.user.email}</span>
-          {session.admin && (
+          {session.role === "ADMIN" && (
             <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900/30 dark:text-amber-200">
               admin
             </span>
