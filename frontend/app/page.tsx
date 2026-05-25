@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { auth } from "@/lib/auth";
 import { AuthButton } from "@/components/AuthButton";
 
 type HealthResult =
@@ -9,9 +12,7 @@ async function fetchHealth(): Promise<HealthResult> {
   const base = process.env.API_URL ?? "http://localhost:8080";
   try {
     const res = await fetch(`${base}/actuator/health`, { cache: "no-store" });
-    if (!res.ok) {
-      return { state: "down", status: `HTTP ${res.status}` };
-    }
+    if (!res.ok) return { state: "down", status: `HTTP ${res.status}` };
     const data = (await res.json()) as { status?: string };
     const status = data.status ?? "UNKNOWN";
     return { state: status === "UP" ? "up" : "down", status };
@@ -24,38 +25,34 @@ async function fetchHealth(): Promise<HealthResult> {
 }
 
 export default async function Home() {
+  const session = await auth();
+  if (session?.userId) redirect("/home");
+
+  const t = await getTranslations("landing");
   const health = await fetchHealth();
   const dotColor =
     health.state === "up"
-      ? "bg-emerald-500"
+      ? "bg-[var(--color-state-good)]"
       : health.state === "down"
-        ? "bg-amber-500"
-        : "bg-red-500";
+        ? "bg-[var(--color-state-warning)]"
+        : "bg-[var(--color-state-bad)]";
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-24 bg-zinc-50 dark:bg-black">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-6 py-24">
       <div className="flex flex-col items-center gap-3 text-center">
-        <h1 className="text-5xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          Quiniela 2026
+        <h1 className="text-5xl font-semibold tracking-tight text-[var(--color-accent-cyan)] uppercase">
+          {t("title")}
         </h1>
-        <p className="text-lg text-zinc-600 dark:text-zinc-400">
-          La quiniela de los panas para el Mundial. ⚽ Pitazo inicial: 11 de junio.
-        </p>
+        <p className="text-lg text-[var(--color-text-muted)]">{t("subtitle")}</p>
       </div>
 
-      <div className="rounded-lg border border-zinc-200 bg-white px-5 py-4 dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="rounded-md border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-5 py-4">
         <div className="flex items-center gap-3">
           <span className={`inline-block h-2.5 w-2.5 rounded-full ${dotColor}`} />
-          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-            Backend:{" "}
-            {health.state === "error" ? "no disponible" : health.status}
+          <span className="font-mono-num text-sm text-[var(--color-text-primary)]">
+            {health.state === "error" ? t("backendDown") : `${t("backendUp")} · ${health.status}`}
           </span>
         </div>
-        {health.state === "error" && (
-          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-            {health.message}
-          </p>
-        )}
       </div>
 
       <AuthButton />

@@ -7,5 +7,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
   Optional<User> findByGoogleSub(String googleSub);
 
+  Optional<User> findByInvitePath(String invitePath);
+
   Optional<User> findByEmail(String email);
 }

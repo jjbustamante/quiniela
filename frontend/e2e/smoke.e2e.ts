@@ -6,9 +6,9 @@ import AxeBuilder from '@axe-core/playwright';
 test.describe('home page', () => {
   test('renders without crashing', async ({ page }) => {
     await page.goto('/');
-    // The page emits a real <html lang="es"> with a heading; adapt this assertion
-    // as the landing-page content evolves past the scaffold.
-    await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+    // After next-intl scaffolding (Task 7), the layout renders lang from the
+    // negotiated locale. Default is es-CO.
+    await expect(page.locator('html')).toHaveAttribute('lang', 'es-CO');
   });
 
   test('has no critical accessibility violations (WCAG 2 AA)', async ({ page }) => {

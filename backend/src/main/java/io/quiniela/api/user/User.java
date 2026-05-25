@@ -31,8 +31,14 @@ public class User {
   @Column(name = "avatar_url")
   private String avatarUrl;
 
-  @Column(name = "is_admin", nullable = false)
-  private boolean admin;
+  @Column(nullable = false)
+  private UserRole role;
+
+  @Column(name = "invited_by_user_id")
+  private Long invitedByUserId;
+
+  @Column(name = "invite_path", unique = true)
+  private String invitePath;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -42,12 +48,12 @@ public class User {
 
   protected User() {}
 
-  public User(String googleSub, String email, String displayName, String avatarUrl, boolean admin) {
+  public User(String googleSub, String email, String displayName, String avatarUrl, UserRole role) {
     this.googleSub = googleSub;
     this.email = email;
     this.displayName = displayName;
     this.avatarUrl = avatarUrl;
-    this.admin = admin;
+    this.role = role;
   }
 
   @PrePersist
@@ -94,12 +100,28 @@ public class User {
     this.avatarUrl = avatarUrl;
   }
 
-  public boolean isAdmin() {
-    return admin;
+  public UserRole getRole() {
+    return role;
   }
 
-  public void setAdmin(boolean admin) {
-    this.admin = admin;
+  public void setRole(UserRole role) {
+    this.role = role;
+  }
+
+  public Long getInvitedByUserId() {
+    return invitedByUserId;
+  }
+
+  public void setInvitedByUserId(Long id) {
+    this.invitedByUserId = id;
+  }
+
+  public String getInvitePath() {
+    return invitePath;
+  }
+
+  public void setInvitePath(String invitePath) {
+    this.invitePath = invitePath;
   }
 
   public Instant getCreatedAt() {

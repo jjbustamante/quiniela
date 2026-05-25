@@ -1,0 +1,47 @@
+{
+  "common": {
+    "appName": "Quiniela Panas",
+    "signIn": "Iniciar sesión con Google",
+    "signOut": "Cerrar sesión",
+    "loading": "Cargando…"
+  },
+  "landing": {
+    "title": "Quiniela 2026",
+    "subtitle": "La quiniela de los panas para el Mundial. ⚽ Pitazo inicial: 11 de junio.",
+    "backendUp": "Backend operando",
+    "backendDown": "Backend no disponible"
+  },
+  "invite": {
+    "invitedBy": "{name} te invitó a la Quiniela Panas",
+    "joinPrompt": "Inicia sesión con Google para unirte.",
+    "invalid": "Invitación no válida",
+    "invalidHelp": "Verifica el enlace con quien te invitó."
+  },
+  "lobby": {
+    "title": "Mi quiniela",
+    "potChip": "Pot: {pot} · {paid} pagas",
+    "countdown": "{days} días hasta el primer partido",
+    "groupsHeading": "Fase de grupos",
+    "knockoutsHeading": "Eliminatorias",
+    "knockoutsLocked": "Se abre tras la fase de grupos",
+    "askPaulFillAll": "🐙 Que Paul llene todo",
+    "downloadXlsx": "⬇ Descargar plantilla",
+    "uploadXlsx": "⬆ Subir plantilla",
+    "inviteFriends": "Invitar amigos",
+    "unpaidPill": "Sin pagar"
+  },
+  "nav": {
+    "myQuiniela": "Mi Quiniela",
+    "ranking": "Tabla",
+    "matches": "Partidos",
+    "compare": "vs"
+  },
+  "invite_sheet": {
+    "title": "Invita a un amigo",
+    "linkLabel": "Tu enlace personal",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "whatsapp": "Compartir por WhatsApp",
+    "whatsappMessage": "Te invito a la Quiniela Panas para el Mundial 2026 ⚽ {url}"
+  }
+}

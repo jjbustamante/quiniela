@@ -43,7 +43,7 @@ public class JwtService {
         .subject(String.valueOf(user.getId()))
         .claim("email", user.getEmail())
         .claim("name", user.getDisplayName())
-        .claim("admin", user.isAdmin())
+        .claim("role", user.getRole().name())
         .issuedAt(Date.from(now))
         .expiration(Date.from(now.plus(LIFETIME)))
         .signWith(signingKey, Jwts.SIG.HS256)
