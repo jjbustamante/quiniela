@@ -13,6 +13,7 @@ Ship a phone-first web app by 2026-06-11 that lets a small group of friends and 
 
 - **Players:** friends and family. Spanish-speaking primary, English-speaking minority. Mixed tech literacy — power users alongside people who'd rather use Excel.
 - **Pool size:** single pool for v1, ~20-50 players, real-money payout settled offline.
+- **Money:** USD entry fee, USD prizes. Payments themselves happen off-platform (Zelle / cash / transfer); the app tracks who has paid, the running pot, and the configurable prize split (default 80% / 15% / 5% for the top 3).
 - **Primary device:** phone. Laptop is a fallback layout.
 - **Deadline:** hard. Group-stage bets lock at kickoff (single deadline for the full group stage, per legacy rules). Knockout-round bets unlock after group stage finishes.
 
@@ -32,9 +33,11 @@ Ship a phone-first web app by 2026-06-11 that lets a small group of friends and 
 10. Schedule + results screen: tabs Pasados / Hoy / Próximos, live-match indicator, user's pick rendered under each fixture with ✓/✗
 11. Compare picks vs another player: difference-first view, player picker, four-column layout (match / you / them / actual)
 12. Admin results-entry screen, gated by `is_admin` flag
-13. XLSX download/upload as an escape hatch for bracket fill
-14. i18n scaffolding from day one (Spanish default, English secondary, switcher in header/profile menu)
-15. Multi-tournament-ready schema and routes (only World Cup 2026 instance ships)
+13. Admin payments + prize-split screen (`/admin/payments`), gated by `is_admin` flag — mark players paid, view pot total, edit the prize-split percentages (frozen at kickoff)
+14. Public pot/prize display on the lobby and ranking screens (pot total + prize-split percentages + estimated payouts next to top 3)
+15. XLSX download/upload as an escape hatch for bracket fill
+16. i18n scaffolding from day one (Spanish default, English secondary, switcher in header/profile menu)
+17. Multi-tournament-ready schema and routes (only World Cup 2026 instance ships)
 
 ### Deferred to v1.1
 
@@ -44,11 +47,13 @@ Ship a phone-first web app by 2026-06-11 that lets a small group of friends and 
 - Multiple concurrent pools
 - Public read-only share links
 - Paul-as-a-player (auto-generated bracket competing in standings) — Paul ships only as an assistant in v1
+- In-app payment integration (Stripe, PayPal, etc.) — v1 tracking only, payments stay offline
 
 ### Out of scope
 
 - Mobile native apps
-- Payment integration (payouts stay offline)
+- Online payment processing (the app records payments, it does not collect them)
+- Receipt generation, invoices, tax forms
 - Match-level commentary, news feeds, or roster details beyond names + flags
 - Live ranking animations (refresh-on-load is fine for v1)
 
@@ -65,6 +70,7 @@ quiniela.dpdns.org
 ├── /matches                   → Partidos (schedule + results, tabs Pasados/Hoy/Próximos)
 ├── /compare/:opponent?        → vs (compare picks, optional opponent handle in URL)
 ├── /admin/results             → results entry, hidden behind is_admin
+├── /admin/payments            → payments ledger + prize-split editor, hidden behind is_admin
 ├── /api/auth/*                → Auth.js routes
 ├── /api/bracket/import        → XLSX upload endpoint
 └── /api/bracket/export        → XLSX download endpoint
@@ -106,13 +112,14 @@ Open app → bottom nav → **Partidos** → "Hoy" tab → see today's fixtures 
 | Screen | Route | Purpose | Key elements |
 |--------|-------|---------|--------------|
 | Invite landing | `/join/:code` | First-time entry | Pool name, "Te invitaron a…", Google sign-in button |
-| Lobby | `/home` | Pick screen entry + progress | Countdown chip (T-Nd HH:MM), 12 group cards with progress bars, 6 knockout sub-cards (locked until group stage ends), "🐙 Paul llena todo" CTA, "Descargar/Subir XLSX" secondary actions |
+| Lobby | `/home` | Pick screen entry + progress | Countdown chip (T-Nd HH:MM), pot chip ("Pot: $480 · 24 pagas"), 12 group cards with progress bars, 6 knockout sub-cards (locked until group stage ends), "🐙 Paul llena todo" CTA, "Descargar/Subir XLSX" secondary actions, "sin pagar" pill on the user's own profile chip if they haven't been marked paid |
 | Group drill-in | `/group/:groupId` | Fill 6 match scores | Header with back arrow, group label, 6 match rows (team-team + score boxes + 🐙 icon), tap-to-numpad behavior, "Guardar y volver" + "Siguiente: Grupo C →" |
 | Knockout drill-in | `/knockout/:roundId` | Fill knockout round picks | Same pattern as group drill-in; number of matches varies by round |
-| Ranking | `/ranking` | Standings | Tabs General / Por jornada, rank pos with medal colors for top 3, trend arrow (▲/▼/─), points, "you" row highlighted |
+| Ranking | `/ranking` | Standings | Tabs General / Por jornada, prize-split header strip ("Pot $480 · 1° 80% · 2° 15% · 3° 5%"), rank pos with medal colors for top 3, estimated payout chip ($-amount) next to top 3, trend arrow (▲/▼/─), points, "you" row highlighted |
 | Schedule + results | `/matches` | Match calendar | Tabs Pasados / Hoy / Próximos, day labels, match rows with kick-off time, live indicator (pulsing dot), score or "— : —", user's pick + ✓/✗ |
 | Compare | `/compare/:opponent?` | Head-to-head picks | Player picker, point gap chip, tabs Diferencias / Todo, 4-column table (match / you / them / actual) |
 | Admin results | `/admin/results` | Enter actual match results | Same chrome as schedule, score fields editable, save per match, fires the existing PL/pgSQL scoring trigger |
+| Admin payments | `/admin/payments` | Track money in, configure prizes | Two stacked sections: (1) prize-split editor — three percentage inputs that must sum to 100, "Frozen at kickoff" badge after lock; (2) ledger — table of players with paid toggle, amount, paid-at timestamp, free-text note (e.g. "Zelle ref 8821"), running total chip at top, CSV export button |
 
 ## Visual design system
 
@@ -149,13 +156,40 @@ Open app → bottom nav → **Partidos** → "Hoy" tab → see today's fixtures 
 - Cards: dark elevated background, 3px left border (gray idle, cyan when "done" / active)
 - Score chips and ranking numbers always monospace
 
+## Payments and prizes
+
+### Model
+
+- **Currency:** USD. Storage as integer cents (`amount_cents`) to avoid floating-point. Format with `Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })` regardless of UI locale — money is the same number for everyone, only labels around it translate.
+- **Entry fee:** single fixed amount per pool (default $20, configurable at pool creation). Stored on the `pool` row.
+- **Pot:** computed live as `SUM(payment.amount_cents) WHERE pool_id = … AND status = 'paid'`. Re-derived on every read; no cached aggregate to drift.
+- **Prize split:** three percentage rows in a `prize_split` table — `(pool_id, rank, percentage)`. Default `(1, 80), (2, 15), (3, 5)`. Constraint: percentages sum to 100. Editable in `/admin/payments` until `pool.locked_at`; UI disables the inputs and shows a "Frozen at kickoff" badge after lock.
+- **Eligibility:** any player who has submitted a bracket is on the ranking. Payment status doesn't gate play or rank. At payout time, the admin reconciles offline — if a top-3 finisher hasn't paid, the admin manually moves the prize to the next eligible player. The app does not auto-skip unpaid players.
+
+### Visibility
+
+- **Public** (every signed-in player): pot total, count of paid players ("24 jugadas pagas"), the three prize-split percentages, estimated payouts on the top 3 ranking rows.
+- **Self-only:** their own paid/unpaid state (a "sin pagar" pill on their profile chip in the lobby). Other players' payment status is not exposed.
+- **Admin-only:** the full payment ledger — every player's paid state, amount, timestamp, note. Live total. CSV export.
+
+### Tie handling for prize money
+
+Ties on points share rank (already specified above). For prize money: the tied players split the combined money of the ranks they occupy. Example: if 1st and 2nd tie at 142 points, they each get `(80% + 15%) / 2 = 47.5%` of the pot. If 2nd, 3rd, and 4th all tie, the 2nd-and-3rd money (`15% + 5% = 20%`) splits three ways. 4th place earns prize money in this case only because they tied into a paying rank.
+
+### Admin operations
+
+- Mark paid: toggle on the player row; sets `paid_at = now()`, `amount_cents = pool.entry_fee_cents` (overridable for partial / over payments).
+- Unmark paid: toggle off; sets `paid_at = null`. Audit-logged (`payment_history` table or `updated_at` + `updated_by`).
+- Refund: not a v1 button. Admin un-marks paid and notes the refund in the free-text payment note. v1.1 can formalize this.
+- Add a player who isn't on the invite list: not supported via this screen. Players must come in via `/join/:code`.
+
 ## Internationalization
 
 - Library: `next-intl` (or equivalent) — to be decided in implementation plan
 - Default locale: `es-CO`. Secondary: `en`. Structure supports adding more without code changes.
 - All user-facing strings extracted to message files from day one — no hardcoded Spanish.
 - Switcher placement: profile menu in the top bar (not bottom nav — too rare a change to deserve a tab slot).
-- Locale-sensitive formatting: dates and times via `Intl.DateTimeFormat`, numbers via `Intl.NumberFormat`. Scores stay as plain integers.
+- Locale-sensitive formatting: dates and times via `Intl.DateTimeFormat`. Money via `Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })` — the actual currency stays USD regardless of UI locale, only surrounding labels translate. Scores stay as plain integers.
 - Team names: stored once per `teams` row, translated at render via message keys `team.ESP`, `team.ITA`, etc. Flags are emojis, not images.
 
 ## Accessibility
@@ -175,6 +209,8 @@ Open app → bottom nav → **Partidos** → "Hoy" tab → see today's fixtures 
 - **Ranking refreshes on screen mount.** No live websocket for v1. The PL/pgSQL trigger keeps `quinielas.points` correct; the API just reads.
 - **Compare data fetching** can be heavy (104 rows × 2 players). Default tab is "Diferencias" to reduce payload feel; "Todo" loads on demand.
 - **Paul backend** is out of UI scope but the UI assumes: `POST /api/paul/suggest?match_id=…` returns `{ score_t1, score_t2, reasoning }`; `POST /api/paul/fill` returns a full bracket.
+- **Prize-split lock.** `pool.locked_at` is set at the same kickoff timestamp that locks brackets. After that timestamp, `/api/pool/prize-split` rejects writes (409); the admin UI mirrors with disabled inputs + "Frozen at kickoff" badge.
+- **Pot freshness.** Lobby and ranking re-fetch pot total on screen mount. No live updates — a player marked paid mid-session sees the new pot when they navigate.
 
 ## XLSX import/export contract
 
@@ -191,10 +227,13 @@ Open app → bottom nav → **Partidos** → "Hoy" tab → see today's fixtures 
 4. **Knockout fixture population:** is the admin entering "Spain advanced as A1" manually, or pulling from a public results feed? Affects admin UI scope.
 5. **Pool name:** "Quiniela Panas" hardcoded or configurable? Affects landing copy.
 6. **Avatar source:** Google profile pictures from Auth.js, or initials? Profile pictures need DOMAIN allowlisting in `next.config.ts`.
+7. **Entry fee setup:** seeded via SQL/Flyway, or set in a one-time pool-creation screen? v1 has a single pool so a Flyway seed is fine, but it locks in $20 (or whatever) unless we add a config row to edit.
+8. **Payment audit log:** is `payments.updated_at + updated_by` enough, or do we want a separate `payment_history` table with full event log (paid → un-paid → paid)? Affects refund/dispute traceability.
 
 ## Risks
 
-- **Scope vs deadline.** 9 must-have features in 17 days is tight. If anything slips, candidates for late deferral (in priority order): Compare picks → XLSX escape hatch → Admin UI (replace with SQL script). Bracket fill + Ranking + Schedule are non-negotiable.
+- **Scope vs deadline.** Adding payment tracking + prize config pushes the must-have list to roughly a dozen headline features in 17 days — tight. If anything slips, candidates for late deferral (in priority order): Compare picks → XLSX escape hatch → prize-split editor (hardcode 80/15/5 + ship without admin edit) → Admin results screen (replace with SQL). Bracket fill + Ranking + Schedule + payment ledger are non-negotiable.
+- **Money flow trust.** App tracks paid status but the actual money is in Zelle/cash. A mistake in the ledger creates real-world disputes. Mitigation: free-text note per payment, admin un-mark is auditable, CSV export so the admin can reconcile against bank statements weekly.
 - **Locking edge case.** A player mid-numpad-tap at the exact kickoff second could lose the score they were entering. Mitigation: server rejects writes past deadline with a clear toast; UI shows "Bloqueado en T-00:00:30" warning for the last minute.
 - **Live results latency.** No real-time feed in v1 — admin enters results manually. If admin is slow, ranking lags reality. Acceptable for a friends pool; communicate via WhatsApp.
 - **Style B coldness.** Broadcast/sportsbook aesthetic is striking but may feel less warm than a friends-and-family product expects. Mitigation: Spanish copy stays casual ("Que Paul llene todo", "¡Completo!"), avoid finance/poker jargon, lean into emoji where appropriate.
