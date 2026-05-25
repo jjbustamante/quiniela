@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { TopBar } from "@/components/shell/TopBar";
 
@@ -6,24 +7,27 @@ type SearchParams = { error?: string };
 
 /**
  * Auth.js routes here when sign-in fails (configured via pages.error in
- * lib/auth.ts). The error code arrives as ?error=<name>. We map known names
- * thrown by our jwt callback (NoInvite, BackendError, BackendUnreachable)
- * to translated messages; everything else falls back to "generic".
+ * lib/auth.ts). Auth.js's ?error= URL param normalizes to generic codes,
+ * so we read the more specific code from the authError cookie set by our
+ * jwt callback; the URL param is the fallback.
  */
 export default async function AuthErrorPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { error } = await searchParams;
+  const { error: urlError } = await searchParams;
+  const jar = await cookies();
+  const cookieError = jar.get("authError")?.value;
+  const code = cookieError ?? urlError;
   const t = await getTranslations("auth_error");
 
   const message =
-    error === "NoInvite"
+    code === "NoInvite"
       ? t("noInvite")
-      : error === "BackendError"
+      : code === "BackendError"
         ? t("backendError")
-        : error === "BackendUnreachable"
+        : code === "BackendUnreachable"
           ? t("backendUnreachable")
           : t("generic");
 
