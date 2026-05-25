@@ -57,5 +57,11 @@
     "copied": "Copied",
     "whatsapp": "Share via WhatsApp",
     "whatsappMessage": "Join my Quiniela Panas bracket for World Cup 2026 ⚽ {url}"
+  },
+  "numpad": {
+    "title": "Tap the score",
+    "presets": "Common scores",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
   }
 }

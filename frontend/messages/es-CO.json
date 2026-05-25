@@ -57,5 +57,11 @@
     "copied": "Copiado",
     "whatsapp": "Compartir por WhatsApp",
     "whatsappMessage": "Te invito a la Quiniela Panas para el Mundial 2026 ⚽ {url}"
+  },
+  "numpad": {
+    "title": "Marca el resultado",
+    "presets": "Marcadores frecuentes",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar"
   }
 }
