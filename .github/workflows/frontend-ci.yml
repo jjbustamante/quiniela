@@ -129,21 +129,60 @@ jobs:
       - name: Verify npm package signatures (Sigstore provenance)
         run: npm audit signatures
 
-  build-and-scan-image:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Build the image once locally, scan it with Trivy, then on push to master
+  # docker-push the SAME image and deploy. No double-build.
+  #   - PRs / other branches: build + scan only (local image, no registry).
+  #   - push to master: build + scan + push + deploy.
+  # ─────────────────────────────────────────────────────────────────────────
+  build-scan-deploy:
     needs: [unit-tests, e2e-tests, audit]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write          # OIDC token exchange (publish path only)
+      security-events: write   # SARIF upload (Trivy)
     steps:
       - uses: actions/checkout@v6
       - uses: buildpacks/github-actions/setup-pack@v5.12.3
         # Pin a specific tag — buildpacks/github-actions doesn't publish a floating v5 tag.
 
-      - name: Compute image tag
-        id: tag
-        run: echo "tag=ci-${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+      - uses: aquasecurity/setup-trivy@v0.2.6
+        with:
+          version: v0.70.0
+          cache: true
 
-      - name: pack build (no publish — Wave 2 will push to Artifact Registry)
+      # GCP auth — only needed when we'll push (master). Skipped on PRs so they
+      # don't require WIF setup just to validate.
+      - uses: google-github-actions/auth@v2
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+      - name: Configure Docker for Artifact Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Compute image ref
+        id: image
+        # On master: registry-qualified ref so `docker push` knows the destination.
+        # On PRs:    local-only ref scoped to this run.
         run: |
-          pack build "${IMAGE_NAME}:${{ steps.tag.outputs.tag }}" \
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            REF="${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GCP_AR_REPO }}/${{ env.IMAGE_NAME }}:${SHORT_SHA}"
+          else
+            REF="${{ env.IMAGE_NAME }}:ci-${SHORT_SHA}"
+          fi
+          echo "ref=${REF}" >> "$GITHUB_OUTPUT"
+
+      - name: pack build (local — no --publish; we docker-push after Trivy gate)
+        run: |
+          pack build "${{ steps.image.outputs.ref }}" \
             --builder "${CNB_BUILDER}" \
             --path frontend/
 
@@ -151,14 +190,9 @@ jobs:
       # on at least v0.36.0 (treats it like scan-all-severities), so we
       # install Trivy via setup-trivy and call the CLI directly. Stable,
       # debuggable, all flags reach Trivy verbatim.
-      - uses: aquasecurity/setup-trivy@v0.2.6
-        with:
-          version: v0.70.0
-          cache: true
-
       - name: Trivy image scan (one scan, table + sarif outputs)
         run: |
-          IMAGE="${IMAGE_NAME}:${{ steps.tag.outputs.tag }}"
+          IMAGE="${{ steps.image.outputs.ref }}"
 
           # One scan → JSON (no gate). Convert to table (for CI log
           # visibility) + sarif (for GH Security tab). Final --exit-code
@@ -191,54 +225,24 @@ jobs:
           sarif_file: trivy.sarif
           category: trivy-frontend
 
-  # ─────────────────────────────────────────────────────────────────────────
-  # Wave 2: publish image to Artifact Registry + deploy to Cloud Run.
-  # Runs only on push to main (not PRs).
-  # OIDC federation via google-github-actions/auth — no long-lived JSON keys.
-  # ─────────────────────────────────────────────────────────────────────────
-  publish-and-deploy:
-    needs: build-and-scan-image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write        # required for the GitHub OIDC token exchange
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: buildpacks/github-actions/setup-pack@v5.12.3
-
-      - uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SA }}
-
-      - uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
-
-      - name: Compute image ref
-        id: image
-        run: |
-          SHORT_SHA="${GITHUB_SHA:0:7}"
-          REF="${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GCP_AR_REPO }}/${{ env.IMAGE_NAME }}:${SHORT_SHA}"
-          echo "ref=${REF}" >> "$GITHUB_OUTPUT"
-
-      - name: pack build + publish
-        run: |
-          pack build "${{ steps.image.outputs.ref }}" \
-            --builder "${CNB_BUILDER}" \
-            --path frontend/ \
-            --publish
+      # Push the SAME image we just scanned. Only on master, only after Trivy passes.
+      - name: docker push to Artifact Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: docker push "${{ steps.image.outputs.ref }}"
 
       - name: Deploy to Cloud Run
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
           gcloud run deploy "${{ vars.GCP_WEB_SERVICE }}" \
             --image="${{ steps.image.outputs.ref }}" \
             --region="${{ vars.GCP_REGION }}" \
             --project="${{ vars.GCP_PROJECT_ID }}" \
             --quiet
+
+          URL=$(gcloud run services describe "${{ vars.GCP_WEB_SERVICE }}" \
+            --region="${{ vars.GCP_REGION }}" --project="${{ vars.GCP_PROJECT_ID }}" \
+            --format='value(status.url)')
+          echo "::notice::Frontend deployed to ${URL}"
 
           URL=$(gcloud run services describe "${{ vars.GCP_WEB_SERVICE }}" \
             --region="${{ vars.GCP_REGION }}" --project="${{ vars.GCP_PROJECT_ID }}" \

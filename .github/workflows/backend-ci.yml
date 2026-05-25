@@ -97,9 +97,19 @@ jobs:
           sarif_file: backend/target/dependency-check-report.sarif
           category: owasp-dc-backend
 
-  build-and-scan-image:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Build the image once locally, scan it with Trivy, then on push to master
+  # docker-push the SAME image and deploy. No double-build.
+  #   - PRs / other branches: build + scan only (local image, no registry).
+  #   - push to master: build + scan + push + deploy.
+  # ─────────────────────────────────────────────────────────────────────────
+  build-scan-deploy:
     needs: [unit-tests, integration-tests, owasp-dc]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write          # OIDC token exchange (publish path only)
+      security-events: write   # SARIF upload (Trivy)
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-java@v5
@@ -110,20 +120,48 @@ jobs:
       - uses: buildpacks/github-actions/setup-pack@v5.12.3
         # Pin a specific tag — buildpacks/github-actions doesn't publish a floating v5 tag.
 
-      - name: Compute image tag
-        id: tag
-        run: echo "tag=ci-${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+      - uses: aquasecurity/setup-trivy@v0.2.6
+        with:
+          version: v0.70.0
+          cache: true
 
-      - name: pack build (no publish — Wave 2 will push to Artifact Registry)
+      # GCP auth — only needed when we'll push (master). Skipped on PRs so they
+      # don't require WIF setup just to validate.
+      - uses: google-github-actions/auth@v2
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+      - name: Configure Docker for Artifact Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Compute image ref
+        id: image
+        # On master: registry-qualified ref so `docker push` knows the destination.
+        # On PRs:    local-only ref scoped to this run.
+        run: |
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            REF="${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GCP_AR_REPO }}/${{ env.IMAGE_NAME }}:${SHORT_SHA}"
+          else
+            REF="${{ env.IMAGE_NAME }}:ci-${SHORT_SHA}"
+          fi
+          echo "ref=${REF}" >> "$GITHUB_OUTPUT"
+
+      - name: pack build (local — no --publish; we docker-push after Trivy gate)
         # --descriptor reads backend/project.toml (builder, BP_JVM_VERSION,
         # BP_JVM_TYPE=JRE, BP_MAVEN_BUILD_ARGUMENTS that skip tests +
         # Spotless + OWASP DC since CI ran them in separate jobs already).
         # No --volume mount: Paketo's non-root user model rejects the
         # docker-created /home/cnb/.m2 parent; pack's internal cache
-        # layer covers single-run builds. (Cross-run caching via
-        # --cache-image is a follow-up once OIDC push is wired.)
+        # layer covers single-run builds.
         run: |
-          pack build "${IMAGE_NAME}:${{ steps.tag.outputs.tag }}" \
+          pack build "${{ steps.image.outputs.ref }}" \
             --descriptor backend/project.toml \
             --path backend/
 
@@ -131,14 +169,9 @@ jobs:
       # on at least v0.36.0 (treats it like scan-all-severities), so we
       # install Trivy via setup-trivy and call the CLI directly. Stable,
       # debuggable, all flags reach Trivy verbatim.
-      - uses: aquasecurity/setup-trivy@v0.2.6
-        with:
-          version: v0.70.0
-          cache: true
-
       - name: Trivy image scan (one scan, table + sarif outputs)
         run: |
-          IMAGE="${IMAGE_NAME}:${{ steps.tag.outputs.tag }}"
+          IMAGE="${{ steps.image.outputs.ref }}"
 
           # One scan → JSON (no gate). Convert to table (for CI log
           # visibility) + sarif (for GH Security tab). Final --exit-code
@@ -170,54 +203,13 @@ jobs:
           sarif_file: trivy.sarif
           category: trivy-backend
 
-  # ─────────────────────────────────────────────────────────────────────────
-  # Wave 2: publish image to Artifact Registry + deploy to Cloud Run.
-  # Runs only on push to main (not PRs, not workflow_dispatch by default).
-  # OIDC federation via google-github-actions/auth — no long-lived JSON keys.
-  # ─────────────────────────────────────────────────────────────────────────
-  publish-and-deploy:
-    needs: build-and-scan-image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write        # required for the GitHub OIDC token exchange
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: 'maven'
-
-      - uses: buildpacks/github-actions/setup-pack@v5.12.3
-
-      - uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SA }}
-
-      - uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
-
-      - name: Compute image ref
-        id: image
-        run: |
-          SHORT_SHA="${GITHUB_SHA:0:7}"
-          REF="${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GCP_AR_REPO }}/${{ env.IMAGE_NAME }}:${SHORT_SHA}"
-          echo "ref=${REF}" >> "$GITHUB_OUTPUT"
-
-      - name: pack build + publish
-        run: |
-          pack build "${{ steps.image.outputs.ref }}" \
-            --descriptor backend/project.toml \
-            --path backend/ \
-            --publish
+      # Push the SAME image we just scanned. Only on master, only after Trivy passes.
+      - name: docker push to Artifact Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: docker push "${{ steps.image.outputs.ref }}"
 
       - name: Deploy to Cloud Run
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: |
           gcloud run deploy "${{ vars.GCP_BACKEND_SERVICE }}" \
             --image="${{ steps.image.outputs.ref }}" \
