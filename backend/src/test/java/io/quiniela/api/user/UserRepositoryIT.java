@@ -27,4 +27,14 @@ class UserRepositoryIT extends AbstractIntegrationTest {
   void findByInvitePathReturnsEmptyForUnknown() {
     assertThat(users.findByInvitePath("does-not-exist")).isEmpty();
   }
+
+  @Test
+  void findByEmail() {
+    var u = new User("google-sub-2", "bob@example.com", "Bob", null, UserRole.PLAYER);
+    users.save(u);
+
+    var found = users.findByEmail("bob@example.com");
+    assertThat(found).isPresent();
+    assertThat(found.get().getDisplayName()).isEqualTo("Bob");
+  }
 }

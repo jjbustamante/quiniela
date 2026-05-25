@@ -1,7 +1,6 @@
 package io.quiniela.api.user;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,7 +31,6 @@ public class User {
   @Column(name = "avatar_url")
   private String avatarUrl;
 
-  @Convert(converter = UserRoleConverter.class)
   @Column(nullable = false)
   private UserRole role;
 
@@ -159,7 +157,11 @@ public class User {
    */
   @Deprecated
   public void setAdmin(boolean admin) {
-    if (admin) this.role = UserRole.ADMIN;
+    if (!admin) {
+      throw new UnsupportedOperationException(
+          "setAdmin(false) is not supported; use setRole(UserRole) — bridge removed in Task 5");
+    }
+    this.role = UserRole.ADMIN;
   }
 
   @Override
