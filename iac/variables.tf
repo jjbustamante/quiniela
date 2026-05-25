@@ -102,6 +102,6 @@ variable "cloudflare_zone_id" {
 }
 
 variable "custom_domain" {
-  description = "Apex domain for the web app, e.g. `quiniela.dpdns.org`. The api service gets `api.<this>` automatically."
+  description = "Apex domain for the web app, e.g. `laquinieladelospanas.com`. The api service is intentionally not mapped — it's only called server-side via .run.app."
   type        = string
 }

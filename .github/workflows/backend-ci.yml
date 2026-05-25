@@ -1,8 +1,8 @@
 # Backend CI — Spring Boot service at backend/.
 #
-# Wave 1 (current): build, test, scan locally. No image push, no deploy.
-# Wave 2 (deferred until quiniela.dpdns.org responds): add Artifact Registry
-# push via OIDC and gcloud run deploy step.
+# Wave 1: build, test, scan locally (unit + integration + OWASP DC + Trivy).
+# Wave 2: push to Artifact Registry via OIDC (WIF) + gcloud run deploy on
+#         push to master. PRs build + scan only.
 #
 # Applies the personal CI/CD plugin at brain/plugins/tech/spring-boot-cicd/.
 

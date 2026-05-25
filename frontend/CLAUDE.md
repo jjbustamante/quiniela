@@ -145,4 +145,4 @@ This frontend applies the personal CI/CD plugin at `brain/plugins/tech/nextjs-ci
 | `output: 'standalone'` | bare `next.config.ts` | Trust `next start` for CNB build (smaller-image standalone optimization deferred) |
 | `Procfile: node .next/standalone/server.js` | `Procfile: node node_modules/.bin/next start` | Non-standalone variant of the no-package-manager-at-runtime pattern |
 
-**Wave 2 deferred** until `quiniela.dpdns.org` is responding: Artifact Registry push (via OIDC federation) + `gcloud run deploy` step. See `brain/plugins/tech/nextjs-cicd/deployment/gcp-cloud-run.md` for the canonical recipe + the three Cloud Run gotchas (`HOSTNAME=0.0.0.0`, `PORT`, `next/image` memory).
+**Wave 2 applied 2026-05-24** — `.github/workflows/frontend-ci.yml` now builds → Trivy → pushes to Artifact Registry via OIDC (WIF) → `gcloud run deploy` on push to `master`. Custom domain `laquinieladelospanas.com` live. See `brain/plugins/tech/nextjs-cicd/deployment/gcp-cloud-run.md` for the canonical recipe + the three Cloud Run gotchas (`HOSTNAME=0.0.0.0`, `PORT`, `next/image` memory).

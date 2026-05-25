@@ -5,11 +5,8 @@
 #
 # The api service is intentionally NOT mapped to a custom domain. It's only
 # called server-side by the web service (which uses the .run.app URL via the
-# API_URL env var), so a friendly hostname adds no user value. We previously
-# tried `api.${var.custom_domain}` but dpdns.org's nameservers are
-# inconsistent on subdomain delegation — some serve the Cloudflare NS
-# referral, others return NXDOMAIN — which broke Cloud Run's ACME validator.
-# Not worth fighting; api stays on .run.app.
+# API_URL env var), so a friendly hostname adds no user value. Keeping api on
+# .run.app also avoids a second managed-cert provisioning loop.
 #
 # Flow:
 #   1. google_cloud_run_domain_mapping creates the mapping. Cloud Run starts
