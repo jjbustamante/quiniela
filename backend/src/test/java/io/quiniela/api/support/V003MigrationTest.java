@@ -18,7 +18,8 @@ class V003MigrationTest extends AbstractIntegrationTest {
     var columns =
         jdbc.queryForList(
             "SELECT column_name FROM information_schema.columns "
-                + "WHERE table_name = 'users' ORDER BY column_name",
+                + "WHERE table_name = 'users' AND table_schema = 'public' "
+                + "ORDER BY column_name",
             String.class);
 
     assertThat(columns).contains("role", "invited_by_user_id", "invite_path");
@@ -35,5 +36,10 @@ class V003MigrationTest extends AbstractIntegrationTest {
 
     assertThat(poolCount).isEqualTo(1L);
     assertThat(prizeCount).isEqualTo(3L);
+
+    Long sum =
+        jdbc.queryForObject(
+            "SELECT SUM(percentage) FROM prize_split WHERE pool_id = 1", Long.class);
+    assertThat(sum).isEqualTo(100L);
   }
 }

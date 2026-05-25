@@ -17,8 +17,8 @@ ALTER TABLE users ADD CONSTRAINT users_role_chk
 ALTER TABLE users ADD COLUMN invited_by_user_id BIGINT
   REFERENCES users(id) ON DELETE SET NULL;
 
-ALTER TABLE users ADD COLUMN invite_path VARCHAR(64) UNIQUE;
-CREATE INDEX idx_users_invite_path ON users(invite_path);
+ALTER TABLE users ADD COLUMN invite_path VARCHAR(64);
+CREATE UNIQUE INDEX idx_users_invite_path ON users(invite_path);
 
 -- ── pool ───────────────────────────────────────────────────────────────────
 
