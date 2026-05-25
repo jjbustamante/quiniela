@@ -15,25 +15,27 @@ export function BottomNav({ activeKey }: { activeKey?: BottomNavKey }) {
   return (
     <nav
       aria-label="primary"
-      className="fixed inset-x-0 bottom-0 flex border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-header)]"
+      className="fixed inset-x-0 bottom-0 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-header)]"
     >
-      {NAV.map(({ key, href }) => {
-        const isActive = key === activeKey;
-        return (
-          <Link
-            key={key}
-            href={href}
-            aria-current={isActive ? "page" : undefined}
-            className={`chrome-label flex flex-1 justify-center border-t-2 py-3 ${
-              isActive
-                ? "border-[var(--color-accent-cyan)] font-bold text-[var(--color-accent-cyan)]"
-                : "border-transparent text-[var(--color-text-muted)]"
-            }`}
-          >
-            {t(key)}
-          </Link>
-        );
-      })}
+      <div className="mx-auto flex w-full max-w-md sm:max-w-2xl lg:max-w-4xl">
+        {NAV.map(({ key, href }) => {
+          const isActive = key === activeKey;
+          return (
+            <Link
+              key={key}
+              href={href}
+              aria-current={isActive ? "page" : undefined}
+              className={`chrome-label flex flex-1 justify-center border-t-2 py-3 ${
+                isActive
+                  ? "border-[var(--color-accent-cyan)] font-bold text-[var(--color-accent-cyan)]"
+                  : "border-transparent text-[var(--color-text-muted)]"
+              }`}
+            >
+              {t(key)}
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }
