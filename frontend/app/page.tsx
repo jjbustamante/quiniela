@@ -1,3 +1,5 @@
+import { AuthButton } from "@/components/AuthButton";
+
 type HealthResult =
   | { state: "up"; status: string }
   | { state: "down"; status: string }
@@ -55,6 +57,8 @@ export default async function Home() {
           </p>
         )}
       </div>
+
+      <AuthButton />
     </main>
   );
 }

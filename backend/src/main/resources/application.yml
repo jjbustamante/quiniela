@@ -35,3 +35,21 @@ management:
       probes:
         enabled: true
       show-details: when-authorized
+
+# Application config — see SecurityConfig, AuthController, GoogleTokenService, JwtService.
+app:
+  # Comma-separated emails granted is_admin=true on Google sign-in.
+  # Tightening this list never demotes existing admins; only the DB does.
+  admin-emails: ${ADMIN_EMAILS:}
+
+  google:
+    # OAuth 2.0 Client ID (the *.apps.googleusercontent.com value). Used as
+    # the expected `aud` claim when verifying Google ID tokens. Set on the
+    # Cloud Run service via IaC (env AUTH_GOOGLE_ID).
+    oauth-client-id: ${AUTH_GOOGLE_ID:placeholder-for-local-dev.apps.googleusercontent.com}
+
+  security:
+    # HMAC HS256 signing key for the session JWTs we issue. MUST be ≥32 chars.
+    # Same value Auth.js uses for its own session cookie signing (NEXTAUTH_SECRET).
+    # Local dev gets a long throwaway placeholder; prod reads from Secret Manager.
+    jwt-secret: ${NEXTAUTH_SECRET:dev-only-jwt-secret-must-be-at-least-32-chars-long}

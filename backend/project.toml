@@ -21,6 +21,13 @@ value = "25"
 name = "BP_JVM_TYPE"
 value = "JRE"
 
+# Paketo's memory calculator assumes 250 threads × 1 MB stack by default.
+# A Spring Boot web app comfortably uses 50-100. Lower count reclaims
+# ~200 MB of stack budget so Heap + Metaspace fit a 1 GiB Cloud Run pod.
+[[io.buildpacks.build.env]]
+name = "BP_JVM_THREAD_COUNT"
+value = "50"
+
 # Image build = `mvn package` only. Skip the things CI runs in separate
 # parallel jobs (unit-tests, integration-tests, owasp-dc, spotless:check
 # is bound to the compile phase). Cuts ~3-5 min off the image-build step.

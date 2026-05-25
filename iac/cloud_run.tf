@@ -33,9 +33,14 @@ resource "google_cloud_run_v2_service" "api" {
       image = local.placeholder_image # deploy script overrides
 
       resources {
+        # Bumped to 1 GiB after adding Spring Security + OAuth2 RS + JJWT.
+        # Spring Boot 4 JRE container needs ~600-700 MB for Metaspace +
+        # CodeCache + heap floor; 512 MiB made Paketo's memory-calculator
+        # compute a negative max-heap → "failed to launch: memory-calculator".
+        # See backend/project.toml `BP_JVM_THREAD_COUNT=50` which also helps.
         limits = {
           cpu    = "1"
-          memory = "512Mi"
+          memory = "1Gi"
         }
         cpu_idle          = true # only bill CPU during requests
         startup_cpu_boost = true # faster Spring Boot cold start
@@ -53,6 +58,18 @@ resource "google_cloud_run_v2_service" "api" {
       env {
         name  = "SPRING_PROFILES_ACTIVE"
         value = "cloudrun"
+      }
+      # AUTH_GOOGLE_ID is the Google OAuth client ID; the api needs it to
+      # verify inbound ID tokens (validates the `aud` claim).
+      env {
+        name  = "AUTH_GOOGLE_ID"
+        value = var.google_oauth_client_id
+      }
+      # Comma-separated list of emails that get is_admin=true on first
+      # sign-in. Defaults to the project owner.
+      env {
+        name  = "ADMIN_EMAILS"
+        value = var.owner_email
       }
       env {
         name  = "CLOUDSQL_CONNECTION_NAME"
@@ -164,6 +181,12 @@ resource "google_cloud_run_v2_service" "web" {
       env {
         name  = "NODE_ENV"
         value = "production"
+      }
+      # Auth.js v5 behind Cloud Run's edge proxy: trust X-Forwarded-Host so
+      # OAuth callbacks resolve to the public URL, not the internal one.
+      env {
+        name  = "AUTH_TRUST_HOST"
+        value = "true"
       }
       # Server-side fetch URL — points at the api Cloud Run service.
       env {

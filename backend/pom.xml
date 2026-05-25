@@ -33,12 +33,26 @@
         <postgres-socket-factory.version>1.28.3</postgres-socket-factory.version>
         <grpc.version>1.79.0</grpc.version>
         <protobuf.version>4.34.2</protobuf.version>
+        <google-api-client.version>2.7.0</google-api-client.version>
+        <jjwt.version>0.12.7</jjwt.version>
 
         <!-- Build-plugin versions (externalized for visibility + atomic bumps) -->
         <spotless.version>2.46.1</spotless.version>
         <google-java-format.version>1.28.0</google-java-format.version>
         <jacoco.version>0.8.13</jacoco.version>
         <dependency-check.version>11.1.1</dependency-check.version>
+        <!-- Match flyway-core managed by spring-boot-starter-parent. Maven plugin
+             scope doesn't inherit dependency-management so we pin explicitly. -->
+        <flyway.version>11.20.3</flyway.version>
+
+        <!-- Flyway Maven plugin defaults — point at local docker-compose Postgres.
+             Override per-invocation: `./mvnw flyway:info -Dflyway.url=...`.
+             App-runtime migrations still run via Spring Boot's flyway-core
+             auto-config (see application.yml `spring.flyway.enabled: true`);
+             these properties only feed the standalone Maven plugin below. -->
+        <flyway.url>jdbc:postgresql://localhost:5432/quiniela</flyway.url>
+        <flyway.user>quiniela</flyway.user>
+        <flyway.password>dev</flyway.password>
     </properties>
 
     <!-- Force newer versions of transitive deps pulled in by
@@ -84,6 +98,46 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+        <!-- Spring Security 7 + OAuth2 Resource Server: validates inbound JWT
+             bearer tokens that we ourselves issue after Google sign-in. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
+        <!-- Google Identity ID token verification — for the inbound Google
+             OIDC token from the Next.js Auth.js callback. -->
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>${google-api-client.version}</version>
+        </dependency>
+
+        <!-- jjwt: issuing our own session JWT signed with NEXTAUTH_SECRET
+             (HMAC HS256). The resource server above validates incoming
+             tokens with the same key. -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -125,6 +179,38 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- Standalone Flyway CLI for local dev:
+                   ./mvnw flyway:info       — see what's applied vs pending
+                   ./mvnw flyway:migrate    — apply pending migrations (no app start)
+                   ./mvnw flyway:validate   — check files match applied checksums
+                   ./mvnw flyway:repair     — fix checksums after editing applied SQL
+                   ./mvnw flyway:clean      — DROP EVERYTHING (dev only!)
+                 Reads flyway.url / flyway.user / flyway.password from <properties>
+                 above; override on the CLI with -Dflyway.url=... when needed.
+                 Independent of Spring Boot's auto-config — both can coexist. -->
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <configuration>
+                    <locations>
+                        <location>filesystem:src/main/resources/db/migration</location>
+                    </locations>
+                    <baselineOnMigrate>true</baselineOnMigrate>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${postgresql.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.flywaydb</groupId>
+                        <artifactId>flyway-database-postgresql</artifactId>
+                        <version>${flyway.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <plugin>
