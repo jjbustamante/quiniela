@@ -126,6 +126,15 @@ BEGIN
     END LOOP;
 
     NEW.updated_at := NOW();
+
+    -- Maintain denormalized winner_id from the latest scores.
+    NEW.winner_id := CASE
+        WHEN NEW.score_t1 IS NULL OR NEW.score_t2 IS NULL THEN NULL
+        WHEN NEW.score_t1 > NEW.score_t2 THEN NEW.team_1_id
+        WHEN NEW.score_t2 > NEW.score_t1 THEN NEW.team_2_id
+        ELSE NULL  -- draw: no single winner; admin handles tie-breakers separately
+    END;
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

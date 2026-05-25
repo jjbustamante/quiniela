@@ -39,7 +39,9 @@ class V005MigrationTest extends AbstractIntegrationTest {
     var count =
         jdbc.queryForObject(
             "SELECT COUNT(*) FROM pg_trigger "
-                + "WHERE tgname = 'matches_score_update_trigger' AND NOT tgisinternal",
+                + "WHERE tgname = 'matches_score_update_trigger' "
+                + "AND tgrelid = 'match'::regclass "
+                + "AND NOT tgisinternal",
             Long.class);
     assertThat(count).isEqualTo(1L);
   }
