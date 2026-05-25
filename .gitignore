@@ -40,3 +40,6 @@ frontend/next-env.d.ts
 
 # Logs
 *.log
+
+# Brainstorming companion sessions
+.superpowers/
