@@ -95,5 +95,19 @@
     "presets": "Common scores",
     "confirm": "Confirm",
     "cancel": "Cancel"
+  },
+  "admin": {
+    "resultsTitle": "RESULTS",
+    "resultsSubtitle": "Record the actual final score for each match.",
+    "filterAll": "All",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "playedBadge": "Played",
+    "modifiedBadge": "Modified",
+    "errorSaving": "Save failed",
+    "kickoffShort": "{date} · {time}",
+    "scorePlaceholderT1": "T1",
+    "scorePlaceholderT2": "T2"
   }
 }

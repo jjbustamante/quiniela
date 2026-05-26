@@ -95,5 +95,19 @@
     "presets": "Marcadores frecuentes",
     "confirm": "Confirmar",
     "cancel": "Cancelar"
+  },
+  "admin": {
+    "resultsTitle": "RESULTADOS",
+    "resultsSubtitle": "Marca el marcador real de cada partido.",
+    "filterAll": "Todos",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Guardado",
+    "playedBadge": "Jugado",
+    "modifiedBadge": "Modificado",
+    "errorSaving": "Error al guardar",
+    "kickoffShort": "{date} · {time}",
+    "scorePlaceholderT1": "T1",
+    "scorePlaceholderT2": "T2"
   }
 }
