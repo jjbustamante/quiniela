@@ -2,6 +2,12 @@ import { defineConfig, devices } from '@playwright/test';
 
 // See brain/plugins/tech/nextjs-cicd/ci/e2e-tests.md.
 // Tests run against the PRODUCTION server (`next start`), NEVER `next dev`.
+//
+// Set PLAYWRIGHT_BASE_URL to point at an already-running server on a
+// custom port (e.g. http://localhost:3003) when 3000 is taken locally.
+// When set, Playwright reuses that server instead of starting its own.
+
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000';
 
 export default defineConfig({
   testDir: './e2e',
@@ -16,7 +22,7 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html']] : 'html',
 
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -33,7 +39,7 @@ export default defineConfig({
   // so failure modes there will surface — but the page should still render.
   webServer: {
     command: process.env.CI ? 'npm run build && npm start' : 'npm start',
-    url: 'http://localhost:3000',
+    url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
