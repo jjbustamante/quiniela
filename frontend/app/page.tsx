@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { AuthButton } from "@/components/AuthButton";
 import { PaulBadge } from "@/components/PaulMascot";
 import { StatCell } from "@/components/stats/StatCell";
-import { getPublicSummary } from "@/lib/api/summary";
+import { getPublicSummaryOrFallback } from "@/lib/api/summary";
 import {
   dateRangeShort,
   daysUntil,
@@ -25,7 +25,7 @@ export default async function Home() {
   const [t, tCommon, summary] = await Promise.all([
     getTranslations("landing"),
     getTranslations("common"),
-    getPublicSummary(),
+    getPublicSummaryOrFallback(),
   ]);
 
   const { tournament, pool } = summary;
