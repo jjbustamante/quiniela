@@ -100,6 +100,12 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
       - name: E2E tests (production server via webServer config)
+        # Auth.js refuses to load without a secret. Smoke tests don't sign in,
+        # but the module is imported by every server-rendered page, so we
+        # need a placeholder. NOT a real secret — the e2e job only renders
+        # public unauthenticated pages.
+        env:
+          AUTH_SECRET: e2e-placeholder-not-a-real-secret-do-not-trust
         run: pnpm exec playwright test
 
       - uses: actions/upload-artifact@v7
