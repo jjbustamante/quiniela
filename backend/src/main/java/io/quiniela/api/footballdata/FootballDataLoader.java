@@ -55,6 +55,11 @@ public class FootballDataLoader implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
+    // Runs unconditionally — idempotent (only touches rows where flag_emoji
+    // IS NULL). Catches missing-emoji rows from older loader runs that
+    // hardcoded NULL.
+    backfillFlagEmojis();
+
     if (!enabled) {
       log.info("football-data loader disabled (app.football-data.enabled=false)");
       return;
@@ -67,6 +72,33 @@ public class FootballDataLoader implements ApplicationRunner {
       load();
     } catch (Exception e) {
       log.warn("football-data load failed; team + match tables remain empty", e);
+    }
+  }
+
+  /**
+   * Backfill flag_emoji for any team row missing it. Idempotent — only updates rows where
+   * flag_emoji IS NULL. Safe to run on every startup.
+   */
+  @Transactional
+  void backfillFlagEmojis() {
+    java.util.List<java.util.Map<String, Object>> rows =
+        jdbc.queryForList(
+            "SELECT id, code FROM team WHERE flag_emoji IS NULL AND code IS NOT NULL");
+    int updated = 0;
+    int skipped = 0;
+    for (java.util.Map<String, Object> row : rows) {
+      String code = (String) row.get("code");
+      Long id = ((Number) row.get("id")).longValue();
+      String emoji = FlagEmojis.toEmoji(code);
+      if (emoji == null) {
+        skipped++;
+        continue;
+      }
+      jdbc.update("UPDATE team SET flag_emoji = ? WHERE id = ?", emoji, id);
+      updated++;
+    }
+    if (updated > 0 || skipped > 0) {
+      log.info("football-data loader: backfilled {} flag emojis ({} unmapped)", updated, skipped);
     }
   }
 
@@ -100,14 +132,16 @@ public class FootballDataLoader implements ApplicationRunner {
         String tla = t.tla() != null ? t.tla() : ("X" + t.id());
         String name = t.name() != null ? t.name() : tla;
         String groupCode = groupByTeam.get(t.id());
+        String flagEmoji = FlagEmojis.toEmoji(tla);
         jdbc.update(
             "INSERT INTO team (id, tournament_id, code, name, group_code, flag_emoji) "
-                + "VALUES (?, ?, ?, ?, ?, NULL) ON CONFLICT (id) DO NOTHING",
+                + "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING",
             t.id(),
             TOURNAMENT_ID,
             tla,
             name,
-            groupCode);
+            groupCode,
+            flagEmoji);
         teamsInserted++;
       }
     }
