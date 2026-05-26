@@ -5,9 +5,21 @@ import { useLocale, useTranslations } from "next-intl";
 
 const PRESETS = ["1-0", "2-1", "0-0", "1-1", "2-0", "0-1"] as const;
 
+export type MatchContext = {
+  team1Name: string | null;
+  team1Flag: string | null;
+  team2Name: string | null;
+  team2Flag: string | null;
+};
+
+type CommonProps = {
+  onCancel: () => void;
+  match?: MatchContext;
+};
+
 type Props =
-  | { side: "t1" | "t2"; onConfirm: (n: number) => void; onCancel: () => void }
-  | { side: "both"; onConfirm: (s: { t1: number; t2: number }) => void; onCancel: () => void };
+  | (CommonProps & { side: "t1" | "t2"; onConfirm: (n: number) => void })
+  | (CommonProps & { side: "both"; onConfirm: (s: { t1: number; t2: number }) => void });
 
 export function NumpadScoreInput(props: Props) {
   const t = useTranslations("numpad");
@@ -75,7 +87,21 @@ export function NumpadScoreInput(props: Props) {
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-md rounded-t-2xl border-t-2 border-[var(--color-border-accent)] bg-[#111c2e] p-5 shadow-2xl shadow-[var(--color-accent-cyan)]/20 sm:rounded-2xl sm:border-2 sm:border-t-2"
       >
-        <h2 className="chrome-label text-[var(--color-accent-cyan)]">{t("title")}</h2>
+        {props.match ? (
+          <div className="flex items-center justify-center gap-3 text-sm font-bold text-[var(--color-text-primary)]">
+            <span className="flex-1 text-right">
+              {props.match.team1Flag && <span className="mr-1">{props.match.team1Flag}</span>}
+              {props.match.team1Name}
+            </span>
+            <span className="chrome-label text-[var(--color-accent-cyan)]">vs</span>
+            <span className="flex-1 text-left">
+              {props.match.team2Name}
+              {props.match.team2Flag && <span className="ml-1">{props.match.team2Flag}</span>}
+            </span>
+          </div>
+        ) : (
+          <h2 className="chrome-label text-[var(--color-accent-cyan)]">{t("title")}</h2>
+        )}
 
         <div className="mt-4">
           <div className="chrome-label">{t("presets")}</div>

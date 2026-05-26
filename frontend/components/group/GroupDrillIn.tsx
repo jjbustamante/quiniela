@@ -35,18 +35,32 @@ export function GroupDrillIn({
           />
         ))}
       </div>
-      {editing && (
-        <NumpadScoreInput
-          side="both"
-          onConfirm={(s) =>
-            startTransition(() => {
-              saveBetAction(editing.matchId, s.t1, s.t2, groupId);
-              setEditing(null);
-            })
-          }
-          onCancel={() => setEditing(null)}
-        />
-      )}
+      {editing &&
+        (() => {
+          const editingMatch = matches.find((m) => m.id === editing.matchId);
+          return (
+            <NumpadScoreInput
+              side="both"
+              match={
+                editingMatch
+                  ? {
+                      team1Name: editingMatch.team1Name,
+                      team1Flag: editingMatch.team1Flag,
+                      team2Name: editingMatch.team2Name,
+                      team2Flag: editingMatch.team2Flag,
+                    }
+                  : undefined
+              }
+              onConfirm={(s) =>
+                startTransition(() => {
+                  saveBetAction(editing.matchId, s.t1, s.t2, groupId);
+                  setEditing(null);
+                })
+              }
+              onCancel={() => setEditing(null)}
+            />
+          );
+        })()}
     </>
   );
 }
