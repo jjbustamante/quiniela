@@ -55,14 +55,17 @@ public class FootballDataLoader implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
-    // Runs unconditionally — idempotent (only touches rows where flag_emoji
-    // IS NULL). Catches missing-emoji rows from older loader runs that
-    // hardcoded NULL.
-    backfillFlagEmojis();
-
     if (!enabled) {
       log.info("football-data loader disabled (app.football-data.enabled=false)");
       return;
+    }
+    // Backfill flag_emoji for any team rows missing it. Idempotent.
+    // Guarded behind `enabled` so the H2 smoke test (Flyway disabled, no
+    // team table) doesn't try to query a missing relation.
+    try {
+      backfillFlagEmojis();
+    } catch (Exception e) {
+      log.warn("football-data backfill failed; flag emojis may be missing", e);
     }
     if (teams.count() > 0) {
       log.info("football-data loader skipped (team table already populated)");
