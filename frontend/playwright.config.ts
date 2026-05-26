@@ -38,7 +38,9 @@ export default defineConfig({
   // The landing page fetches the backend's /actuator/health as a Server Component,
   // so failure modes there will surface — but the page should still render.
   webServer: {
-    command: process.env.CI ? 'npm run build && npm start' : 'npm start',
+    // Use pnpm in both modes — `npm run` reads .npmrc and warns about
+    // pnpm-only keys (node-linker). The repo is pnpm-managed end to end.
+    command: process.env.CI ? 'pnpm build && pnpm start' : 'pnpm start',
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

@@ -53,7 +53,10 @@ export async function getPublicSummaryOrFallback(): Promise<PublicSummary> {
   try {
     return await getPublicSummary();
   } catch (err) {
-    console.warn("[summary] backend unreachable, using fallback", err);
+    // One-line log on purpose — the stack adds noise to the e2e log without
+    // saying anything useful (fetch failed → ECONNREFUSED is self-evident).
+    const reason = err instanceof Error ? err.message : String(err);
+    console.warn(`[summary] backend unreachable (${reason}); using fallback`);
     return FALLBACK;
   }
 }

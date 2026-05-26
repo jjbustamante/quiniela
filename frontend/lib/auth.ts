@@ -22,6 +22,12 @@ async function setAuthErrorCookie(code: string) {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [Google],
+  // Cloud Run terminates TLS at the load balancer; Auth.js's default host
+  // check rejects requests whose Host header doesn't match AUTH_URL.
+  // trustHost delegates host validation to the platform (Cloud Run only
+  // routes to us via the configured custom domain). Also silences the
+  // UntrustedHost noise on localhost in e2e + dev.
+  trustHost: true,
   // Surface backend rejections on a friendly Spanish page instead of the
   // default Auth.js generic error screen. The error type is appended as
   // ?error=<code> by Auth.js — we read it server-side to pick a message.
