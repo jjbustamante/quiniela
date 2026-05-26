@@ -1,27 +1,53 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── Broadcast / sportsbook palette ─────────────────────────────────── */
-  --color-bg-primary: #0a0e1a;
-  --color-bg-elevated: #0f172a;
-  --color-bg-header: #000814;
-  --color-border-subtle: #1e293b;
-  --color-border-accent: #00d4ff;
-  --color-text-primary: #e2e8f0;
-  --color-text-muted: #94a3b8;
-  --color-accent-cyan: #00d4ff;
-  --color-accent-purple: #a855f7;
-  --color-state-good: #22c55e;
-  --color-state-bad: #ef4444;
-  --color-state-warning: #fbbf24;
+  /* ── Estadio '26 palette ──────────────────────────────────────────── */
+  /* Warm off-white paper, deep ink, host-country tri-color accents.    */
 
-  /* Typography */
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, "SFMono-Regular", "Menlo", monospace;
+  /* Surfaces */
+  --color-bg-primary: #fef9f1;
+  --color-bg-paper: #ffffff;
+  --color-bg-ink: #0a0a0a;
+  --color-bg-header: #0a0a0a;
+  --color-bg-elevated: #ffffff;
 
-  /* Sizing tokens for phone-first density */
-  --radius-card: 0.5rem;
+  /* Text */
+  --color-text-primary: #0a0a0a;
+  --color-text-muted: #6b6b6b;
+  --color-text-inverse: #fef9f1;
+
+  /* Lines */
+  --color-line-subtle: #e7e3da;
+  --color-line-ink: #0a0a0a;
+  --color-border-subtle: #e7e3da;
+  --color-border-accent: #0a0a0a;
+
+  /* Host-country tri-color (used as the stripe + accent palette) */
+  --color-accent-red: #dc2626;
+  --color-accent-blue: #1e40af;
+  --color-accent-green: #047857;
+  --color-accent-gold: #fbbf24;
+
+  /* Primary accent — defaults to red; flip by setting --color-accent on body */
+  --color-accent: var(--color-accent-red);
+  --color-accent-cyan: var(--color-accent-red);   /* legacy alias */
+  --color-accent-purple: var(--color-accent-red); /* legacy alias */
+
+  /* Semantic states */
+  --color-state-good: var(--color-accent-green);
+  --color-state-bad: var(--color-accent-red);
+  --color-state-warning: var(--color-accent-gold);
+
+  /* Typography — Google Fonts loaded via <link> in app/layout.tsx <head>. */
+  --font-display: "Big Shoulders Display", "Impact", system-ui, sans-serif;
+  --font-sans: "Archivo", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Shapes — sharp poster look; ink borders, not pillows */
+  --radius-card: 0;
+  --radius-chip: 0;
   --radius-pill: 9999px;
+  --border-poster: 1.5px;
 }
 
 /* Bare element resets */
@@ -29,19 +55,57 @@ html, body {
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Monospace numerals where it matters (scores, pot, countdown) */
+/* Tabular numerals where it matters (scores, pot, countdown) */
 .font-mono-num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
-/* Uppercase chrome utility */
+/* Uppercase mono chrome label — typographic vocabulary only. Color and
+   size are the caller's responsibility (or pair with `.chrome-label-muted`
+   for the gray default). Baking color/size here makes inline Tailwind
+   utilities silently lose the specificity fight (the .poster trap). */
 .chrome-label {
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;       /* 10px */
   font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Default chrome-label color: secondary metadata gray. Use alongside
+   `.chrome-label` for the most common case (kickoff times, group counts,
+   section subheads). Drop this class when you want to override color. */
+.chrome-label-muted {
   color: var(--color-text-muted);
 }
+
+/* Big display headline — condensed, ink-black, tight tracking */
+.headline-display {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+/* Poster border — sharp rectangle outlined in ink. Use as the standard
+   container vocabulary instead of soft rounded cards. Background is the
+   caller's responsibility (Tailwind utilities lose specificity against a
+   plain selector, so baking a bg here silently hides any inline bg-*). */
+.poster {
+  border: var(--border-poster) solid var(--color-line-ink);
+}
+
+/* Host-country stripe — green/red/blue band placed under top bars */
+.stripe-host {
+  display: flex;
+  height: 5px;
+}
+.stripe-host > :nth-child(1) { background: var(--color-accent-green); flex: 1; }
+.stripe-host > :nth-child(2) { background: var(--color-accent-red); flex: 1; }
+.stripe-host > :nth-child(3) { background: var(--color-accent-blue); flex: 1; }

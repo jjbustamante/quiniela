@@ -2,23 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { PosterChip } from "@/components/stats/PosterChip";
+import { daysUntil } from "@/lib/tournament-format";
 
-const KICKOFF = new Date("2026-06-11T17:00:00Z").getTime();
-
-export function CountdownChip() {
+/**
+ * Countdown poster chip — black chip with the day count in big condensed
+ * type. Updates once a minute (a day-resolution counter doesn't need
+ * second-resolution ticks).
+ */
+export function CountdownChip({ kickoffDate }: { kickoffDate: string }) {
   const t = useTranslations("lobby");
-  const [days, setDays] = useState(daysUntil());
+  const [days, setDays] = useState(() => daysUntil(kickoffDate));
   useEffect(() => {
-    const id = setInterval(() => setDays(daysUntil()), 60_000);
+    const id = setInterval(() => setDays(daysUntil(kickoffDate)), 60_000);
     return () => clearInterval(id);
-  }, []);
+  }, [kickoffDate]);
   return (
-    <span className="font-mono-num text-xs text-[var(--color-accent-cyan)] border border-[var(--color-border-accent)] rounded px-2 py-1">
-      {t("countdown", { days })}
-    </span>
+    <PosterChip
+      value={days}
+      label={t("countdownLabel")}
+      tone="ink"
+      labelClassName="text-[var(--color-accent-gold)]"
+    />
   );
-}
-
-function daysUntil() {
-  return Math.max(0, Math.ceil((KICKOFF - Date.now()) / (1000 * 60 * 60 * 24)));
 }

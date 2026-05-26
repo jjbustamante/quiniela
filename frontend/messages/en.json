@@ -7,7 +7,18 @@
   },
   "landing": {
     "title": "Quiniela 2026",
-    "subtitle": "The friends-and-family bracket for the World Cup. ⚽ Kickoff: June 11."
+    "subtitle": "The friends-and-family bracket for the World Cup. ⚽ Kickoff: June 11.",
+    "established": "EST. 2010",
+    "kicker": "WORLD CUP EDITION · {days} DAYS",
+    "headlinePart1": "WHO",
+    "headlineAccent": "KNOWS BALL",
+    "headlinePart2": "BEST AMONG YOUR FRIENDS?",
+    "body": "The friends bracket for <strong>{hosts}</strong>. Call {matches} matches, beat Paul the Octopus, take the pot.",
+    "statPanas": "PLAYERS",
+    "statKickoff": "TO KICKOFF",
+    "kickoffDays": "{days}D",
+    "inviteOnlyTitle": "Invite-only.",
+    "inviteOnlyBody": "Ask someone already in to share their personal link."
   },
   "invite": {
     "invitedBy": "{name} invited you to Quiniela Panas",
@@ -16,17 +27,32 @@
     "invalidHelp": "Double-check the link with whoever sent it."
   },
   "lobby": {
-    "title": "My bracket",
-    "potChip": "Pot: {pot} · {paid} paid",
+    "title": "MY BRACKET",
+    "potChipPaid": "{paid} PAID",
     "countdown": "{days} days to first match",
+    "countdownLabel": "DAYS · KICKOFF",
+    "countdownTitle": "COUNTDOWN",
+    "countdownHeadline": "DAYS UNTIL\nKICKOFF",
+    "countdownMeta": "{date} · {venue}",
     "groupsHeading": "Group stage",
+    "groupsCount": "GROUPS",
     "knockoutsHeading": "Knockouts",
-    "knockoutsLocked": "Unlocks after group stage",
-    "askPaulFillAll": "🐙 Let Paul fill everything",
+    "knockoutsLocked": "Opens after the group stage.",
+    "knockoutsLockedHeadline": "R16 · QFs · SFs · FINAL",
+    "knockoutsOpen": "Knockouts open — enter your bracket.",
+    "statPot": "POT",
+    "statPaid": "PAID",
+    "statProgress": "FILLED",
+    "askPaulFillAll": "PAUL FILLS IT ALL",
     "downloadXlsx": "⬇ Download template",
     "uploadXlsx": "⬆ Upload template",
-    "inviteFriends": "Invite friends",
+    "inviteFriends": "INVITE",
     "unpaidPill": "Unpaid"
+  },
+  "group": {
+    "matchesHeading": "YOUR PICKS · {count} MATCHES",
+    "paulDecide": "LET PAUL DECIDE",
+    "paulChange": "CHANGE · PAUL"
   },
   "nav": {
     "myQuiniela": "My Bracket",
@@ -40,17 +66,25 @@
     "backendError": "The server had a problem. Try again in a moment.",
     "backendUnreachable": "We couldn't reach the server. Check your connection and try again.",
     "generic": "Something went wrong signing in. Please try again.",
+    "genericHeadline": "SOMETHING WENT WRONG.",
+    "privateHeadlinePart1": "THIS ONE'S",
+    "privateHeadlineAccent": "PRIVATE.",
+    "whyTitle": "WHY?",
+    "whyBody": "Each bracket has its own ruleset and roster. Personal links keep out crashers — and keep the pot honest.",
     "backToHome": "Back to home"
   },
   "placeholder": {
     "comingSoon": "Coming soon",
+    "rankingHeadline": "THE TABLE,\nCOMING SOON.",
+    "matchesHeadline": "THE FIXTURE,\nLOADING.",
+    "compareHeadline": "DUELS,\nCOMING SOON.",
     "rankingHelp": "Standings appear once the tournament kicks off.",
     "matchesHelp": "Matches appear once the World Cup fixture is loaded.",
     "compareHelp": "Compare your bracket against your friends."
   },
   "invite_sheet": {
     "title": "Invite a friend",
-    "linkLabel": "Your personal link",
+    "linkLabel": "YOUR PERSONAL LINK",
     "copy": "Copy",
     "copied": "Copied",
     "whatsapp": "Share via WhatsApp",

@@ -1,13 +1,24 @@
 {
   "common": {
     "appName": "Quiniela Panas",
-    "signIn": "Iniciar sesión con Google",
+    "signIn": "Entrar con Google",
     "signOut": "Cerrar sesión",
     "loading": "Cargando…"
   },
   "landing": {
     "title": "Quiniela 2026",
-    "subtitle": "La quiniela de los panas para el Mundial. ⚽ Pitazo inicial: 11 de junio."
+    "subtitle": "La quiniela de los panas para el Mundial. ⚽ Pitazo inicial: 11 de junio.",
+    "established": "EST. 2010",
+    "kicker": "EDICIÓN MUNDIAL · {days} DÍAS",
+    "headlinePart1": "¿QUIÉN",
+    "headlineAccent": "SABE MÁS",
+    "headlinePart2": "DE FÚTBOL ENTRE TUS PANAS?",
+    "body": "La quiniela del Mundial <strong>{hosts}</strong>. Marca los {matches} partidos, gánale a Paul el Pulpo, llévate el pot.",
+    "statPanas": "PANAS",
+    "statKickoff": "PITAZO",
+    "kickoffDays": "{days}D",
+    "inviteOnlyTitle": "Solo con invitación.",
+    "inviteOnlyBody": "Pídele a un pana que ya esté adentro su enlace personal."
   },
   "invite": {
     "invitedBy": "{name} te invitó a la Quiniela Panas",
@@ -16,17 +27,32 @@
     "invalidHelp": "Verifica el enlace con quien te invitó."
   },
   "lobby": {
-    "title": "Mi quiniela",
-    "potChip": "Pot: {pot} · {paid} pagas",
+    "title": "MI QUINIELA",
+    "potChipPaid": "{paid} PAGAS",
     "countdown": "{days} días hasta el primer partido",
+    "countdownLabel": "DÍAS · PITAZO",
+    "countdownTitle": "CUENTA REGRESIVA",
+    "countdownHeadline": "DÍAS PARA\nEL PITAZO",
+    "countdownMeta": "{date} · {venue}",
     "groupsHeading": "Fase de grupos",
+    "groupsCount": "GRUPOS",
     "knockoutsHeading": "Eliminatorias",
-    "knockoutsLocked": "Se abre tras la fase de grupos",
-    "askPaulFillAll": "🐙 Que Paul llene todo",
+    "knockoutsLocked": "Se abre tras la fase de grupos.",
+    "knockoutsLockedHeadline": "OCTAVOS · CUARTOS · SEMIS · FINAL",
+    "knockoutsOpen": "Eliminatorias abiertas — entra a tu llave.",
+    "statPot": "POT",
+    "statPaid": "PAGAS",
+    "statProgress": "LISTOS",
+    "askPaulFillAll": "PAUL LLENA TODO",
     "downloadXlsx": "⬇ Descargar plantilla",
     "uploadXlsx": "⬆ Subir plantilla",
-    "inviteFriends": "Invitar amigos",
+    "inviteFriends": "INVITAR",
     "unpaidPill": "Sin pagar"
+  },
+  "group": {
+    "matchesHeading": "TUS MARCADORES · {count} PARTIDOS",
+    "paulDecide": "PAUL DECIDE",
+    "paulChange": "CAMBIAR · PAUL"
   },
   "nav": {
     "myQuiniela": "Mi Quiniela",
@@ -40,17 +66,25 @@
     "backendError": "El servidor tuvo un problema. Intenta de nuevo en un momento.",
     "backendUnreachable": "No pudimos contactar al servidor. Verifica tu conexión e intenta de nuevo.",
     "generic": "Algo salió mal al iniciar sesión. Intenta de nuevo.",
+    "genericHeadline": "ALGO SALIÓ MAL.",
+    "privateHeadlinePart1": "ESTA",
+    "privateHeadlineAccent": "ES PRIVADA.",
+    "whyTitle": "POR QUÉ?",
+    "whyBody": "Cada quiniela tiene aforo y reglas. Los enlaces personales evitan polizones — y mantienen el pot honesto.",
     "backToHome": "Volver al inicio"
   },
   "placeholder": {
     "comingSoon": "Próximamente",
+    "rankingHeadline": "LA TABLA,\nMUY PRONTO.",
+    "matchesHeadline": "EL FIXTURE,\nEN CARGA.",
+    "compareHeadline": "DUELOS,\nMUY PRONTO.",
     "rankingHelp": "La tabla de posiciones aparece cuando arranca el torneo.",
     "matchesHelp": "Los partidos aparecen cuando se cargue el fixture del Mundial.",
     "compareHelp": "Compara tu quiniela contra la de tus amigos."
   },
   "invite_sheet": {
-    "title": "Invita a un amigo",
-    "linkLabel": "Tu enlace personal",
+    "title": "Invita a un pana",
+    "linkLabel": "TU ENLACE PERSONAL",
     "copy": "Copiar",
     "copied": "Copiado",
     "whatsapp": "Compartir por WhatsApp",

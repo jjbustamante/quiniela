@@ -1,13 +1,17 @@
 import { useTranslations } from "next-intl";
+import { PosterChip } from "@/components/stats/PosterChip";
 
-export function PotChip({ potCents, paidCount }: { potCents: number; paidCount: number }) {
+/**
+ * Pot poster chip — gold chip with the dollar amount in display type and
+ * the pana count in mono next to it.
+ */
+export function PotChip({ pot, panaCount }: { pot: string; panaCount: number }) {
   const t = useTranslations("lobby");
-  const pot = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-    potCents / 100,
-  );
   return (
-    <span className="font-mono-num text-xs text-[var(--color-state-good)] border border-[var(--color-border-subtle)] rounded px-2 py-1">
-      {t("potChip", { pot, paid: paidCount })}
-    </span>
+    <PosterChip
+      value={pot}
+      label={t("potChipPaid", { paid: panaCount })}
+      tone="gold"
+    />
   );
 }

@@ -2,9 +2,9 @@ import { auth, signIn, signOut } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
 
 /**
- * Server Component. Renders either a sign-in or sign-out form depending on
- * the current session. Uses server actions for the form submit — no client
- * JS needed for the auth flow itself.
+ * Server Component. Renders either a poster-style Google sign-in button
+ * or a sign-out form depending on session. Server actions on submit —
+ * no client JS for the auth flow.
  */
 export async function AuthButton() {
   const session = await auth();
@@ -19,7 +19,7 @@ export async function AuthButton() {
         }}
         className="flex items-center gap-3"
       >
-        <div className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+        <div className="flex items-center gap-2 text-sm text-[var(--color-text-primary)]">
           {session.user.image && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -30,16 +30,16 @@ export async function AuthButton() {
               className="rounded-full"
             />
           )}
-          <span>{session.user.name ?? session.user.email}</span>
+          <span className="font-medium">{session.user.name ?? session.user.email}</span>
           {session.role === "ADMIN" && (
-            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900/30 dark:text-amber-200">
-              admin
+            <span className="chrome-label bg-[var(--color-accent-gold)] px-2 py-0.5 text-[var(--color-text-primary)]">
+              ADMIN
             </span>
           )}
         </div>
         <button
           type="submit"
-          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+          className="font-mono-num text-xs font-bold uppercase tracking-[0.12em] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
         >
           {t("signOut")}
         </button>
@@ -56,13 +56,13 @@ export async function AuthButton() {
     >
       <button
         type="submit"
-        className="inline-flex items-center gap-2 rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+        className="flex w-full items-center justify-center gap-3 bg-[var(--color-bg-ink)] px-4 py-4 font-display text-lg font-black uppercase tracking-wide text-[var(--color-text-inverse)] hover:bg-black"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            fill="currentColor"
-            d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z"
-          />
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#fff" d="M22.5 12.3c0-.8-.1-1.5-.2-2.3H12v4.3h5.9c-.3 1.4-1 2.6-2.2 3.4v2.8h3.6c2.1-2 3.2-4.8 3.2-8.2z" />
+          <path fill="#fff" d="M12 23c2.9 0 5.3-1 7.1-2.6l-3.6-2.8c-1 .7-2.3 1.1-3.5 1.1-2.7 0-5-1.8-5.8-4.3H2.4v2.8C4.2 20.6 7.9 23 12 23z" />
+          <path fill="#fff" d="M6.2 14.5c-.2-.7-.3-1.4-.3-2 0-.7.1-1.4.3-2v-2.8H2.4C1.6 9.3 1 10.6 1 12s.6 2.7 1.4 4.3l3.8-1.8z" />
+          <path fill="#fff" d="M12 5.5c1.5 0 2.9.5 4 1.5l3-3C17.3 2.4 14.9 1 12 1 7.9 1 4.2 3.4 2.4 7l3.8 2.8c.8-2.5 3.1-4.3 5.8-4.3z" />
         </svg>
         {t("signIn")}
       </button>

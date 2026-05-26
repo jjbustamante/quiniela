@@ -10,12 +10,17 @@ const NAV: ReadonlyArray<{ key: BottomNavKey; href: string }> = [
   { key: "compare", href: "/compare" },
 ];
 
+/**
+ * Estadio '26 bottom nav — black bar, gold top-border on active tab.
+ * Stays mobile-first (max-width container) so it doesn't span an
+ * entire desktop window.
+ */
 export function BottomNav({ activeKey }: { activeKey?: BottomNavKey }) {
   const t = useTranslations("nav");
   return (
     <nav
       aria-label="primary"
-      className="fixed inset-x-0 bottom-0 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-header)]"
+      className="fixed inset-x-0 bottom-0 z-30 bg-[var(--color-bg-ink)] pb-[env(safe-area-inset-bottom)]"
     >
       <div className="mx-auto flex w-full max-w-md">
         {NAV.map(({ key, href }) => {
@@ -25,10 +30,10 @@ export function BottomNav({ activeKey }: { activeKey?: BottomNavKey }) {
               key={key}
               href={href}
               aria-current={isActive ? "page" : undefined}
-              className={`chrome-label flex flex-1 justify-center border-t-2 py-3 ${
+              className={`flex flex-1 items-center justify-center border-t-[3px] py-3 font-display text-xs font-bold uppercase tracking-[0.04em] ${
                 isActive
-                  ? "border-[var(--color-accent-cyan)] font-bold text-[var(--color-accent-cyan)]"
-                  : "border-transparent text-[var(--color-text-muted)]"
+                  ? "border-[var(--color-accent-gold)] text-[var(--color-accent-gold)]"
+                  : "border-transparent text-white/55 hover:text-white/80"
               }`}
             >
               {t(key)}

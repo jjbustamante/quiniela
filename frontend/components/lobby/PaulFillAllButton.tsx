@@ -2,8 +2,13 @@
 
 import { useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { PaulBadge } from "@/components/PaulMascot";
 import { paulFillAllAction } from "@/app/home/actions";
 
+/**
+ * Hero CTA — red poster, Paul badge + uppercase display label. Used in the
+ * lobby's action row.
+ */
 export function PaulFillAllButton() {
   const t = useTranslations("lobby");
   const [pending, start] = useTransition();
@@ -12,8 +17,9 @@ export function PaulFillAllButton() {
       type="button"
       onClick={() => start(() => paulFillAllAction())}
       disabled={pending}
-      className="w-full rounded-md border border-[var(--color-accent-purple)] bg-[var(--color-accent-purple)]/10 py-3 chrome-label text-[var(--color-accent-purple)] hover:bg-[var(--color-accent-purple)]/20 disabled:opacity-50"
+      className="flex w-full items-center justify-center gap-2.5 bg-[var(--color-accent-red)] px-4 py-3.5 font-display text-sm font-extrabold uppercase tracking-[0.04em] text-[var(--color-text-inverse)] disabled:opacity-50 hover:bg-[var(--color-bg-ink)]"
     >
+      <PaulBadge size={22} />
       {t("askPaulFillAll")}
     </button>
   );

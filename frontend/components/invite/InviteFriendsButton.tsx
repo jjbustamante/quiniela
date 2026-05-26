@@ -6,6 +6,10 @@ import { InviteFriendsSheet } from "./InviteFriendsSheet";
 
 type Role = "ADMIN" | "CAPTAIN" | "PLAYER";
 
+/**
+ * Estadio "+ INVITAR" — paper poster with an ink border. Hidden for plain
+ * PLAYER role or when there's no invitePath available.
+ */
 export function InviteFriendsButton({
   role,
   invitePath,
@@ -22,9 +26,9 @@ export function InviteFriendsButton({
     <>
       <button
         onClick={() => setOpen(true)}
-        className="w-full rounded border border-[var(--color-border-accent)] py-3 chrome-label text-[var(--color-accent-cyan)]"
+        className="bg-[var(--color-bg-paper)] border-[1.5px] border-[var(--color-line-ink)] px-4 py-3.5 font-display text-sm font-extrabold uppercase tracking-[0.04em] text-[var(--color-text-primary)] hover:bg-[var(--color-accent-gold)]"
       >
-        {t("inviteFriends")}
+        + {t("inviteFriends")}
       </button>
       {open && <InviteFriendsSheet invitePath={invitePath} onClose={() => setOpen(false)} />}
     </>

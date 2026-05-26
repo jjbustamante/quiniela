@@ -1,32 +1,55 @@
 import Link from "next/link";
 
+/**
+ * GroupCard — poster tile with a big condensed letter, a status pill, and
+ * the four team flags + codes underneath. Status pill: green (done), gold
+ * (in progress), red (empty). Tap to drill into the group.
+ */
 export function GroupCard({
   letter,
   filled,
   total,
+  teams,
 }: {
   letter: string;
   filled: number;
   total: number;
+  /** Pass {code, flag} per team if you have them; falls back to a row of
+   *  empty placeholders that still preserves the card height. */
+  teams?: ReadonlyArray<{ code: string; flag: string | null }>;
 }) {
-  const pct = total === 0 ? 0 : Math.round((filled / total) * 100);
-  const complete = filled === total && total > 0;
+  const done = filled === total && total > 0;
+  const empty = filled === 0;
+  const pillBg = done
+    ? "bg-[var(--color-accent-green)] text-[var(--color-text-inverse)]"
+    : empty
+      ? "bg-[var(--color-accent-red)] text-[var(--color-text-inverse)]"
+      : "bg-[var(--color-accent-gold)] text-[var(--color-text-primary)]";
+
+  const slots = teams ?? Array.from({ length: 4 }).map((_, i) => ({ code: `T${i + 1}`, flag: null }));
+
   return (
     <Link
       href={`/group/${letter}`}
-      className="flex items-center justify-between rounded-md border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] px-4 py-3 transition-colors hover:border-[var(--color-border-accent)]/40"
+      className="poster block bg-[var(--color-bg-paper)] p-2.5 transition-colors hover:bg-[#fff]"
     >
-      <div>
-        <div className="text-sm font-bold text-[var(--color-text-primary)]">Grupo {letter}</div>
-        <div className="mt-0.5 text-xs text-[var(--color-text-muted)]">
-          {filled} / {total}
+      <div className="flex items-center justify-between">
+        <div className="font-display text-4xl font-black leading-[0.85] tracking-[-0.05em] text-[var(--color-text-primary)]">
+          {letter}
         </div>
+        <span className={`font-mono text-[10px] font-bold tracking-[0.08em] px-2 py-0.5 ${pillBg}`}>
+          {filled}/{total}
+        </span>
       </div>
-      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[var(--color-border-subtle)]">
-        <div
-          className={`h-full ${complete ? "bg-[var(--color-state-good)]" : "bg-[var(--color-accent-cyan)]"}`}
-          style={{ width: `${pct}%` }}
-        />
+      <div className="mt-2 flex items-center gap-1">
+        {slots.slice(0, 4).map((t, i) => (
+          <div key={`${t.code}-${i}`} className="flex flex-1 items-center gap-1">
+            <span className="text-sm leading-none">{t.flag ?? "·"}</span>
+            <span className="font-mono text-[9px] font-bold tracking-[0.04em] text-[var(--color-text-muted)]">
+              {t.code}
+            </span>
+          </div>
+        ))}
       </div>
     </Link>
   );

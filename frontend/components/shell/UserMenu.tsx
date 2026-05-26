@@ -6,6 +6,10 @@ import { signOutAction } from "@/app/auth-actions";
 
 type Role = "ADMIN" | "CAPTAIN" | "PLAYER";
 
+/**
+ * UserMenu — circular avatar (gold initial on ink) that opens a poster-style
+ * dropdown with name, role, and sign-out. Closes on Escape and outside click.
+ */
 export function UserMenu({
   displayName,
   role,
@@ -32,7 +36,7 @@ export function UserMenu({
         onClick={() => setOpen((v) => !v)}
         aria-label={displayName}
         aria-expanded={open}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-accent-cyan)] text-sm font-bold text-black"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-accent-gold)] font-display text-sm font-extrabold leading-none text-[var(--color-text-primary)]"
       >
         {initial}
       </button>
@@ -45,18 +49,16 @@ export function UserMenu({
           />
           <div
             role="menu"
-            className="absolute right-0 top-full z-50 mt-2 w-52 rounded-md border-2 border-[var(--color-border-accent)] bg-[#111c2e] p-3 shadow-2xl shadow-[var(--color-accent-cyan)]/20"
+            className="absolute right-0 top-full z-50 mt-2 w-56 border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] p-4 shadow-[0_8px_28px_rgba(0,0,0,0.18)]"
           >
-            <div className="mb-1 truncate text-sm font-bold text-[var(--color-text-primary)]">
+            <div className="mb-1 truncate font-display text-base font-extrabold uppercase tracking-tight text-[var(--color-text-primary)]">
               {displayName}
             </div>
-            <div className="mb-3 text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
-              {role.toLowerCase()}
-            </div>
+            <div className="chrome-label chrome-label-muted mb-4">{role}</div>
             <form action={signOutAction}>
               <button
                 type="submit"
-                className="w-full rounded-md border border-[var(--color-border-subtle)] py-2 text-sm font-semibold text-[var(--color-text-primary)] hover:border-[var(--color-state-bad)] hover:text-[var(--color-state-bad)]"
+                className="w-full bg-[var(--color-bg-ink)] py-2.5 font-display text-sm font-bold uppercase tracking-wide text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-red)]"
               >
                 {t("signOut")}
               </button>

@@ -21,13 +21,16 @@ type Props =
   | (CommonProps & { side: "t1" | "t2"; onConfirm: (n: number) => void })
   | (CommonProps & { side: "both"; onConfirm: (s: { t1: number; t2: number }) => void });
 
+/**
+ * Score numpad — bottom sheet over a dimmed backdrop. Two big numeral
+ * cells (selected = green poster, unselected = dashed-border placeholder),
+ * preset row, 3-column keypad. Escape closes; clicking the scrim closes;
+ * Confirm button is the red poster CTA.
+ */
 export function NumpadScoreInput(props: Props) {
   const t = useTranslations("numpad");
   const locale = useLocale();
 
-  // Single-side mode uses one value. Both-mode tracks t1 + t2 + which cell
-  // is currently active (digit taps fill the active cell, then the active
-  // cell advances).
   const [val, setVal] = useState<number | null>(null);
   const [t1Val, setT1Val] = useState<number | null>(null);
   const [t2Val, setT2Val] = useState<number | null>(null);
@@ -52,7 +55,7 @@ export function NumpadScoreInput(props: Props) {
     if (props.side === "both") {
       if (active === "t1") {
         setT1Val(n);
-        setActive("t2"); // advance to t2 after t1 is set
+        setActive("t2");
       } else {
         setT2Val(n);
       }
@@ -80,106 +83,128 @@ export function NumpadScoreInput(props: Props) {
       aria-modal="true"
       aria-label={t("title")}
       lang={locale}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center"
       onClick={props.onCancel}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-t-2xl border-t-2 border-[var(--color-border-accent)] bg-[#111c2e] p-5 shadow-2xl shadow-[var(--color-accent-cyan)]/20 sm:rounded-2xl sm:border-2 sm:border-t-2"
+        className="w-full max-w-md border-t-2 border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] p-4 pb-6 sm:border-2"
       >
+        {/* Match header (poster) */}
         {props.match ? (
-          <div className="flex items-center justify-center gap-3 text-sm font-bold text-[var(--color-text-primary)]">
-            <span className="flex-1 text-right">
-              {props.match.team1Flag && <span className="mr-1">{props.match.team1Flag}</span>}
-              {props.match.team1Name}
-            </span>
-            <span className="chrome-label text-[var(--color-accent-cyan)]">vs</span>
-            <span className="flex-1 text-left">
-              {props.match.team2Name}
-              {props.match.team2Flag && <span className="ml-1">{props.match.team2Flag}</span>}
-            </span>
+          <div className="mb-3.5 flex items-center justify-between gap-2 bg-[var(--color-bg-ink)] px-4 py-3 text-[var(--color-text-inverse)]">
+            <div className="flex items-center gap-2.5">
+              <span className="text-[28px] leading-none">{props.match.team1Flag}</span>
+              <span className="font-display text-lg font-black uppercase tracking-tight">
+                {props.match.team1Name}
+              </span>
+            </div>
+            <span className="font-display text-xs font-bold text-[var(--color-accent-gold)]">VS</span>
+            <div className="flex items-center gap-2.5">
+              <span className="font-display text-lg font-black uppercase tracking-tight">
+                {props.match.team2Name}
+              </span>
+              <span className="text-[28px] leading-none">{props.match.team2Flag}</span>
+            </div>
           </div>
         ) : (
-          <h2 className="chrome-label text-[var(--color-accent-cyan)]">{t("title")}</h2>
+          <h2 className="chrome-label mb-3.5 text-[var(--color-accent-red)]">{t("title")}</h2>
         )}
 
-        <div className="mt-4">
-          <div className="chrome-label">{t("presets")}</div>
-          <div className="mt-1 flex flex-wrap gap-2">
-            {PRESETS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => pickPreset(p)}
-                className="rounded-md border border-[var(--color-border-subtle)] px-3 py-1 font-mono-num text-sm text-[var(--color-text-primary)] hover:border-[var(--color-accent-cyan)]"
-              >
-                {p}
-              </button>
-            ))}
+        {/* Big numerals */}
+        {props.side === "both" ? (
+          <div
+            className="mb-3 grid grid-cols-2 gap-2"
+            aria-live="polite"
+          >
+            <button
+              type="button"
+              onClick={() => setActive("t1")}
+              className={`flex flex-col items-center border-[1.5px] border-[var(--color-line-ink)] py-3 ${
+                active === "t1"
+                  ? "bg-[var(--color-accent-green)] text-[var(--color-text-inverse)]"
+                  : "bg-[var(--color-bg-paper)] border-dashed text-[var(--color-text-muted)]"
+              }`}
+            >
+              <span className="chrome-label" style={active === "t1" ? { color: "rgba(255,255,255,0.7)" } : undefined}>
+                {props.match?.team1Name ?? "1"}
+              </span>
+              <span className="font-display text-[56px] font-black leading-none tracking-[-0.05em]">
+                {t1Val ?? "_"}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActive("t2")}
+              className={`flex flex-col items-center border-[1.5px] border-[var(--color-line-ink)] py-3 ${
+                active === "t2"
+                  ? "bg-[var(--color-accent-green)] text-[var(--color-text-inverse)]"
+                  : "bg-[var(--color-bg-paper)] border-dashed text-[var(--color-text-muted)]"
+              }`}
+            >
+              <span className="chrome-label" style={active === "t2" ? { color: "rgba(255,255,255,0.7)" } : undefined}>
+                {props.match?.team2Name ?? "2"}
+              </span>
+              <span className="font-display text-[56px] font-black leading-none tracking-[-0.05em]">
+                {t2Val ?? "_"}
+              </span>
+            </button>
           </div>
+        ) : (
+          <div className="mb-3 flex justify-center">
+            <span className="font-display text-[64px] font-black leading-none tracking-[-0.05em] text-[var(--color-accent-red)]">
+              {val ?? "_"}
+            </span>
+          </div>
+        )}
+
+        <span className="chrome-label chrome-label-muted">{t("presets")}</span>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {PRESETS.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => pickPreset(p)}
+              className="border-[1.5px] border-[var(--color-line-ink)] px-3 py-1 font-mono text-xs font-bold tracking-wider text-[var(--color-text-primary)] hover:bg-[var(--color-bg-primary)]"
+            >
+              {p}
+            </button>
+          ))}
         </div>
 
-        <div className="mt-4">
-          <div
-            aria-live="polite"
-            className="mb-2 text-center font-mono-num text-3xl font-bold"
+        <div className="mt-3 grid grid-cols-3 gap-1.5">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => tapDigit(n)}
+              className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-primary)] py-3 font-display text-2xl font-black leading-none tracking-[-0.04em] text-[var(--color-text-primary)]"
+            >
+              {n}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={props.onCancel}
+            className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] py-3 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-muted)]"
           >
-            {props.side === "both" ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setActive("t1")}
-                  className={`px-3 ${active === "t1" ? "text-[var(--color-accent-cyan)] underline underline-offset-4" : "text-[var(--color-text-muted)]"}`}
-                >
-                  {t1Val ?? "_"}
-                </button>
-                <span className="text-[var(--color-text-muted)]">-</span>
-                <button
-                  type="button"
-                  onClick={() => setActive("t2")}
-                  className={`px-3 ${active === "t2" ? "text-[var(--color-accent-cyan)] underline underline-offset-4" : "text-[var(--color-text-muted)]"}`}
-                >
-                  {t2Val ?? "_"}
-                </button>
-              </>
-            ) : (
-              <span className="text-[var(--color-accent-cyan)]">{val ?? "_"}</span>
-            )}
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => tapDigit(n)}
-                className="rounded-md bg-[var(--color-bg-primary)] py-3 font-mono-num text-lg text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]"
-              >
-                {n}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={props.onCancel}
-              className="rounded-md bg-[var(--color-bg-primary)] py-3 text-sm text-[var(--color-text-muted)] hover:bg-[var(--color-bg-elevated)]"
-            >
-              {t("cancel")}
-            </button>
-            <button
-              type="button"
-              onClick={() => tapDigit(0)}
-              className="rounded-md bg-[var(--color-bg-primary)] py-3 font-mono-num text-lg text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]"
-            >
-              0
-            </button>
-            <button
-              type="button"
-              onClick={confirm}
-              disabled={!canConfirm}
-              className="rounded-md bg-[var(--color-accent-cyan)] py-3 text-sm font-bold text-black disabled:opacity-50"
-            >
-              {t("confirm")}
-            </button>
-          </div>
+            {t("cancel")}
+          </button>
+          <button
+            type="button"
+            onClick={() => tapDigit(0)}
+            className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-primary)] py-3 font-display text-2xl font-black leading-none tracking-[-0.04em] text-[var(--color-text-primary)]"
+          >
+            0
+          </button>
+          <button
+            type="button"
+            onClick={confirm}
+            disabled={!canConfirm}
+            className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-accent-red)] py-3 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--color-text-inverse)] disabled:opacity-50"
+          >
+            {t("confirm")}
+          </button>
         </div>
       </div>
     </div>

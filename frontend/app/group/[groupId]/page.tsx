@@ -8,7 +8,7 @@ import { BottomNav } from "@/components/shell/BottomNav";
 import { GroupDrillIn } from "@/components/group/GroupDrillIn";
 import { saveBetAction, acceptPaulSuggestionAction } from "./actions";
 
-const VALID_GROUPS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+const VALID_GROUPS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
 
 export default async function GroupPage({
   params,
@@ -27,28 +27,64 @@ export default async function GroupPage({
   if (!group) notFound();
 
   const tNav = await getTranslations("nav");
+  const tGroup = await getTranslations("group");
+
+  // Pull the 4 distinct teams across this group's matches for the standings
+  // strip — the API returns 6 round-robin matches, every team appears in 3.
+  const teams = new Map<string, { code: string; name: string | null; flag: string | null }>();
+  for (const m of group.matches) {
+    if (m.team1Code && !teams.has(m.team1Code))
+      teams.set(m.team1Code, { code: m.team1Code, name: m.team1Name, flag: m.team1Flag });
+    if (m.team2Code && !teams.has(m.team2Code))
+      teams.set(m.team2Code, { code: m.team2Code, name: m.team2Name, flag: m.team2Flag });
+  }
+  const teamList = Array.from(teams.values()).slice(0, 4);
 
   return (
-    <main className="flex min-h-screen flex-col pb-20">
-      <TopBar title={`${tNav("myQuiniela")} · Grupo ${upperId}`} meta={`${group.filled}/${group.total}`} />
+    <main className="flex min-h-screen flex-col pb-24">
+      <TopBar
+        title={`${tNav("myQuiniela").toUpperCase()} · GRUPO ${upperId}`}
+        meta={`${group.filled}/${group.total}`}
+        back
+      />
+
       <div className="mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-4xl">
-        <div className="px-3 py-3">
+        <div className="px-3 pt-3">
           <Link
             href="/home"
-            className="chrome-label inline-block text-[var(--color-accent-cyan)] hover:underline"
+            className="chrome-label inline-flex items-center gap-1 text-[var(--color-text-primary)] hover:text-[var(--color-accent-red)]"
           >
             ← {tNav("myQuiniela")}
           </Link>
         </div>
-        <div className="px-3">
-          <GroupDrillIn
-            matches={group.matches}
-            groupId={upperId}
-            saveBetAction={saveBetAction}
-            acceptPaulAction={acceptPaulSuggestionAction}
-          />
-        </div>
+
+        {/* Standings strip — the four teams in this group as small posters */}
+        <section className="mx-3 mt-3 grid grid-cols-4 gap-1.5">
+          {teamList.map((t) => (
+            <div
+              key={t.code}
+              className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] px-1.5 py-2 text-center"
+            >
+              <div className="text-base leading-none">{t.flag}</div>
+              <div className="chrome-label chrome-label-muted mt-1">{t.code}</div>
+              <div className="font-display text-lg font-extrabold leading-none tracking-[-0.04em]">·</div>
+            </div>
+          ))}
+        </section>
+
+        <section className="mx-3 mt-4">
+          <span className="chrome-label chrome-label-muted">{tGroup("matchesHeading", { count: group.total })}</span>
+          <div className="mt-2.5">
+            <GroupDrillIn
+              matches={group.matches}
+              groupId={upperId}
+              saveBetAction={saveBetAction}
+              acceptPaulAction={acceptPaulSuggestionAction}
+            />
+          </div>
+        </section>
       </div>
+
       <BottomNav activeKey="myQuiniela" />
     </main>
   );

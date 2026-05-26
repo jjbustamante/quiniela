@@ -9,4 +9,6 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
       Long tournamentId, String groupCode);
 
   List<Match> findByTournamentIdAndRoundIdOrderByKickoffAtAsc(Long tournamentId, Long roundId);
+
+  int countByTournamentIdAndRoundId(Long tournamentId, Long roundId);
 }

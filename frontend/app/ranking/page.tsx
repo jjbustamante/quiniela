@@ -12,13 +12,14 @@ export default async function RankingPage() {
   const t = await getTranslations("placeholder");
 
   return (
-    <main className="flex min-h-screen flex-col pb-20">
-      <TopBar title={tNav("ranking")} />
-      <section className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-3 px-6 text-center sm:max-w-2xl lg:max-w-4xl">
-        <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">
-          {t("comingSoon")}
+    <main className="flex min-h-screen flex-col pb-24">
+      <TopBar title={tNav("ranking").toUpperCase()} meta={t("comingSoon").toUpperCase()} />
+      <section className="mx-auto flex w-full max-w-md flex-1 flex-col items-start justify-center gap-4 px-6 sm:max-w-2xl">
+        <span className="chrome-label text-[var(--color-accent-red)]">{t("comingSoon").toUpperCase()}</span>
+        <h1 className="headline-display text-[44px] sm:text-6xl">
+          {t("rankingHeadline")}
         </h1>
-        <p className="text-[var(--color-text-muted)]">{t("rankingHelp")}</p>
+        <p className="font-sans text-base text-[var(--color-text-muted)]">{t("rankingHelp")}</p>
       </section>
       <BottomNav activeKey="ranking" />
     </main>

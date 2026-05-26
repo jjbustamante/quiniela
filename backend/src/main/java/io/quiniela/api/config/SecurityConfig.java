@@ -17,7 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
  *   <li>Stateless: no server-side session, every request is authenticated by its bearer JWT.
  *   <li>CSRF disabled — pure REST API consumed by Next.js server-side, no browser-submitted forms.
  *   <li>Public: /actuator/** (health probes) + /auth/** (sign-in) + /api/invite/** (invite
- *       resolver).
+ *       resolver) + /api/public/** (landing/home tournament summary).
  *   <li>Everything else (/api/**, future endpoints) requires a valid JWT issued by {@link
  *       JwtService}.
  * </ul>
@@ -33,7 +33,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             authz ->
                 authz
-                    .requestMatchers("/actuator/**", "/auth/**", "/api/invite/**")
+                    .requestMatchers("/actuator/**", "/auth/**", "/api/invite/**", "/api/public/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
