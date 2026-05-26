@@ -25,16 +25,19 @@ public final class FlagEmojis {
           Map.entry("AUS", "AU"),
           Map.entry("AUT", "AT"),
           Map.entry("BEL", "BE"),
+          Map.entry("BIH", "BA"), // Bosnia-Herzegovina (alpha-3 form)
           Map.entry("BRA", "BR"),
           Map.entry("CAN", "CA"),
           Map.entry("CHI", "CL"), // Chile
           Map.entry("CIV", "CI"), // Côte d'Ivoire
           Map.entry("CMR", "CM"), // Cameroon
+          Map.entry("COD", "CD"), // Congo DR (alpha-3 form)
           Map.entry("COL", "CO"),
           Map.entry("CPV", "CV"), // Cape Verde
           Map.entry("CRC", "CR"), // Costa Rica
           Map.entry("CRO", "HR"), // Croatia
-          Map.entry("CUR", "CW"), // Curaçao
+          Map.entry("CUR", "CW"), // Curaçao (FIFA form)
+          Map.entry("CUW", "CW"), // Curaçao (alpha-3 form)
           Map.entry("CZE", "CZ"),
           Map.entry("DEN", "DK"), // Denmark
           Map.entry("ECU", "EC"),
@@ -44,12 +47,14 @@ public final class FlagEmojis {
           Map.entry("FRA", "FR"),
           Map.entry("GER", "DE"), // Germany (FIFA != ISO alpha-3)
           Map.entry("GHA", "GH"),
+          Map.entry("HAI", "HT"), // Haiti
           Map.entry("HON", "HN"), // Honduras
           Map.entry("HUN", "HU"),
           Map.entry("IRN", "IR"), // Iran
           Map.entry("IRQ", "IQ"),
           Map.entry("ITA", "IT"),
           Map.entry("JAM", "JM"),
+          Map.entry("JOR", "JO"), // Jordan
           Map.entry("JPN", "JP"),
           Map.entry("KOR", "KR"), // South Korea
           Map.entry("KSA", "SA"), // Saudi Arabia
@@ -66,6 +71,7 @@ public final class FlagEmojis {
           Map.entry("POL", "PL"),
           Map.entry("POR", "PT"),
           Map.entry("QAT", "QA"),
+          Map.entry("RSA", "ZA"), // South Africa (FIFA form)
           Map.entry("SCO", "GB"), // Scotland → UK fallback
           Map.entry("SEN", "SN"),
           Map.entry("SRB", "RS"),
@@ -76,7 +82,8 @@ public final class FlagEmojis {
           Map.entry("TUN", "TN"),
           Map.entry("TUR", "TR"),
           Map.entry("UKR", "UA"),
-          Map.entry("URU", "UY"),
+          Map.entry("URU", "UY"), // Uruguay (FIFA form)
+          Map.entry("URY", "UY"), // Uruguay (alpha-3 form)
           Map.entry("USA", "US"),
           Map.entry("UZB", "UZ"), // Uzbekistan
           Map.entry("VEN", "VE"),
