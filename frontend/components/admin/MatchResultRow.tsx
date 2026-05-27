@@ -19,8 +19,12 @@ export function MatchResultRow({ match }: { match: AdminMatchRow }) {
   const [scoreT2, setScoreT2] = useState<string>(
     match.scoreT2 != null ? String(match.scoreT2) : "",
   );
+  // Snapshot played-on-mount once. We can't use the live `match.played`
+  // prop because the server action calls revalidatePath, which re-runs
+  // the server component and passes a now-played match in as new props
+  // — that would flip "first save" rows into "Modified" by mistake.
+  const [initiallyPlayed] = useState<boolean>(match.played);
   const [savedThisSession, setSavedThisSession] = useState<boolean>(false);
-  const [played, setPlayed] = useState<boolean>(match.played);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -43,7 +47,6 @@ export function MatchResultRow({ match }: { match: AdminMatchRow }) {
         );
         setScoreT1(String(result.scoreT1));
         setScoreT2(String(result.scoreT2));
-        setPlayed(true);
         setSavedThisSession(true);
       } catch (err) {
         setError(err instanceof Error ? err.message : t("errorSaving"));
@@ -51,9 +54,14 @@ export function MatchResultRow({ match }: { match: AdminMatchRow }) {
     });
   }
 
-  // "Modified" applies when this row was originally played AND the admin
-  // re-saved in this session (replacing the previous result with a correction).
-  const wasModified = match.played && savedThisSession;
+  // "Modified" applies when this row was already played BEFORE this session
+  // AND the admin just re-saved (i.e. replaced an existing result with a
+  // correction). First-ever save of an unplayed match should read "Played".
+  const wasModified = initiallyPlayed && savedThisSession;
+  // Show "Played" badge whenever the row has a saved score on the server,
+  // OR was just saved in this session. Excludes the "Modified" case so the
+  // two badges don't both show.
+  const showPlayedBadge = (match.played || savedThisSession) && !wasModified;
 
   return (
     <form
@@ -77,7 +85,7 @@ export function MatchResultRow({ match }: { match: AdminMatchRow }) {
           {match.groupCode && (
             <span className="chrome-label chrome-label-muted">· {match.groupCode}</span>
           )}
-          {played && !wasModified && (
+          {showPlayedBadge && (
             <span className="chrome-label text-[var(--color-accent-green)]">
               · {t("playedBadge")}
             </span>
