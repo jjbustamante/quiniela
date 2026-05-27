@@ -23,23 +23,30 @@ class ScoringTriggerIT extends AbstractIntegrationTest {
   @Autowired UserRepository users;
   @Autowired DataSource dataSource;
 
-  /**
-   * Reset match 1 scores to NULL before each test so that each test starts from a clean state.
-   * Parent's @BeforeEach (cleanWritableTables) runs first deleting bets/quinielas, then this runs.
-   * With no bets referencing match 1, the trigger loop is empty and safe.
-   */
   @BeforeEach
-  void resetMatchOne() {
+  void resetMatchScores() {
+    // Resets matches 1 (group-stage) and 73, 74 (knockout) before each test.
     new JdbcTemplate(dataSource)
-        .update("UPDATE match SET score_t1 = NULL, score_t2 = NULL WHERE id = 1");
+        .update("UPDATE match SET score_t1 = NULL, score_t2 = NULL WHERE id IN (1, 73, 74)");
   }
 
-  /** Helper: create a user + quiniela + bet on match 1 (the first seeded group-stage match). */
+  /** Create a user + quiniela + bet on match 1 (the first seeded group-stage match). */
   private Long setupBetOnMatch1(int betT1, int betT2) {
     var u = new User("g-sc-" + System.nanoTime(), "sc@example.com", "Sc", null, UserRole.PLAYER);
     u = users.save(u);
     var q = quinielas.save(new Quiniela(1L, u.getId()));
     bets.save(new Bet(q.getId(), 1L, betT1, betT2));
+    return q.getId();
+  }
+
+  /** Create a user + quiniela + bet on a knockout match (round_id = 2, R32). */
+  private Long setupBetOnKnockoutMatch(Long matchId, int betT1, int betT2) {
+    var u =
+        users.save(
+            new User(
+                "g-sck-" + System.nanoTime(), "sck@example.com", "Sck", null, UserRole.PLAYER));
+    var q = quinielas.save(new Quiniela(1L, u.getId()));
+    bets.save(new Bet(q.getId(), matchId, betT1, betT2));
     return q.getId();
   }
 
@@ -52,49 +59,103 @@ class ScoringTriggerIT extends AbstractIntegrationTest {
     return quinielas.findById(qId).orElseThrow().getPoints();
   }
 
+  // ── Group-stage scoring ──────────────────────────────────────────────────
+
   @Test
-  void exactScoreAwardsFivePoints() {
+  void exactScoreAwardsSeven() {
+    // bet 2-1, actual 2-1: outcome (3) + T1 (2) + T2 (2) + diff suppressed = 7.
     var q = setupBetOnMatch1(2, 1);
     setMatchResult(1L, 2, 1);
-    assertThat(pointsOf(q)).isEqualTo(5);
+    assertThat(pointsOf(q)).isEqualTo(7);
   }
 
   @Test
-  void correctWinnerAndGoalDifferenceAwardsThree() {
+  void winnerAndGoalDifferenceAwardsFour() {
+    // bet 2-1, actual 3-2: outcome (3) + diff (1) = 4. No team-score match.
     var q = setupBetOnMatch1(2, 1);
     setMatchResult(1L, 3, 2);
+    assertThat(pointsOf(q)).isEqualTo(4);
+  }
+
+  @Test
+  void winnerWithOneTeamExactAwardsFive() {
+    // bet 2-1, actual 2-0: outcome (3) + T1 exact (2) = 5.
+    var q = setupBetOnMatch1(2, 1);
+    setMatchResult(1L, 2, 0);
+    assertThat(pointsOf(q)).isEqualTo(5);
+  }
+
+  @Test
+  void winnerOnlyNoTeamScoreAwardsThree() {
+    // bet 2-1, actual 5-0: outcome only (3). No T1, no T2, no diff.
+    var q = setupBetOnMatch1(2, 1);
+    setMatchResult(1L, 5, 0);
     assertThat(pointsOf(q)).isEqualTo(3);
   }
 
   @Test
-  void correctWinnerOnlyAwardsTwo() {
-    var q = setupBetOnMatch1(2, 1);
-    setMatchResult(1L, 4, 0);
-    assertThat(pointsOf(q)).isEqualTo(2);
-  }
-
-  @Test
-  void correctDrawAwardsTwo() {
+  void correctDrawWithDifferentExactAwardsFour() {
+    // bet 1-1, actual 0-0: outcome draw (3) + diff (1, both diffs are 0) = 4.
     var q = setupBetOnMatch1(1, 1);
     setMatchResult(1L, 0, 0);
+    assertThat(pointsOf(q)).isEqualTo(4);
+  }
+
+  @Test
+  void predictedDrawActualNotDrawWithOneTeamExactAwardsTwo() {
+    // bet 1-1, actual 1-3: wrong outcome (draw vs team2-win), T1 exact (2) = 2.
+    var q = setupBetOnMatch1(1, 1);
+    setMatchResult(1L, 1, 3);
     assertThat(pointsOf(q)).isEqualTo(2);
   }
 
   @Test
-  void wrongWinnerAwardsZero() {
+  void wrongWinnerWithOneTeamExactAwardsTwo() {
+    // bet 2-1, actual 0-1: wrong outcome (T1-win vs T2-win), T2 exact (2) = 2.
     var q = setupBetOnMatch1(2, 1);
-    setMatchResult(1L, 0, 3);
-    assertThat(pointsOf(q)).isEqualTo(0);
+    setMatchResult(1L, 0, 1);
+    assertThat(pointsOf(q)).isEqualTo(2);
   }
 
   @Test
-  void resultCorrectionUpdatesPointsDelta() {
+  void wrongWinnerNoPartialCreditAwardsZero() {
+    // bet 2-1, actual 3-4: wrong outcome, no team-score match, wrong diff sign.
     var q = setupBetOnMatch1(2, 1);
-    setMatchResult(1L, 2, 1); // exact — +5
-    assertThat(pointsOf(q)).isEqualTo(5);
-    setMatchResult(1L, 3, 2); // winner + diff — should become +3 (delta -2)
-    assertThat(pointsOf(q)).isEqualTo(3);
-    setMatchResult(1L, 0, 3); // miss — delta -3
+    setMatchResult(1L, 3, 4);
     assertThat(pointsOf(q)).isEqualTo(0);
+  }
+
+  // ── Knockout scoring (×2 on every component) ─────────────────────────────
+
+  @Test
+  void exactScoreKnockoutAwardsFourteen() {
+    // bet 2-1, actual 2-1 on knockout: (3+2+2) * 2 = 14.
+    var q = setupBetOnKnockoutMatch(73L, 2, 1);
+    setMatchResult(73L, 2, 1);
+    assertThat(pointsOf(q)).isEqualTo(14);
+  }
+
+  @Test
+  void winnerAndGoalDifferenceKnockoutAwardsEight() {
+    // bet 2-1, actual 3-2 on knockout: (3+1) * 2 = 8.
+    var q = setupBetOnKnockoutMatch(73L, 2, 1);
+    setMatchResult(73L, 3, 2);
+    assertThat(pointsOf(q)).isEqualTo(8);
+  }
+
+  @Test
+  void winnerWithOneTeamExactKnockoutAwardsTen() {
+    // bet 2-1, actual 2-0 on knockout: (3+2) * 2 = 10.
+    var q = setupBetOnKnockoutMatch(73L, 2, 1);
+    setMatchResult(73L, 2, 0);
+    assertThat(pointsOf(q)).isEqualTo(10);
+  }
+
+  @Test
+  void wrongWinnerWithOneTeamExactKnockoutAwardsFour() {
+    // bet 2-1, actual 0-1 on knockout: T2 only (2) * 2 = 4.
+    var q = setupBetOnKnockoutMatch(74L, 2, 1);
+    setMatchResult(74L, 0, 1);
+    assertThat(pointsOf(q)).isEqualTo(4);
   }
 }
