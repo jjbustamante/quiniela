@@ -125,6 +125,23 @@ class ScoringTriggerIT extends AbstractIntegrationTest {
     assertThat(pointsOf(q)).isEqualTo(0);
   }
 
+  @Test
+  void correctionUpdatesPointsDelta() {
+    // Trigger's subtract-old-add-new math: same bet, scored against two different
+    // actuals back to back. After the second UPDATE, points reflects only the new
+    // contribution, not the sum of both.
+    var q = setupBetOnMatch1(2, 1);
+
+    // First: set match 2-1 (exact). bet 2-1 vs actual 2-1 = 7 pts.
+    setMatchResult(1L, 2, 1);
+    assertThat(pointsOf(q)).isEqualTo(7);
+
+    // Correction: change to 2-0. bet 2-1 vs actual 2-0 = outcome (3) + T1 (2) = 5 pts.
+    // Delta is -2 (7 -> 5), not 12 (7 + 5).
+    setMatchResult(1L, 2, 0);
+    assertThat(pointsOf(q)).isEqualTo(5);
+  }
+
   // ── Knockout scoring (×2 on every component) ─────────────────────────────
 
   @Test
