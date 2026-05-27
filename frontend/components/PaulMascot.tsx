@@ -110,16 +110,16 @@ export function PaulBadge({
         aria-hidden="true"
       >
         {bursts}
-        <circle cx="50" cy="50" r="38" fill="var(--color-accent-red)" />
+        <circle cx="50" cy="50" r="38" fill="#fef9f1" />
       </svg>
       <div
         style={{
           position: "absolute",
-          inset: `${size * 0.19}px`,
+          inset: `${size * 0.1}px`,
         }}
       >
         <PaulMascot
-          body="#fef9f1"
+          body="var(--color-accent-red)"
           eye="#fef9f1"
           ink="#0a0a0a"
           accent="var(--color-accent-gold)"

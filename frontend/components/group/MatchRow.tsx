@@ -44,7 +44,7 @@ export function MatchRow({
           className="flex min-w-0 flex-1 flex-col justify-between border-r-[1.5px] border-[var(--color-line-ink)] p-2.5"
           style={{ background: t1Tint }}
         >
-          <span className="chrome-label chrome-label-muted">{kickoffLabel}</span>
+          <span className="chrome-label chrome-label-muted block truncate">{kickoffLabel}</span>
           <div className="mt-1.5 flex min-w-0 items-center gap-1.5">
             <span className="shrink-0 text-[22px] leading-none">{match.team1Flag}</span>
             <span className="truncate font-display text-[15px] font-extrabold uppercase tracking-tight">
@@ -71,7 +71,7 @@ export function MatchRow({
           className="flex min-w-0 flex-1 flex-col items-end justify-between border-l-[1.5px] border-[var(--color-line-ink)] p-2.5"
           style={{ background: t2Tint }}
         >
-          <span className="chrome-label chrome-label-muted">{venueLabel}</span>
+          <span className="chrome-label chrome-label-muted block w-full truncate text-right">{venueLabel}</span>
           <div className="mt-1.5 flex min-w-0 items-center gap-1.5">
             <span className="truncate font-display text-[15px] font-extrabold uppercase tracking-tight">
               {match.team2Name}

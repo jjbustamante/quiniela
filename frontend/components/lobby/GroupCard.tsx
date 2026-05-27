@@ -41,11 +41,11 @@ export function GroupCard({
           {filled}/{total}
         </span>
       </div>
-      <div className="mt-2 flex items-center gap-1">
+      <div className="mt-2 flex items-center gap-0.5">
         {slots.slice(0, 4).map((t, i) => (
-          <div key={`${t.code}-${i}`} className="flex flex-1 items-center gap-1">
-            <span className="text-sm leading-none">{t.flag ?? "·"}</span>
-            <span className="font-mono text-[9px] font-bold tracking-[0.04em] text-[var(--color-text-muted)]">
+          <div key={`${t.code}-${i}`} className="flex min-w-0 flex-1 items-center gap-0.5">
+            <span className="shrink-0 text-[12px] leading-none">{t.flag ?? "·"}</span>
+            <span className="truncate font-mono text-[9px] font-bold tracking-[0.02em] text-[var(--color-text-muted)]">
               {t.code}
             </span>
           </div>
