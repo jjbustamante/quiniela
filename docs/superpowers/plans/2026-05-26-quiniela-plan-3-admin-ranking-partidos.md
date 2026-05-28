@@ -178,25 +178,17 @@
 
 ## Task 6: Self-review + ops dry-run
 
-- [ ] Run all backend ITs (`./mvnw verify`) — green.
-- [ ] Run frontend lint, typecheck, unit, e2e — green.
+Legend: [x] verified this session · [~] covered by automated tests / CI · [ ] manual (needs browser + 2 Google accounts).
+
+- [x] Run all backend ITs (`./mvnw verify`) — green. → 57 ITs, 0 failures (2026-05-27).
+- [~] Run frontend lint, typecheck, unit, e2e — green. → typecheck clean, lint 0 errors (2 pre-existing warnings), unit 11/11; e2e green in CI on every Plan 3 push.
 - [ ] Manually walk: invite a second test user, both fill brackets, log in as admin, enter a result for match #1, observe both rankings + Partidos pages update.
 - [ ] Verify pot increases when a second pana joins.
 - [ ] Verify locked UX by temporarily setting `tournament.group_stage_deadline` to a past timestamp in a scratch DB.
-- [ ] Confirm GitHub Actions deploy pipeline still pushes images to Artifact Registry on `master` push.
-- [ ] Run `gcloud run services describe quiniela-api` post-deploy to confirm the new revision is serving.
-
----
-
-## Self-Review
-
-Before considering this plan executed:
-- [ ] Every task's acceptance checkboxes are checked.
+- [x] Confirm GitHub Actions deploy pipeline still pushes images to Artifact Registry on `master` push. → backend + frontend CI green; images pushed via OIDC, `gcloud run deploy` succeeded on the Task 4 + Task 5 pushes.
+- [x] Run `gcloud run services describe quiniela-api` post-deploy to confirm the new revision is serving. → quiniela-api-00023-snj serving 100% traffic.
+- [x] Every task's acceptance checkboxes are checked. → Tasks 1–5 all ticked.
 - [ ] No regression in Plan 1/2 behavior (group fill, Paul, invite tree all still work).
 - [ ] The "$0 pot · 0 panas" empty state is reachable but doesn't look broken.
-- [ ] Admin-only routes return 403 (not 401, not redirect to login) for authenticated non-admins — easier to spot bugs.
-- [ ] No new third-party dependencies were added without justification.
-
-## Execution Handoff
-
-Pair with `superpowers:executing-plans`. Mark tasks as you complete them with `- [x]`. After Task 1 + Task 2 are green, ship them — don't wait for the full plan. Each task can deploy independently.
+- [~] Admin-only routes return 403 (not 401, not redirect to login) for authenticated non-admins. → AdminResultsControllerIT asserts isForbidden() for non-admin callers; passes in the green suite.
+- [x] No new third-party dependencies were added without justification. → `git diff b18dbf5..HEAD` shows pom.xml + package.json untouched across all of Plan 3.

@@ -24,7 +24,6 @@ export function GroupDrillIn({
   acceptPaulAction: (matchId: number, gid: string) => Promise<void>;
   locked?: boolean;
 }) {
-  const tNumpad = useTranslations("numpad");
   const tGroup = useTranslations("group");
   const [editing, setEditing] = useState<{ matchId: number } | null>(null);
   const [, startTransition] = useTransition();
