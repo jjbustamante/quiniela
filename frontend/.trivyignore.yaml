@@ -78,3 +78,12 @@ vulnerabilities:
   - id: CVE-2026-42499
     statement: "Go stdlib consumePhrase DoS — pebble lifecycle binary."
     expired_at: 2026-06-23
+  - id: CVE-2026-39823
+    statement: "Go stdlib URL parsing — pebble lifecycle binary. Waits on builder refresh."
+    expired_at: 2026-06-23
+  - id: CVE-2026-39825
+    statement: "Go stdlib ReverseProxy query forwarding — pebble lifecycle binary; not exercised at runtime."
+    expired_at: 2026-06-23
+  - id: CVE-2026-39826
+    statement: "Go stdlib html/template script-tag escaping — pebble lifecycle binary."
+    expired_at: 2026-06-23
