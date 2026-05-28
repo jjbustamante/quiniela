@@ -118,6 +118,8 @@
 - [x] Empty state (zero entries) renders "Aún no hay puntos · arranca el 11.JUN" — don't 500.
 - [x] Page hits the endpoint with `cache: 'no-store'` (already the default in `lib/api/client.ts`).
 
+> **Deploy regression resolved (2026-05-27, commits 9d5b26a → f496d16):** backend Cloud Run revision `quiniela-api-00021-nls` died at Flyway startup with `FATAL: remaining connection slots are reserved for roles with privileges of the pg_use_reserved_connections role`. Root cause: Cloud Run rolling deploys briefly overlap revisions, and Hikari's default 10-connection pool × 2 revisions exhausted Cloud SQL `db-f1-micro`'s default ~25 max_connections. Fix shipped in `f496d16`: cap HikariCP at `maximum-pool-size: 5` in `application-cloudrun.yml` + add `database_flags.max_connections=50` to `iac/cloud_sql.tf`. Revision `00022-lng` healthy in prod (`/api/ranking` returns 401 unauth as expected).
+
 **Implementation notes:**
 - Don't over-engineer the rank delta. If `quiniela_rank_snapshot` adds too much scope, ship `delta: null` and a follow-up plan.
 - Top-3 payout estimates show in Task 5 (separate task to keep the diff focused).
