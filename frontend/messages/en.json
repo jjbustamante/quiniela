@@ -40,6 +40,7 @@
     "knockoutsLocked": "Opens after the group stage.",
     "knockoutsLockedHeadline": "R16 · QFs · SFs · FINAL",
     "knockoutsOpen": "Knockouts open — enter your bracket.",
+    "groupLockedPill": "🔒 {when}",
     "statPot": "POT",
     "statPaid": "PAID",
     "statProgress": "FILLED",
@@ -52,7 +53,9 @@
   "group": {
     "matchesHeading": "YOUR PICKS · {count} MATCHES",
     "paulDecide": "LET PAUL DECIDE",
-    "paulChange": "CHANGE · PAUL"
+    "paulChange": "CHANGE · PAUL",
+    "lockedBadge": "🔒 CLOSED · {when}",
+    "lockedHelp": "Picks are locked."
   },
   "nav": {
     "myQuiniela": "My Bracket",

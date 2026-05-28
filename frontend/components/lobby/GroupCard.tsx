@@ -10,6 +10,8 @@ export function GroupCard({
   filled,
   total,
   teams,
+  locked = false,
+  lockedLabel,
 }: {
   letter: string;
   filled: number;
@@ -17,14 +19,18 @@ export function GroupCard({
   /** Pass {code, flag} per team if you have them; falls back to a row of
    *  empty placeholders that still preserves the card height. */
   teams?: ReadonlyArray<{ code: string; flag: string | null }>;
+  locked?: boolean;
+  lockedLabel?: string;
 }) {
   const done = filled === total && total > 0;
   const empty = filled === 0;
-  const pillBg = done
-    ? "bg-[var(--color-accent-green)] text-[var(--color-text-inverse)]"
-    : empty
-      ? "bg-[var(--color-accent-red)] text-[var(--color-text-inverse)]"
-      : "bg-[var(--color-accent-gold)] text-[var(--color-text-primary)]";
+  const pillBg = locked
+    ? "bg-[var(--color-bg-ink)] text-[var(--color-accent-gold)]"
+    : done
+      ? "bg-[var(--color-accent-green)] text-[var(--color-text-inverse)]"
+      : empty
+        ? "bg-[var(--color-accent-red)] text-[var(--color-text-inverse)]"
+        : "bg-[var(--color-accent-gold)] text-[var(--color-text-primary)]";
 
   const slots = teams ?? Array.from({ length: 4 }).map((_, i) => ({ code: `T${i + 1}`, flag: null }));
 
@@ -38,7 +44,7 @@ export function GroupCard({
           {letter}
         </div>
         <span className={`font-mono text-[10px] font-bold tracking-[0.08em] px-2 py-0.5 ${pillBg}`}>
-          {filled}/{total}
+          {locked ? (lockedLabel ?? "🔒") : `${filled}/${total}`}
         </span>
       </div>
       <div className="mt-2 flex items-center gap-0.5">

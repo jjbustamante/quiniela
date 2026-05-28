@@ -61,15 +61,24 @@ public class BracketService {
       Integer actualScoreT2,
       boolean played) {}
 
-  public record GroupView(String code, int filled, int total, List<MatchView> matches) {}
+  public record GroupView(
+      String code, int filled, int total, boolean locked, List<MatchView> matches) {}
 
   public record KnockoutRoundView(
-      String code, String name, int filled, int total, boolean unlocked, List<MatchView> matches) {}
+      String code,
+      String name,
+      int filled,
+      int total,
+      boolean unlocked,
+      boolean locked,
+      List<MatchView> matches) {}
 
   public record BracketView(
       Long quinielaId,
       int totalMatches,
       int totalBets,
+      String groupStageDeadline,
+      String knockoutDeadline,
       List<GroupView> groups,
       List<KnockoutRoundView> knockouts) {}
 
@@ -86,28 +95,45 @@ public class BracketService {
     Map<Long, Team> teamById = new HashMap<>();
     teams.findAll().forEach(t -> teamById.put(t.getId(), t));
 
+    var deadlines = lockClock.fetchTournamentDeadlines(DEFAULT_TOURNAMENT_ID);
+    java.time.Instant now = java.time.Instant.now();
+    boolean groupLocked =
+        deadlines.groupStageDeadline() != null && now.isAfter(deadlines.groupStageDeadline());
+    boolean knockoutLocked =
+        deadlines.knockoutDeadline() != null && now.isAfter(deadlines.knockoutDeadline());
+    // Knockout rounds become visible/interactive once the group stage closes.
+    boolean knockoutUnlocked = groupLocked;
+
     List<GroupView> groups = new ArrayList<>();
     for (String code : List.of("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L")) {
       List<Match> ms =
           matches.findByTournamentIdAndGroupCodeOrderByKickoffAtAsc(DEFAULT_TOURNAMENT_ID, code);
       List<MatchView> mvs = ms.stream().map(m -> toView(m, teamById, betByMatch)).toList();
       int filled = (int) mvs.stream().filter(v -> v.betScoreT1() != null).count();
-      groups.add(new GroupView(code, filled, ms.size(), mvs));
+      groups.add(new GroupView(code, filled, ms.size(), groupLocked, mvs));
     }
 
     List<KnockoutRoundView> ko = new ArrayList<>();
-    boolean unlocked = false; // toggled true by the lock logic once group stage closes.
     for (Round r : rounds.findByTournamentIdOrderBySequenceAsc(DEFAULT_TOURNAMENT_ID)) {
       if ("GROUP".equals(r.getCode())) continue;
       List<Match> ms =
           matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(DEFAULT_TOURNAMENT_ID, r.getId());
       List<MatchView> mvs = ms.stream().map(m -> toView(m, teamById, betByMatch)).toList();
       int filled = (int) mvs.stream().filter(v -> v.betScoreT1() != null).count();
-      ko.add(new KnockoutRoundView(r.getCode(), r.getName(), filled, ms.size(), unlocked, mvs));
+      ko.add(
+          new KnockoutRoundView(
+              r.getCode(), r.getName(), filled, ms.size(), knockoutUnlocked, knockoutLocked, mvs));
     }
 
     int totalMatches = (int) matches.count();
-    return new BracketView(q.getId(), totalMatches, myBets.size(), groups, ko);
+    return new BracketView(
+        q.getId(),
+        totalMatches,
+        myBets.size(),
+        deadlines.groupStageDeadline() == null ? null : deadlines.groupStageDeadline().toString(),
+        deadlines.knockoutDeadline() == null ? null : deadlines.knockoutDeadline().toString(),
+        groups,
+        ko);
   }
 
   private MatchView toView(Match m, Map<Long, Team> teamById, Map<Long, Bet> betByMatch) {

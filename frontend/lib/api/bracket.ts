@@ -20,6 +20,7 @@ export type GroupView = {
   code: string;
   filled: number;
   total: number;
+  locked: boolean;
   matches: MatchView[];
 };
 
@@ -29,6 +30,7 @@ export type KnockoutRoundView = {
   filled: number;
   total: number;
   unlocked: boolean;
+  locked: boolean;
   matches: MatchView[];
 };
 
@@ -36,6 +38,8 @@ export type BracketView = {
   quinielaId: number;
   totalMatches: number;
   totalBets: number;
+  groupStageDeadline: string | null;
+  knockoutDeadline: string | null;
   groups: GroupView[];
   knockouts: KnockoutRoundView[];
 };

@@ -16,11 +16,13 @@ export function GroupDrillIn({
   groupId,
   saveBetAction,
   acceptPaulAction,
+  locked = false,
 }: {
   matches: MatchView[];
   groupId: string;
   saveBetAction: (matchId: number, t1: number, t2: number, gid: string) => Promise<void>;
   acceptPaulAction: (matchId: number, gid: string) => Promise<void>;
+  locked?: boolean;
 }) {
   const tNumpad = useTranslations("numpad");
   const tGroup = useTranslations("group");
@@ -37,12 +39,17 @@ export function GroupDrillIn({
             kickoffLabel={formatKickoff(m.kickoffAt)}
             paulLabelEmpty={tGroup("paulDecide")}
             paulLabelFilled={tGroup("paulChange")}
-            onTapScore={() => setEditing({ matchId: m.id })}
-            onAskPaul={() =>
+            locked={locked}
+            onTapScore={() => {
+              if (locked) return;
+              setEditing({ matchId: m.id });
+            }}
+            onAskPaul={() => {
+              if (locked) return;
               startTransition(() => {
                 acceptPaulAction(m.id, groupId);
-              })
-            }
+              });
+            }}
           />
         ))}
       </div>

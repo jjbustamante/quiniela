@@ -13,7 +13,7 @@ import { KnockoutLockedCard } from "@/components/lobby/KnockoutLockedCard";
 import { PaulFillAllButton } from "@/components/lobby/PaulFillAllButton";
 import { InviteFriendsButton } from "@/components/invite/InviteFriendsButton";
 import { StatCell } from "@/components/stats/StatCell";
-import { dateLong, daysUntil, formatPot } from "@/lib/tournament-format";
+import { dateLong, daysUntil, deadlineShort, formatPot } from "@/lib/tournament-format";
 
 export default async function HomePage() {
   const session = await auth();
@@ -38,6 +38,9 @@ export default async function HomePage() {
   const pct = bracket.totalMatches
     ? Math.round((bracket.totalBets / bracket.totalMatches) * 100)
     : 0;
+  const groupLockedLabel = bracket.groupStageDeadline
+    ? t("groupLockedPill", { when: deadlineShort(bracket.groupStageDeadline) })
+    : "🔒";
 
   return (
     <main className="flex min-h-screen flex-col pb-24">
@@ -89,6 +92,8 @@ export default async function HomePage() {
                 filled={g.filled}
                 total={g.total}
                 teams={teamPreview(g.matches)}
+                locked={g.locked}
+                lockedLabel={groupLockedLabel}
               />
             ))}
           </div>

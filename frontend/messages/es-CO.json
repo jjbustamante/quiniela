@@ -40,6 +40,7 @@
     "knockoutsLocked": "Se abre tras la fase de grupos.",
     "knockoutsLockedHeadline": "OCTAVOS · CUARTOS · SEMIS · FINAL",
     "knockoutsOpen": "Eliminatorias abiertas — entra a tu llave.",
+    "groupLockedPill": "🔒 {when}",
     "statPot": "POT",
     "statPaid": "PAGAS",
     "statProgress": "LISTOS",
@@ -52,7 +53,9 @@
   "group": {
     "matchesHeading": "TUS MARCADORES · {count} PARTIDOS",
     "paulDecide": "PAUL DECIDE",
-    "paulChange": "CAMBIAR · PAUL"
+    "paulChange": "CAMBIAR · PAUL",
+    "lockedBadge": "🔒 CERRADO · {when}",
+    "lockedHelp": "Ya no se pueden cambiar marcadores."
   },
   "nav": {
     "myQuiniela": "Mi Quiniela",

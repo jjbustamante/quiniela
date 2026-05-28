@@ -83,12 +83,12 @@
 - Create: `backend/src/test/java/io/quiniela/api/bracket/BracketLockUiIT.java` — verify `locked: true` returned for past deadlines
 
 **Acceptance:**
-- [ ] `GET /api/bracket/me` response includes `locked: true | false` per group + per knockout round.
-- [ ] Past deadline = locked; before deadline = unlocked. Boundary at `tournament.group_stage_deadline` / `knockout_deadline` timestamps.
-- [ ] Group drill-in: when locked, score cells render as non-tap-able display values; numpad doesn't open; "🔒 Cerrado · 11.JUN 17:00" badge at top.
-- [ ] Knockout drill-in: same treatment per round.
-- [ ] Home lobby `GroupCard`: locked state shows "🔒" pill instead of progress count.
-- [ ] Server-side double-check: hitting `POST /api/bracket/bet` after the deadline returns the existing `BracketLockedException` (no change — verify still wired).
+- [x] `GET /api/bracket/me` response includes `locked: true | false` per group + per knockout round.
+- [x] Past deadline = locked; before deadline = unlocked. Boundary at `tournament.group_stage_deadline` / `knockout_deadline` timestamps.
+- [x] Group drill-in: when locked, score cells render as non-tap-able display values; numpad doesn't open; "🔒 Cerrado · 11.JUN 17:00" badge at top.
+- [x] Knockout drill-in: same treatment per round.
+- [x] Home lobby `GroupCard`: locked state shows "🔒" pill instead of progress count.
+- [x] Server-side double-check: hitting `POST /api/bracket/bet` after the deadline returns the existing `BracketLockedException` (no change — verify still wired).
 
 **Implementation notes:**
 - Reuse the existing `LockClock.fetchTournamentDeadlines()` — don't re-query the schema from scratch.

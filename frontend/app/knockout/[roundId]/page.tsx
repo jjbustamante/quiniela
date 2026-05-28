@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { getMyBracket } from "@/lib/api/bracket";
 import { TopBar } from "@/components/shell/TopBar";
 import { BottomNav } from "@/components/shell/BottomNav";
+import { deadlineShort } from "@/lib/tournament-format";
 
 const VALID = ["R32", "R16", "QF", "SF", "THIRD_PLACE", "FINAL"];
 
@@ -26,6 +27,7 @@ export default async function KnockoutPage({
 
   const tLobby = await getTranslations("lobby");
   const tNav = await getTranslations("nav");
+  const tGroup = await getTranslations("group");
 
   return (
     <main className="flex min-h-screen flex-col pb-20">
@@ -48,11 +50,21 @@ export default async function KnockoutPage({
             </p>
           </div>
         ) : (
-          <div className="px-3 text-sm text-[var(--color-text-muted)]">
-            {/* Active round UI lives here — same MatchRow pattern as the group drill-in.
-                Implemented incrementally as each round resolves in production. */}
-            {round.matches.length} matches available.
-          </div>
+          <>
+            {round.locked && bracket.knockoutDeadline && (
+              <div className="mx-3 mt-2 border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-ink)] px-3 py-2 text-[var(--color-text-inverse)]">
+                <div className="chrome-label text-[var(--color-accent-gold)]">
+                  {tGroup("lockedBadge", { when: deadlineShort(bracket.knockoutDeadline) })}
+                </div>
+                <div className="mt-0.5 text-xs text-white/70">{tGroup("lockedHelp")}</div>
+              </div>
+            )}
+            <div className="px-3 text-sm text-[var(--color-text-muted)]">
+              {/* Active round UI lives here — same MatchRow pattern as the group drill-in.
+                  Implemented incrementally as each round resolves in production. */}
+              {round.matches.length} matches available.
+            </div>
+          </>
         )}
       </div>
       <BottomNav activeKey="myQuiniela" />

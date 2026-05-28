@@ -21,6 +21,7 @@ export function MatchRow({
   venueLabel,
   paulLabelEmpty,
   paulLabelFilled,
+  locked = false,
 }: {
   match: MatchView;
   onTapScore: () => void;
@@ -31,13 +32,14 @@ export function MatchRow({
   venueLabel?: string;
   paulLabelEmpty: string;
   paulLabelFilled: string;
+  locked?: boolean;
 }) {
   const filled = match.betScoreT1 != null && match.betScoreT2 != null;
   const t1Tint = filled && team1Hex ? `${team1Hex}14` : "transparent";
   const t2Tint = filled && team2Hex ? `${team2Hex}14` : "transparent";
 
   return (
-    <div className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)]">
+    <div className={`border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] ${locked ? "opacity-80" : ""}`}>
       <div className="flex items-stretch">
         {/* Team 1 — flag + name + kickoff label */}
         <div
@@ -57,11 +59,13 @@ export function MatchRow({
         <button
           type="button"
           onClick={onTapScore}
+          disabled={locked}
+          aria-disabled={locked || undefined}
           className={`w-[86px] shrink-0 font-display text-[26px] font-black leading-none tracking-[-0.04em] ${
             filled
               ? "bg-[var(--color-bg-ink)] text-[var(--color-accent-gold)]"
               : "bg-[var(--color-bg-paper)] text-[var(--color-text-muted)]"
-          }`}
+          } ${locked ? "cursor-not-allowed" : ""}`}
         >
           {filled ? `${match.betScoreT1}–${match.betScoreT2}` : "_·_"}
         </button>
@@ -85,7 +89,11 @@ export function MatchRow({
       <button
         type="button"
         onClick={onAskPaul}
-        className="flex w-full items-center justify-between border-t-[1.5px] border-dashed border-[var(--color-line-ink)] px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-primary)]"
+        disabled={locked}
+        aria-disabled={locked || undefined}
+        className={`flex w-full items-center justify-between border-t-[1.5px] border-dashed border-[var(--color-line-ink)] px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-muted)] ${
+          locked ? "cursor-not-allowed" : "hover:bg-[var(--color-bg-primary)]"
+        }`}
       >
         <span className="inline-flex items-center gap-2">
           <PaulBadge size={18} />
