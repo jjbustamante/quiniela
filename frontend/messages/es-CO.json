@@ -99,6 +99,22 @@
     "confirm": "Confirmar",
     "cancel": "Cancelar"
   },
+  "matches": {
+    "title": "PARTIDOS",
+    "tabPast": "PASADOS",
+    "tabToday": "HOY",
+    "tabUpcoming": "PRÓXIMOS",
+    "emptyPast": "Aún no hay partidos jugados",
+    "emptyToday": "Sin partidos hoy",
+    "emptyUpcoming": "No hay más partidos",
+    "yourPick": "TU PICK",
+    "result": "RESULT",
+    "noPick": "—",
+    "liveDot": "EN VIVO",
+    "pointsEarned": "+{n} PTS",
+    "groupLabel": "GRUPO {code}",
+    "kickoffShort": "{date} · {time}"
+  },
   "ranking": {
     "title": "TABLA",
     "subtitle": "{count} {count, plural, one {pana} other {panas}} · actualizado {when}",

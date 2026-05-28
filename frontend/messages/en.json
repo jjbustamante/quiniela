@@ -99,6 +99,22 @@
     "confirm": "Confirm",
     "cancel": "Cancel"
   },
+  "matches": {
+    "title": "MATCHES",
+    "tabPast": "PAST",
+    "tabToday": "TODAY",
+    "tabUpcoming": "UPCOMING",
+    "emptyPast": "No matches played yet",
+    "emptyToday": "No matches today",
+    "emptyUpcoming": "No more matches",
+    "yourPick": "YOUR PICK",
+    "result": "RESULT",
+    "noPick": "—",
+    "liveDot": "LIVE",
+    "pointsEarned": "+{n} PTS",
+    "groupLabel": "GROUP {code}",
+    "kickoffShort": "{date} · {time}"
+  },
   "ranking": {
     "title": "RANKING",
     "subtitle": "{count} {count, plural, one {player} other {players}} · updated {when}",

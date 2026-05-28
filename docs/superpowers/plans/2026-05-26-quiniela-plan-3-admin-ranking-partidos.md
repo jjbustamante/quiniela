@@ -140,14 +140,14 @@
 - Modify: `frontend/messages/{en,es-CO}.json` — `matches.{pasados,hoy,proximos,yourPick,result,hit,miss,upcoming,liveDot}` keys
 
 **Acceptance:**
-- [ ] `GET /api/matches` returns `{ past: [...], today: [...], upcoming: [...] }` where each match shape is `{ id, roundCode, groupCode, kickoffAt, team1: {code,name,flag}, team2: {code,name,flag}, score: {t1, t2} | null, played, yourPick: {t1, t2} | null, hit: 'exact' | 'winner' | 'goalDiff' | 'draw' | 'miss' | null }`.
-- [ ] "today" window: kickoff ≥ start-of-day UTC and < start-of-tomorrow UTC (server's clock, not client's).
-- [ ] "past" includes all matches with `kickoff < start-of-today`, sorted DESC.
-- [ ] "upcoming" includes all matches with `kickoff ≥ start-of-tomorrow`, sorted ASC.
-- [ ] User's pick comes from `bet` table joined on `(quiniela_id, match_id)` for the JWT's user; `null` if no bet exists.
-- [ ] `hit` is computed using the same point classification logic as the V005 trigger — extract to a shared SQL function so both stay in sync.
-- [ ] `/matches` page renders tab UI (Pasados / Hoy / Próximos), with a live-match indicator (red dot) next to today's matches whose kickoff has passed but `played` is `false`.
-- [ ] Empty Hoy tab renders "Sin partidos hoy" (Spanish) / "No matches today" (English) — not a generic "no data" placeholder.
+- [x] `GET /api/matches` returns `{ past: [...], today: [...], upcoming: [...] }` where each match shape is `{ id, roundCode, groupCode, kickoffAt, team1: {code,name,flag}, team2: {code,name,flag}, score: {t1, t2} | null, played, yourPick: {t1, t2} | null, hit: 'exact' | 'winner' | 'goalDiff' | 'draw' | 'miss' | null }`. → **Spec adapted post-V010: `hit` enum replaced with `pointsEarned: int|null` computed by `score_match_for_bet`.** Same anti-drift intent (single source of truth in PL/pgSQL). Response also gains `serverTime` so the frontend live-dot decision doesn't depend on the client clock.
+- [x] "today" window: kickoff ≥ start-of-day UTC and < start-of-tomorrow UTC (server's clock, not client's).
+- [x] "past" includes all matches with `kickoff < start-of-today`, sorted DESC.
+- [x] "upcoming" includes all matches with `kickoff ≥ start-of-tomorrow`, sorted ASC.
+- [x] User's pick comes from `bet` table joined on `(quiniela_id, match_id)` for the JWT's user; `null` if no bet exists.
+- [x] `hit` is computed using the same point classification logic as the V005 trigger — extract to a shared SQL function so both stay in sync. → Backend `SELECT score_match_for_bet(...)` reuses V010's function directly.
+- [x] `/matches` page renders tab UI (Pasados / Hoy / Próximos), with a live-match indicator (red dot) next to today's matches whose kickoff has passed but `played` is `false`.
+- [x] Empty Hoy tab renders "Sin partidos hoy" (Spanish) / "No matches today" (English) — not a generic "no data" placeholder.
 
 **Implementation notes:**
 - The classification function (`hit`) is core scoring logic — duplicating it in Java and SQL invites drift. Either expose the V005 PL/pgSQL function via a SELECT, or extract a Java helper that gets unit-tested against the SQL with fixed cases. Pick at implementation time.
