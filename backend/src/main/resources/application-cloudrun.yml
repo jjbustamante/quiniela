@@ -20,6 +20,16 @@ spring:
     username: ${DB_USER}
     password: ${DATABASE_PASSWORD}
     hikari:
+      # Cloud SQL db-f1-micro defaults to ~25 max_connections; raised to 50 via
+      # database_flag in iac/cloud_sql.tf to give rolling deploys headroom.
+      # Hikari default of 10/revision overruns 25 when two Cloud Run revisions
+      # overlap during deploy (new revision dies at Flyway init with
+      # "FATAL: remaining connection slots are reserved"). Pool=5 keeps
+      # per-instance request concurrency healthy while leaving the new 50
+      # ceiling comfortably out of reach for this audience size.
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 5000
       data-source-properties:
         cloudSqlInstance: ${CLOUDSQL_CONNECTION_NAME}
         socketFactory: com.google.cloud.sql.postgres.SocketFactory

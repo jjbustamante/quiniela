@@ -41,6 +41,17 @@ resource "google_sql_database_instance" "main" {
       # ssl_mode default is ENCRYPTED_ONLY for Postgres 12+
     }
 
+    # db-f1-micro defaults max_connections to ~25. Cloud Run rolling deploys
+    # briefly overlap old + new revisions, and each revision's HikariCP pool
+    # opens connections in parallel with Flyway's startup probe. With the
+    # JDBC defaults that easily exceeds 25 and the new revision dies with
+    # `FATAL: remaining connection slots are reserved`. Pair with the
+    # HikariCP cap in backend application-cloudrun.yml.
+    database_flags {
+      name  = "max_connections"
+      value = "50"
+    }
+
     maintenance_window {
       day          = 7 # Sunday
       hour         = 3 # 03:00 UTC = ~22:00 Caracas — late evening, low quiniela traffic
