@@ -110,13 +110,13 @@
 - Modify: `frontend/messages/{en,es-CO}.json` — `ranking.*` keys (header, columns, you, trend up/down/flat)
 
 **Acceptance:**
-- [ ] `GET /api/ranking` returns `{ entries: [{ rank, userId, displayName, points, delta, isYou }], updatedAt }`, sorted by `points DESC, displayName ASC`.
-- [ ] `rank` ties share a number (1, 1, 3 — not 1, 2, 3) — `RANK()` semantics, not `ROW_NUMBER()`.
-- [ ] `delta` is rank change vs previous round (positive = moved up). For v1, store a `previous_rank` column in `quiniela` or recompute on the fly from a SQL snapshot table. Simplest: a new `quiniela_rank_snapshot` table updated by a cron / admin endpoint after each round closes. **Decide at implementation time** — if cron infra is too much, ship without delta (`delta: null`) and add in v1.1.
-- [ ] `isYou` flag set for the row matching the JWT's user.
-- [ ] `/ranking` page renders the leaderboard with monospace font for points, "YOU" pill on your row, trend arrows (▲ delta_positive, ▼ delta_negative, "—" if `delta === 0 || null`).
-- [ ] Empty state (zero entries) renders "Aún no hay puntos · arranca el 11.JUN" — don't 500.
-- [ ] Page hits the endpoint with `cache: 'no-store'` (already the default in `lib/api/client.ts`).
+- [x] `GET /api/ranking` returns `{ entries: [{ rank, userId, displayName, points, delta, isYou }], updatedAt }`, sorted by `points DESC, displayName ASC`.
+- [x] `rank` ties share a number (1, 1, 3 — not 1, 2, 3) — `RANK()` semantics, not `ROW_NUMBER()`.
+- [x] `delta` is rank change vs previous round (positive = moved up). For v1, store a `previous_rank` column in `quiniela` or recompute on the fly from a SQL snapshot table. Simplest: a new `quiniela_rank_snapshot` table updated by a cron / admin endpoint after each round closes. **Decide at implementation time** — if cron infra is too much, ship without delta (`delta: null`) and add in v1.1. → **Shipped `delta: null` for v1.**
+- [x] `isYou` flag set for the row matching the JWT's user.
+- [x] `/ranking` page renders the leaderboard with monospace font for points, "YOU" pill on your row, trend arrows (▲ delta_positive, ▼ delta_negative, "—" if `delta === 0 || null`).
+- [x] Empty state (zero entries) renders "Aún no hay puntos · arranca el 11.JUN" — don't 500.
+- [x] Page hits the endpoint with `cache: 'no-store'` (already the default in `lib/api/client.ts`).
 
 **Implementation notes:**
 - Don't over-engineer the rank delta. If `quiniela_rank_snapshot` adds too much scope, ship `delta: null` and a follow-up plan.

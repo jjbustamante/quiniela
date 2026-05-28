@@ -99,6 +99,18 @@
     "confirm": "Confirmar",
     "cancel": "Cancelar"
   },
+  "ranking": {
+    "title": "TABLA",
+    "subtitle": "{count} {count, plural, one {pana} other {panas}} · actualizado {when}",
+    "headerRank": "#",
+    "headerName": "PANA",
+    "headerPoints": "PTS",
+    "you": "TÚ",
+    "empty": "Aún no hay puntos · arranca el 11.JUN",
+    "trendUp": "▲",
+    "trendDown": "▼",
+    "trendFlat": "—"
+  },
   "admin": {
     "resultsTitle": "RESULTADOS",
     "resultsSubtitle": "Marca el marcador real de cada partido.",

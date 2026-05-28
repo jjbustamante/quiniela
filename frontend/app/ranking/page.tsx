@@ -1,26 +1,67 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
+import { getRanking } from "@/lib/api/ranking";
 import { TopBar } from "@/components/shell/TopBar";
 import { BottomNav } from "@/components/shell/BottomNav";
+import { RankingRow } from "@/components/ranking/RankingRow";
+import { deadlineShort } from "@/lib/tournament-format";
 
 export default async function RankingPage() {
   const session = await auth();
   if (!session?.userId) redirect("/");
 
+  const ranking = await getRanking();
   const tNav = await getTranslations("nav");
-  const t = await getTranslations("placeholder");
+  const t = await getTranslations("ranking");
+
+  const updatedLabel = deadlineShort(ranking.updatedAt);
+  const count = ranking.entries.length;
 
   return (
     <main className="flex min-h-screen flex-col pb-24">
-      <TopBar title={tNav("ranking").toUpperCase()} meta={t("comingSoon").toUpperCase()} />
-      <section className="mx-auto flex w-full max-w-md flex-1 flex-col items-start justify-center gap-4 px-6 sm:max-w-2xl">
-        <span className="chrome-label text-[var(--color-accent-red)]">{t("comingSoon").toUpperCase()}</span>
-        <h1 className="headline-display text-[44px] sm:text-6xl">
-          {t("rankingHeadline")}
-        </h1>
-        <p className="font-sans text-base text-[var(--color-text-muted)]">{t("rankingHelp")}</p>
-      </section>
+      <TopBar title={tNav("ranking").toUpperCase()} meta={`${count}`} />
+
+      <div className="mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-4xl">
+        <div className="px-3 pt-3">
+          <span className="chrome-label chrome-label-muted">
+            {t("subtitle", { count, when: updatedLabel })}
+          </span>
+        </div>
+
+        {count === 0 ? (
+          <section className="mx-3 mt-6 border-[1.5px] border-dashed border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] p-6 text-center">
+            <p className="font-display text-base font-extrabold uppercase tracking-tight text-[var(--color-text-muted)]">
+              {t("empty")}
+            </p>
+          </section>
+        ) : (
+          <section className="mx-3 mt-3 flex flex-col gap-1.5">
+            <div className="flex items-stretch border-b-[1.5px] border-[var(--color-line-ink)] px-1 py-1">
+              <span className="chrome-label chrome-label-muted w-16 shrink-0 px-2.5">
+                {t("headerRank")}
+              </span>
+              <span className="chrome-label chrome-label-muted flex-1 px-3">
+                {t("headerName")}
+              </span>
+              <span className="chrome-label chrome-label-muted w-20 shrink-0 px-3 text-right">
+                {t("headerPoints")}
+              </span>
+            </div>
+            {ranking.entries.map((e) => (
+              <RankingRow
+                key={e.userId}
+                entry={e}
+                youLabel={t("you")}
+                trendUp={t("trendUp")}
+                trendDown={t("trendDown")}
+                trendFlat={t("trendFlat")}
+              />
+            ))}
+          </section>
+        )}
+      </div>
+
       <BottomNav activeKey="ranking" />
     </main>
   );

@@ -99,6 +99,18 @@
     "confirm": "Confirm",
     "cancel": "Cancel"
   },
+  "ranking": {
+    "title": "RANKING",
+    "subtitle": "{count} {count, plural, one {player} other {players}} · updated {when}",
+    "headerRank": "#",
+    "headerName": "PLAYER",
+    "headerPoints": "PTS",
+    "you": "YOU",
+    "empty": "No points yet · kicks off Jun 11",
+    "trendUp": "▲",
+    "trendDown": "▼",
+    "trendFlat": "—"
+  },
   "admin": {
     "resultsTitle": "RESULTS",
     "resultsSubtitle": "Record the actual final score for each match.",
