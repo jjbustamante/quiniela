@@ -125,7 +125,8 @@
     "empty": "Aún no hay puntos · arranca el 11.JUN",
     "trendUp": "▲",
     "trendDown": "▼",
-    "trendFlat": "—"
+    "trendFlat": "—",
+    "prizeFor": "Premio"
   },
   "admin": {
     "resultsTitle": "RESULTADOS",

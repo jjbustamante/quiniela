@@ -125,7 +125,8 @@
     "empty": "No points yet · kicks off Jun 11",
     "trendUp": "▲",
     "trendDown": "▼",
-    "trendFlat": "—"
+    "trendFlat": "—",
+    "prizeFor": "Prize"
   },
   "admin": {
     "resultsTitle": "RESULTS",

@@ -12,12 +12,15 @@ export function RankingRow({
   trendUp,
   trendDown,
   trendFlat,
+  payoutLabel,
 }: {
   entry: RankingEntry;
   youLabel: string;
   trendUp: string;
   trendDown: string;
   trendFlat: string;
+  /** Pre-formatted medal + payout string (e.g. "🥇 $24") for top-3 rows. */
+  payoutLabel?: string;
 }) {
   const delta = entry.delta;
   let trend = trendFlat;
@@ -46,7 +49,7 @@ export function RankingRow({
         <span className={`font-mono text-xs font-bold ${trendTone}`}>{trend}</span>
       </div>
 
-      {/* Name + optional YOU pill */}
+      {/* Name + optional YOU pill + optional medal/payout */}
       <div className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2">
         <span className="truncate font-display text-base font-extrabold uppercase tracking-tight">
           {entry.displayName ?? "—"}
@@ -54,6 +57,11 @@ export function RankingRow({
         {entry.isYou && (
           <span className="shrink-0 bg-[var(--color-accent-gold)] px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-[0.12em] text-[var(--color-text-primary)]">
             {youLabel}
+          </span>
+        )}
+        {payoutLabel && (
+          <span className="shrink-0 font-mono text-[11px] font-bold tracking-[0.04em] text-[var(--color-accent-gold)]">
+            {payoutLabel}
           </span>
         )}
       </div>

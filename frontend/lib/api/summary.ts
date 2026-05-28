@@ -1,5 +1,11 @@
 import { api } from "./client";
 
+export type PrizeSplitEntry = {
+  rank: number;
+  percentage: number;
+  payoutCents: number;
+};
+
 export type PublicSummary = {
   tournament: {
     slug: string;
@@ -17,6 +23,7 @@ export type PublicSummary = {
     potCents: number;
     panaCount: number;
   };
+  prizeSplit: PrizeSplitEntry[];
 };
 
 /**
@@ -38,6 +45,14 @@ const FALLBACK: PublicSummary = {
     totalGroups: 12,
   },
   pool: { currency: "USD", entryFeeCents: 2000, potCents: 0, panaCount: 0 },
+  // Mirrors the V003 seed (80/15/5). When the backend is down we still want
+  // /ranking to render the same shape with $0 payouts, so the page doesn't
+  // suddenly grow/shrink rows on a transient outage.
+  prizeSplit: [
+    { rank: 1, percentage: 80, payoutCents: 0 },
+    { rank: 2, percentage: 15, payoutCents: 0 },
+    { rank: 3, percentage: 5, payoutCents: 0 },
+  ],
 };
 
 export async function getPublicSummary(): Promise<PublicSummary> {

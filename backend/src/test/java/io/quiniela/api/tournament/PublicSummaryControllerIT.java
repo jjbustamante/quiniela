@@ -42,6 +42,16 @@ class PublicSummaryControllerIT extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.pool.currency").value("USD"))
         .andExpect(jsonPath("$.pool.entryFeeCents").value(2000))
         .andExpect(jsonPath("$.pool.potCents").isNumber())
-        .andExpect(jsonPath("$.pool.panaCount").isNumber());
+        .andExpect(jsonPath("$.pool.panaCount").isNumber())
+        // Seeded 80/15/5 split. Test pool starts empty → all payoutCents = 0
+        // (proves the empty-pool edge case never 500s).
+        .andExpect(jsonPath("$.prizeSplit.length()").value(3))
+        .andExpect(jsonPath("$.prizeSplit[0].rank").value(1))
+        .andExpect(jsonPath("$.prizeSplit[0].percentage").value(80))
+        .andExpect(jsonPath("$.prizeSplit[0].payoutCents").value(0))
+        .andExpect(jsonPath("$.prizeSplit[1].rank").value(2))
+        .andExpect(jsonPath("$.prizeSplit[1].percentage").value(15))
+        .andExpect(jsonPath("$.prizeSplit[2].rank").value(3))
+        .andExpect(jsonPath("$.prizeSplit[2].percentage").value(5));
   }
 }

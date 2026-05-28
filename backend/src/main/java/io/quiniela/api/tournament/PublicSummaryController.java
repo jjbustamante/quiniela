@@ -9,7 +9,9 @@ import io.quiniela.api.team.TeamRepository;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import javax.sql.DataSource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,6 +38,7 @@ public class PublicSummaryController {
   private final MatchRepository matches;
   private final RoundRepository rounds;
   private final TeamRepository teams;
+  private final JdbcTemplate jdbc;
 
   public PublicSummaryController(
       TournamentRepository tournaments,
@@ -43,13 +46,15 @@ public class PublicSummaryController {
       PoolMembershipRepository memberships,
       MatchRepository matches,
       RoundRepository rounds,
-      TeamRepository teams) {
+      TeamRepository teams,
+      DataSource ds) {
     this.tournaments = tournaments;
     this.pools = pools;
     this.memberships = memberships;
     this.matches = matches;
     this.rounds = rounds;
     this.teams = teams;
+    this.jdbc = new JdbcTemplate(ds);
   }
 
   public record TournamentSummary(
@@ -64,7 +69,10 @@ public class PublicSummaryController {
 
   public record PoolSummary(String currency, int entryFeeCents, long potCents, long panaCount) {}
 
-  public record SummaryResponse(TournamentSummary tournament, PoolSummary pool) {}
+  public record PrizeSplitEntry(int rank, int percentage, long payoutCents) {}
+
+  public record SummaryResponse(
+      TournamentSummary tournament, PoolSummary pool, List<PrizeSplitEntry> prizeSplit) {}
 
   @GetMapping("/summary")
   public ResponseEntity<SummaryResponse> get() {
@@ -92,6 +100,19 @@ public class PublicSummaryController {
                 .filter(s -> !s.isEmpty())
                 .toList();
 
+    // Prize split: percentages stay constant per pool; payout follows the live pot. Empty pool
+    // → all payoutCents = 0 but the percentage breakdown still renders (don't 500).
+    final long finalPotCents = potCents;
+    List<PrizeSplitEntry> prizeSplit =
+        jdbc.query(
+            "SELECT rank, percentage FROM prize_split WHERE pool_id = ? ORDER BY rank ASC",
+            (rs, n) ->
+                new PrizeSplitEntry(
+                    rs.getInt("rank"),
+                    rs.getInt("percentage"),
+                    finalPotCents * rs.getInt("percentage") / 100),
+            ACTIVE_POOL_ID);
+
     return ResponseEntity.ok(
         new SummaryResponse(
             new TournamentSummary(
@@ -103,6 +124,7 @@ public class PublicSummaryController {
                 tournament.getOpeningVenue(),
                 groupStageMatches,
                 totalGroups),
-            new PoolSummary(pool.getCurrency(), pool.getEntryFeeCents(), potCents, panaCount)));
+            new PoolSummary(pool.getCurrency(), pool.getEntryFeeCents(), potCents, panaCount),
+            prizeSplit));
   }
 }

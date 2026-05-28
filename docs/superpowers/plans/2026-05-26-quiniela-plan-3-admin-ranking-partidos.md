@@ -166,10 +166,10 @@
 - Update: `frontend/lib/api/summary.ts` `FALLBACK` constant — include hardcoded 80/15/5 split for offline safety
 
 **Acceptance:**
-- [ ] `/api/public/summary` response gains `prizeSplit: [{ rank: 1, percentage: 80, payoutCents: <potCents * 80 / 100> }, ...]`.
-- [ ] Empty pool (zero panas) renders 0 payouts but full split percentages — not 500.
-- [ ] `/ranking` shows "🥇 $XX" / "🥈 $YY" / "🥉 $ZZ" next to the top-3 rows.
-- [ ] Landing page is NOT extended — pot is still withheld pre-auth per the spec decision.
+- [x] `/api/public/summary` response gains `prizeSplit: [{ rank: 1, percentage: 80, payoutCents: <potCents * 80 / 100> }, ...]`.
+- [x] Empty pool (zero panas) renders 0 payouts but full split percentages — not 500.
+- [x] `/ranking` shows "🥇 $XX" / "🥈 $YY" / "🥉 $ZZ" next to the top-3 rows.
+- [x] Landing page is NOT extended — pot is still withheld pre-auth per the spec decision.
 
 **Implementation notes:**
 - Tight task — one extension to an existing endpoint and one render in an existing page.
