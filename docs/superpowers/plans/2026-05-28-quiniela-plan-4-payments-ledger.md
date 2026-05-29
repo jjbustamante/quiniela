@@ -50,7 +50,7 @@ Scope: core ledger only. Prize-split editor UI, CSV export, and the lobby
 - [x] Task 5: Frontend captain payments — lib/api/payments.ts + /captain/payments + actions
 - [x] Task 6: Frontend admin payments — /admin/payments + actions
 - [x] Task 7: i18n keys + lobby "Pagos" entry-point link
-- [ ] Task 8: Verify end-to-end + ship
+- [x] Task 8: Verify end-to-end + ship
 
 ---
 
@@ -779,8 +779,8 @@ git commit -m "feat(frontend): payments i18n + lobby entry point"
 - [x] Backend `./mvnw verify` green
 - [x] Frontend typecheck + lint clean
 - [x] `PublicSummaryController` unchanged (pot semantics preserved)
-- [ ] Backend + frontend CI green on `master`
-- [ ] `/api/payments/my-subgroup` returns 401 unauth in prod
+- [x] Backend + frontend CI green on `master`
+- [x] `/api/payments/my-subgroup` returns 401 unauth in prod
 
 ---
 
