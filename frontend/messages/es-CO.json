@@ -66,7 +66,8 @@
     "home": "Inicio",
     "payments": "Pagos",
     "results": "Resultados",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "testMode": "Modo prueba"
   },
   "auth_error": {
     "title": "No pudimos iniciar tu sesión",
@@ -170,5 +171,25 @@
   },
   "testMode": {
     "banner": "MODO PRUEBA · los datos no son reales"
+  },
+  "test": {
+    "title": "MODO PRUEBA",
+    "modeOn": "Modo prueba ACTIVO",
+    "modeOff": "Modo prueba apagado",
+    "enable": "Activar modo prueba",
+    "disable": "Salir a producción",
+    "confirmGoLive": "¿Salir a producción? Se desactivan las herramientas de prueba y se quita el aviso.",
+    "deadlinesTitle": "Fechas límite",
+    "groupDeadline": "Cierre fase de grupos",
+    "knockoutDeadline": "Cierre eliminatorias",
+    "deadlinesHelp": "Pon el cierre de grupos en el pasado para probar el estado cerrado y abrir las eliminatorias.",
+    "save": "Guardar",
+    "currentRound": "Ronda actual: {round}",
+    "allPlayed": "Todos los partidos jugados",
+    "simulateRound": "Simular ronda actual",
+    "simulateAll": "Simular todo",
+    "cleanTitle": "Limpiar datos de prueba",
+    "clean": "Limpiar",
+    "confirmClean": "¿Borrar todos los pronósticos, resultados y pagos de prueba?"
   }
 }

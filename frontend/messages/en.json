@@ -66,7 +66,8 @@
     "home": "Home",
     "payments": "Payments",
     "results": "Results",
-    "settings": "Settings"
+    "settings": "Settings",
+    "testMode": "Test mode"
   },
   "auth_error": {
     "title": "We couldn't sign you in",
@@ -170,5 +171,25 @@
   },
   "testMode": {
     "banner": "TEST MODE · data is not real"
+  },
+  "test": {
+    "title": "TEST MODE",
+    "modeOn": "Test mode ON",
+    "modeOff": "Test mode is off",
+    "enable": "Enable test mode",
+    "disable": "Go live",
+    "confirmGoLive": "Go live? Test tools will be disabled and the banner removed.",
+    "deadlinesTitle": "Deadlines",
+    "groupDeadline": "Group stage close",
+    "knockoutDeadline": "Knockouts close",
+    "deadlinesHelp": "Set the group deadline in the past to test the locked state and unlock knockouts.",
+    "save": "Save",
+    "currentRound": "Current round: {round}",
+    "allPlayed": "All matches played",
+    "simulateRound": "Simulate current round",
+    "simulateAll": "Simulate everything",
+    "cleanTitle": "Clean test data",
+    "clean": "Clean",
+    "confirmClean": "Delete all test predictions, results and payments?"
   }
 }

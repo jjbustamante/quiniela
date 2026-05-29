@@ -74,9 +74,14 @@ export function NavDrawer({ role }: { role: Role }) {
               </Link>
             )}
             {role === "ADMIN" && (
-              <Link href="/admin/results" className={linkClass} onClick={close}>
-                {t("results")}
-              </Link>
+              <>
+                <Link href="/admin/results" className={linkClass} onClick={close}>
+                  {t("results")}
+                </Link>
+                <Link href="/admin/test" className={linkClass} onClick={close}>
+                  {t("testMode")}
+                </Link>
+              </>
             )}
             <Link href="/settings" className={linkClass} onClick={close}>
               {t("settings")}
