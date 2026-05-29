@@ -31,7 +31,8 @@ partidos — without that data becoming the real pool. Needs:
   `RoundRepository.findByTournamentIdOrderBySequenceAsc`.
 - Admin endpoints live under `/api/admin`; admin gate is
   `AdminResultsService.requireAdmin` (ResponseStatusException, role check).
-- Next migration: **V012**.
+- Next migration: **V013** (V012 is taken by the user-timezone feature, which
+  ships first — see `2026-05-29-user-timezone-design.md`).
 
 ## Decisions (locked in brainstorming)
 
@@ -53,9 +54,9 @@ partidos — without that data becoming the real pool. Needs:
 
 ## Architecture
 
-### Data — migration `V012__test_mode.sql`
+### Data — migration `V013__test_mode.sql`
 ```sql
-ALTER TABLE tournament ADD COLUMN test_mode BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE tournament ADD COLUMN test_mode BOOLEAN NOT NULL DEFAULT true;  -- V013
 ```
 Add `testMode` to the `Tournament` JPA entity (boolean, `@Column(name =
 "test_mode")`) with getter + setter.
