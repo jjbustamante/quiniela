@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
+import { getMe } from "@/lib/api/me";
 import { getMatches } from "@/lib/api/matches";
 import { TopBar } from "@/components/shell/TopBar";
 import { BottomNav } from "@/components/shell/BottomNav";
@@ -10,7 +11,7 @@ export default async function MatchesPage() {
   const session = await auth();
   if (!session?.userId) redirect("/");
 
-  const view = await getMatches();
+  const [me, view] = await Promise.all([getMe(), getMatches()]);
   const tNav = await getTranslations("nav");
   const t = await getTranslations("matches");
 
@@ -23,7 +24,7 @@ export default async function MatchesPage() {
       <div className="mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-4xl px-3 pt-3">
         <span className="chrome-label chrome-label-muted">{tNav("matches")}</span>
         <div className="mt-3">
-          <MatchTabs view={view} />
+          <MatchTabs view={view} timeZone={me.timezone} />
         </div>
       </div>
 

@@ -39,7 +39,7 @@ export default async function AdminResultsPage() {
             </h2>
             <div className="mt-2 flex flex-col gap-2">
               {rows.map((m) => (
-                <MatchResultRow key={m.matchId} match={m} />
+                <MatchResultRow key={m.matchId} match={m} timeZone={me.timezone} />
               ))}
             </div>
           </section>

@@ -9,6 +9,7 @@ export type MeResponse = {
   invitePath: string | null;
   canInvite: boolean;
   invitedByUserId: number | null;
+  timezone: string;
 };
 
 export async function getMe(): Promise<MeResponse> {

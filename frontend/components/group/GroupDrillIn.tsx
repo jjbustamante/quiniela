@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import type { MatchView } from "@/lib/api/bracket";
+import { formatMatchDateTime } from "@/lib/format-datetime";
 import { MatchRow } from "./MatchRow";
 import { NumpadScoreInput } from "./NumpadScoreInput";
 
@@ -17,12 +18,14 @@ export function GroupDrillIn({
   saveBetAction,
   acceptPaulAction,
   locked = false,
+  timeZone,
 }: {
   matches: MatchView[];
   groupId: string;
   saveBetAction: (matchId: number, t1: number, t2: number, gid: string) => Promise<void>;
   acceptPaulAction: (matchId: number, gid: string) => Promise<void>;
   locked?: boolean;
+  timeZone: string;
 }) {
   const tGroup = useTranslations("group");
   const [editing, setEditing] = useState<{ matchId: number } | null>(null);
@@ -35,7 +38,7 @@ export function GroupDrillIn({
           <MatchRow
             key={m.id}
             match={m}
-            kickoffLabel={formatKickoff(m.kickoffAt)}
+            kickoffLabel={formatMatchDateTime(m.kickoffAt, timeZone)}
             paulLabelEmpty={tGroup("paulDecide")}
             paulLabelFilled={tGroup("paulChange")}
             locked={locked}
@@ -82,13 +85,3 @@ export function GroupDrillIn({
   );
 }
 
-function formatKickoff(iso: string): string {
-  try {
-    const d = new Date(iso);
-    const date = d.toLocaleDateString("es-CO", { day: "2-digit", month: "short" }).toUpperCase().replace(".", "");
-    const time = d.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false });
-    return `${date} · ${time}`;
-  } catch {
-    return iso;
-  }
-}

@@ -4,6 +4,8 @@
  * is built the same way everywhere.
  */
 
+import { formatDeadline } from "./format-datetime";
+
 const MONTH_ABBR_ES = [
   "ENE",
   "FEB",
@@ -60,15 +62,9 @@ export function formatPot(potCents: number, currency: string): string {
   }).format(potCents / 100);
 }
 
-/** "11.JUN 17:00" — instant-precision deadline label for the lock badge. */
-export function deadlineShort(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = MONTH_ABBR_ES[d.getUTCMonth()];
-  const hh = String(d.getUTCHours()).padStart(2, "0");
-  const mm = String(d.getUTCMinutes()).padStart(2, "0");
-  return `${day}.${month} ${hh}:${mm}`;
+/** "12.JUN 12:00" — deadline/lock label in the user's timezone. */
+export function deadlineShort(iso: string, timeZone: string): string {
+  return formatDeadline(iso, timeZone);
 }
 
 function parseISODate(iso: string): Date {

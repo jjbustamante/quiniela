@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import type { AdminMatchRow } from "@/lib/api/admin";
+import { formatDeadline } from "@/lib/format-datetime";
 import { saveResultAction } from "@/app/admin/results/actions";
 
 /**
@@ -11,7 +12,7 @@ import { saveResultAction } from "@/app/admin/results/actions";
  * what's been done. Optimistic-ish — we set local state to whatever the
  * server returned, not to whatever the input said.
  */
-export function MatchResultRow({ match }: { match: AdminMatchRow }) {
+export function MatchResultRow({ match, timeZone }: { match: AdminMatchRow; timeZone: string }) {
   const t = useTranslations("admin");
   const [scoreT1, setScoreT1] = useState<string>(
     match.scoreT1 != null ? String(match.scoreT1) : "",
@@ -28,7 +29,7 @@ export function MatchResultRow({ match }: { match: AdminMatchRow }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const kickoff = formatKickoff(match.kickoffAt);
+  const kickoff = formatDeadline(match.kickoffAt, timeZone);
   const canSave =
     scoreT1.trim() !== "" &&
     scoreT2.trim() !== "" &&
@@ -136,11 +137,3 @@ export function MatchResultRow({ match }: { match: AdminMatchRow }) {
   );
 }
 
-function formatKickoff(iso: string): string {
-  const d = new Date(iso);
-  const date = `${String(d.getUTCDate()).padStart(2, "0")}.${MONTH[d.getUTCMonth()]}`;
-  const time = `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
-  return `${date} ${time}`;
-}
-
-const MONTH = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];

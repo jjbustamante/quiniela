@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import type { MatchesView } from "@/lib/api/matches";
+import { formatMatchDateTime } from "@/lib/format-datetime";
 import { MatchListItem } from "./MatchListItem";
 
 type Tab = "past" | "today" | "upcoming";
 
-export function MatchTabs({ view }: { view: MatchesView }) {
+export function MatchTabs({ view, timeZone }: { view: MatchesView; timeZone: string }) {
   const t = useTranslations("matches");
 
   // Default to whichever tab has the most relevant content for the moment:
@@ -59,7 +60,7 @@ export function MatchTabs({ view }: { view: MatchesView }) {
                 noPick: t("noPick"),
                 live: t("liveDot"),
                 formatPoints: (n) => t("pointsEarned", { n }),
-                kickoff: formatKickoff(m.kickoffAt),
+                kickoff: formatMatchDateTime(m.kickoffAt, timeZone),
                 groupLabel: m.groupCode ? t("groupLabel", { code: m.groupCode }) : null,
               }}
             />
@@ -94,20 +95,3 @@ function TabButton({
   );
 }
 
-function formatKickoff(iso: string): string {
-  try {
-    const d = new Date(iso);
-    const date = d
-      .toLocaleDateString("es-CO", { day: "2-digit", month: "short" })
-      .toUpperCase()
-      .replace(".", "");
-    const time = d.toLocaleTimeString("es-CO", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-    return `${date} · ${time}`;
-  } catch {
-    return iso;
-  }
-}

@@ -39,7 +39,7 @@ export default async function HomePage() {
     ? Math.round((bracket.totalBets / bracket.totalMatches) * 100)
     : 0;
   const groupLockedLabel = bracket.groupStageDeadline
-    ? t("groupLockedPill", { when: deadlineShort(bracket.groupStageDeadline) })
+    ? t("groupLockedPill", { when: deadlineShort(bracket.groupStageDeadline, me.timezone) })
     : "🔒";
 
   return (

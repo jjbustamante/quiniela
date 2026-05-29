@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
+import { getMe } from "@/lib/api/me";
 import { getRanking } from "@/lib/api/ranking";
 import { getPublicSummary } from "@/lib/api/summary";
 import { TopBar } from "@/components/shell/TopBar";
@@ -14,11 +15,11 @@ export default async function RankingPage() {
   const session = await auth();
   if (!session?.userId) redirect("/");
 
-  const [ranking, summary] = await Promise.all([getRanking(), getPublicSummary()]);
+  const [me, ranking, summary] = await Promise.all([getMe(), getRanking(), getPublicSummary()]);
   const tNav = await getTranslations("nav");
   const t = await getTranslations("ranking");
 
-  const updatedLabel = deadlineShort(ranking.updatedAt);
+  const updatedLabel = deadlineShort(ranking.updatedAt, me.timezone);
   const count = ranking.entries.length;
 
   // Build "🥇 $24" labels for the top-3 ranks (RANK semantics — ties share
