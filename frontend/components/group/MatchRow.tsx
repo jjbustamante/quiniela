@@ -49,7 +49,7 @@ export function MatchRow({
           <span className="chrome-label chrome-label-muted block truncate">{kickoffLabel}</span>
           <div className="mt-1.5 flex min-w-0 items-center gap-1.5">
             <span className="shrink-0 text-[22px] leading-none">{match.team1Flag}</span>
-            <span className="truncate font-display text-[15px] font-extrabold uppercase tracking-tight">
+            <span className="min-w-0 truncate font-display text-[15px] font-extrabold uppercase tracking-tight">
               {match.team1Name}
             </span>
           </div>
@@ -77,7 +77,7 @@ export function MatchRow({
         >
           <span className="chrome-label chrome-label-muted block w-full truncate text-right">{venueLabel}</span>
           <div className="mt-1.5 flex min-w-0 items-center gap-1.5">
-            <span className="truncate font-display text-[15px] font-extrabold uppercase tracking-tight">
+            <span className="min-w-0 truncate font-display text-[15px] font-extrabold uppercase tracking-tight">
               {match.team2Name}
             </span>
             <span className="shrink-0 text-[22px] leading-none">{match.team2Flag}</span>

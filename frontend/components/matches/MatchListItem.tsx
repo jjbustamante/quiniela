@@ -41,7 +41,7 @@ export function MatchListItem({
           <span className="chrome-label chrome-label-muted block truncate">{labels.kickoff}</span>
           <div className="mt-1.5 flex min-w-0 items-center gap-1.5">
             <span className="shrink-0 text-[22px] leading-none">{match.team1.flag}</span>
-            <span className="truncate font-display text-[15px] font-extrabold uppercase tracking-tight">
+            <span className="min-w-0 truncate font-display text-[15px] font-extrabold uppercase tracking-tight">
               {match.team1.name ?? "—"}
             </span>
           </div>
@@ -49,7 +49,7 @@ export function MatchListItem({
 
         {/* Score / kickoff stub */}
         <div className="flex w-[110px] shrink-0 flex-col items-center justify-center gap-0.5 bg-[var(--color-bg-paper)] px-2 py-2">
-          {showResult && match.played && match.score ? (
+          {match.played && match.score ? (
             <span className="font-display text-[26px] font-black leading-none tracking-[-0.04em] text-[var(--color-text-primary)]">
               {match.score.t1}–{match.score.t2}
             </span>
@@ -72,7 +72,7 @@ export function MatchListItem({
             {match.roundCode}
           </span>
           <div className="mt-1.5 flex min-w-0 items-center gap-1.5">
-            <span className="truncate font-display text-[15px] font-extrabold uppercase tracking-tight">
+            <span className="min-w-0 truncate font-display text-[15px] font-extrabold uppercase tracking-tight">
               {match.team2.name ?? "—"}
             </span>
             <span className="shrink-0 text-[22px] leading-none">{match.team2.flag}</span>
