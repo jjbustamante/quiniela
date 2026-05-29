@@ -43,7 +43,10 @@ class AdminTestControllerIT extends AbstractIntegrationTest {
   void restoreTestMode() {
     jdbc.update("UPDATE tournament SET test_mode = true WHERE id = 1");
     jdbc.update(
-        "UPDATE match SET score_t1=NULL, score_t2=NULL, winner_id=NULL, played=false WHERE id=1");
+        "UPDATE match SET score_t1=NULL, score_t2=NULL, winner_id=NULL, played=false WHERE tournament_id=1");
+    jdbc.update(
+        "UPDATE match m SET team_1_id=NULL, team_2_id=NULL "
+            + "WHERE m.tournament_id=1 AND m.match_parent_1_id IS NOT NULL");
   }
 
   private String adminToken() {
@@ -160,6 +163,70 @@ class AdminTestControllerIT extends AbstractIntegrationTest {
     mockMvc
         .perform(post("/api/admin/test/clean").header("Authorization", "Bearer " + token))
         .andExpect(status().isConflict());
+  }
+
+  @Test
+  void simulateRoundPlaysCurrentRoundAndScores() throws Exception {
+    String token = adminToken();
+    jdbc.update(
+        "UPDATE match SET score_t1=NULL, score_t2=NULL, winner_id=NULL, played=false WHERE tournament_id=1");
+
+    long groupUnplayedBefore =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='GROUP' AND m.played=false",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(groupUnplayedBefore).isGreaterThan(0);
+
+    mockMvc
+        .perform(post("/api/admin/test/simulate/round").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.roundCode").value("GROUP"))
+        .andExpect(jsonPath("$.matchesPlayed").value((int) groupUnplayedBefore));
+
+    long groupUnplayedAfter =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='GROUP' AND m.played=false",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(groupUnplayedAfter).isZero();
+  }
+
+  @Test
+  void simulateRoundIsForbiddenForNonAdmin() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/admin/test/simulate/round")
+                .header("Authorization", "Bearer " + playerToken()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void simulateRoundReturns409WhenTestModeOff() throws Exception {
+    String token = adminToken();
+    jdbc.update("UPDATE tournament SET test_mode = false WHERE id = 1");
+    mockMvc
+        .perform(post("/api/admin/test/simulate/round").header("Authorization", "Bearer " + token))
+        .andExpect(status().isConflict());
+  }
+
+  @Test
+  void simulateAllPlaysEveryResolvableMatch() throws Exception {
+    String token = adminToken();
+    jdbc.update(
+        "UPDATE match SET score_t1=NULL, score_t2=NULL, winner_id=NULL, played=false WHERE tournament_id=1");
+
+    mockMvc
+        .perform(post("/api/admin/test/simulate/all").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.roundsSimulated").isNumber());
+
+    long groupUnplayed =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='GROUP' AND m.played=false",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(groupUnplayed).isZero();
   }
 
   @Test

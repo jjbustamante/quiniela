@@ -47,6 +47,20 @@ public class AdminTestController {
     return ResponseEntity.ok(service.clean(callerId(jwt)));
   }
 
+  @PostMapping("/simulate/round")
+  public ResponseEntity<AdminTestService.SimulateRoundResult> simulateRound(
+      @AuthenticationPrincipal Jwt jwt) {
+    if (jwt == null) return ResponseEntity.status(401).build();
+    return ResponseEntity.ok(service.simulateRound(callerId(jwt)));
+  }
+
+  @PostMapping("/simulate/all")
+  public ResponseEntity<AdminTestService.SimulateAllResult> simulateAll(
+      @AuthenticationPrincipal Jwt jwt) {
+    if (jwt == null) return ResponseEntity.status(401).build();
+    return ResponseEntity.ok(service.simulateAll(callerId(jwt)));
+  }
+
   @PutMapping("/deadlines")
   public ResponseEntity<AdminTestService.DeadlinesView> deadlines(
       @AuthenticationPrincipal Jwt jwt, @RequestBody DeadlinesRequest req) {
