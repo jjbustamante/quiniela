@@ -7,7 +7,7 @@ import { formatPot } from "@/lib/tournament-format";
 import { TopBar } from "@/components/shell/TopBar";
 import { BottomNav } from "@/components/shell/BottomNav";
 import { CaptainGroupCard } from "@/components/payments/CaptainGroupCard";
-import { SubgroupRow } from "@/components/payments/SubgroupRow";
+import { PaidToggleRow } from "@/components/payments/PaidToggleRow";
 import { markSettledAction, markPaidAction } from "./actions";
 
 export default async function AdminPaymentsPage() {
@@ -55,9 +55,11 @@ export default async function AdminPaymentsPage() {
             </h2>
             <div className="mt-2 flex flex-col gap-1.5">
               {ledger.orphans.map((member) => (
-                <SubgroupRow
+                <PaidToggleRow
                   key={member.userId}
-                  member={member}
+                  userId={member.userId}
+                  displayName={member.displayName}
+                  paid={member.paid}
                   markPaidAction={markPaidAction}
                   paidLabel={t("paid")}
                   unpaidLabel={t("unpaid")}
