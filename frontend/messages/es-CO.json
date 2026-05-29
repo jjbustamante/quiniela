@@ -61,7 +61,11 @@
     "myQuiniela": "Mi Quiniela",
     "ranking": "Tabla",
     "matches": "Partidos",
-    "compare": "Comparar"
+    "compare": "Comparar",
+    "menu": "Menú",
+    "home": "Inicio",
+    "payments": "Pagos",
+    "results": "Resultados"
   },
   "auth_error": {
     "title": "No pudimos iniciar tu sesión",

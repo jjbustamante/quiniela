@@ -61,7 +61,11 @@
     "myQuiniela": "My Bracket",
     "ranking": "Ranking",
     "matches": "Matches",
-    "compare": "Compare"
+    "compare": "Compare",
+    "menu": "Menu",
+    "home": "Home",
+    "payments": "Payments",
+    "results": "Results"
   },
   "auth_error": {
     "title": "We couldn't sign you in",
