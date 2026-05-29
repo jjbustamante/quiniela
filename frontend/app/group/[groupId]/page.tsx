@@ -46,7 +46,6 @@ export default async function GroupPage({
       <TopBar
         title={`${tNav("myQuiniela").toUpperCase()} · GRUPO ${upperId}`}
         meta={`${group.filled}/${group.total}`}
-        back
       />
 
       <div className="mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-4xl">
