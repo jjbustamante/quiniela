@@ -149,10 +149,11 @@
   },
   "settings": {
     "title": "SETTINGS",
-    "timezoneLabel": "Timezone",
+    "detectedLabel": "Your detected timezone",
+    "saveDetected": "Save this",
+    "detectedActive": "Already yours",
+    "orChoose": "Or choose another",
     "timezoneHelp": "Match times are shown in this zone.",
-    "useDevice": "Use my device's timezone",
-    "save": "Save",
     "saved": "Saved"
   },
   "admin": {

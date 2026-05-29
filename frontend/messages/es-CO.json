@@ -149,10 +149,11 @@
   },
   "settings": {
     "title": "AJUSTES",
-    "timezoneLabel": "Zona horaria",
+    "detectedLabel": "Tu zona detectada",
+    "saveDetected": "Guardar esta",
+    "detectedActive": "Es la que tienes",
+    "orChoose": "O elige otra",
     "timezoneHelp": "Las horas de los partidos se muestran en esta zona.",
-    "useDevice": "Usar la de mi dispositivo",
-    "save": "Guardar",
     "saved": "Guardado"
   },
   "admin": {
