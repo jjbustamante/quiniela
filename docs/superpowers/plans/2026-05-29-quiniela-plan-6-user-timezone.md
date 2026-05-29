@@ -32,12 +32,12 @@
 
 ## Progress
 
-- [ ] Task 1: V012 migration + User.timezone entity field
-- [ ] Task 2: MeResponse.timezone + PUT /api/me/timezone + IT
-- [ ] Task 3: lib/format-datetime.ts helper + unit test
-- [ ] Task 4: lib/api/me.ts type + replace buggy formatters (thread tz)
-- [ ] Task 5: /settings page + TimezoneSetting + server action + nav drawer item + i18n
-- [ ] Task 6: verify + ship
+- [x] Task 1: V012 migration + User.timezone entity field
+- [x] Task 2: MeResponse.timezone + PUT /api/me/timezone + IT
+- [x] Task 3: lib/format-datetime.ts helper + unit test
+- [x] Task 4: lib/api/me.ts type + replace buggy formatters (thread tz)
+- [x] Task 5: /settings page + TimezoneSetting + server action + nav drawer item + i18n
+- [x] Task 6: verify + ship
 
 ---
 
@@ -48,7 +48,7 @@
 - Modify: `backend/src/main/java/io/quiniela/api/user/User.java`
 - Create: `backend/src/test/java/io/quiniela/api/support/V012MigrationTest.java`
 
-- [ ] **Step 1: Write the failing migration test**
+- [x] **Step 1: Write the failing migration test**
 
 Create `V012MigrationTest.java`:
 ```java
@@ -86,11 +86,11 @@ class V012MigrationTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 `cd backend && ./mvnw verify` → FAIL (no `timezone` column).
 
-- [ ] **Step 3: Write the migration**
+- [x] **Step 3: Write the migration**
 
 Create `V012__user_timezone.sql`:
 ```sql
@@ -102,7 +102,7 @@ Create `V012__user_timezone.sql`:
 ALTER TABLE users ADD COLUMN timezone VARCHAR(64) NOT NULL DEFAULT 'America/Bogota';
 ```
 
-- [ ] **Step 4: Add the entity field**
+- [x] **Step 4: Add the entity field**
 
 In `backend/src/main/java/io/quiniela/api/user/User.java`, add the column field
 after `invitePath` (before `createdAt`):
@@ -124,11 +124,11 @@ And add getter + setter near the other accessors:
 constructor path doesn't set it, and Hibernate will read the DB-applied value
 back. No constructor change needed.)
 
-- [ ] **Step 5: Run to verify it passes**
+- [x] **Step 5: Run to verify it passes**
 
 `cd backend && ./mvnw verify` → PASS (V012MigrationTest green; all prior ITs green).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 ```bash
 git add backend/src/main/resources/db/migration/V012__user_timezone.sql \
         backend/src/main/java/io/quiniela/api/user/User.java \
@@ -144,7 +144,7 @@ git commit -m "feat(backend): V012 — users.timezone column + entity field"
 - Modify: `backend/src/main/java/io/quiniela/api/me/MeController.java`
 - Modify: `backend/src/test/java/io/quiniela/api/me/MeControllerIT.java`
 
-- [ ] **Step 1: Add failing IT cases**
+- [x] **Step 1: Add failing IT cases**
 
 In `MeControllerIT.java`, add these imports at the top (alongside the existing
 ones):
@@ -214,11 +214,11 @@ And add these tests inside the class:
   }
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 `cd backend && ./mvnw verify` → FAIL (no `timezone` in MeResponse, no PUT route).
 
-- [ ] **Step 3: Update MeController**
+- [x] **Step 3: Update MeController**
 
 Rewrite `backend/src/main/java/io/quiniela/api/me/MeController.java`:
 ```java
@@ -311,11 +311,11 @@ public class MeController {
 }
 ```
 
-- [ ] **Step 4: Run to verify they pass**
+- [x] **Step 4: Run to verify they pass**
 
 `cd backend && ./mvnw verify` → PASS (4 new cases green; spotless:apply first if format fails).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 ```bash
 git add backend/src/main/java/io/quiniela/api/me/MeController.java \
         backend/src/test/java/io/quiniela/api/me/MeControllerIT.java
@@ -334,7 +334,7 @@ The helper formats an instant (ISO timestamp) in an explicit IANA zone, matching
 the app's existing "DD.MMM · HH:MM" Spanish-abbrev visual style. Deterministic on
 SSR + client because the zone is passed in, not read from the runtime.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `frontend/lib/format-datetime.test.ts`:
 ```ts
@@ -370,11 +370,11 @@ describe("format-datetime", () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 `cd frontend && pnpm test -- format-datetime 2>&1 | tail -15` → FAIL (module missing).
 
-- [ ] **Step 3: Implement the helper**
+- [x] **Step 3: Implement the helper**
 
 Create `frontend/lib/format-datetime.ts`:
 ```ts
@@ -432,7 +432,7 @@ export function formatDeadline(iso: string, timeZone: string): string {
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes**
+- [x] **Step 4: Run to verify it passes**
 
 `cd frontend && pnpm test -- format-datetime 2>&1 | tail -15` → all 6 green.
 
@@ -441,7 +441,7 @@ export function formatDeadline(iso: string, timeZone: string): string {
 > helper pads day to 2 digits — the tests use day 12 so this won't bite; keep
 > the padStart.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 ```bash
 git add frontend/lib/format-datetime.ts frontend/lib/format-datetime.test.ts
 git commit -m "feat(frontend): zone-aware instant formatter"
@@ -467,7 +467,7 @@ git commit -m "feat(frontend): zone-aware instant formatter"
 No new behavior to unit-test here (covered by Task 3's helper test + existing
 page rendering); this task is the wiring. Verify via typecheck + build at the end.
 
-- [ ] **Step 1: Add `timezone` to the me type**
+- [x] **Step 1: Add `timezone` to the me type**
 
 In `frontend/lib/api/me.ts`, add `timezone: string;` to the `MeResponse` type
 (it's the type returned by `getMe()`):
@@ -485,7 +485,7 @@ export type MeResponse = {
 };
 ```
 
-- [ ] **Step 2: Make `deadlineShort` zone-aware**
+- [x] **Step 2: Make `deadlineShort` zone-aware**
 
 In `frontend/lib/tournament-format.ts`, replace the `deadlineShort` function
 with a delegating wrapper (keep the date-only helpers untouched):
@@ -501,7 +501,7 @@ Remove the now-unused `MONTH_ABBR_ES` references ONLY if nothing else in the
 file uses them — `formatDayMonth` still uses `MONTH_ABBR_ES`, so KEEP the array.
 Remove the old `getUTC*`-based body of `deadlineShort` entirely (replaced above).
 
-- [ ] **Step 3: Update `deadlineShort` callers to pass tz**
+- [x] **Step 3: Update `deadlineShort` callers to pass tz**
 
 Each caller fetches `me` and passes `me.timezone`. Pages that already fetch
 `getMe`: `home`. Pages that must ADD a `getMe()` call: `ranking`, `group`,
@@ -525,7 +525,7 @@ fetch `const me = await getMe();`, change
 `deadlineShort(bracket.knockoutDeadline)` →
 `deadlineShort(bracket.knockoutDeadline, me.timezone)`.
 
-- [ ] **Step 4: Thread tz into MatchTabs + GroupDrillIn (kickoff labels)**
+- [x] **Step 4: Thread tz into MatchTabs + GroupDrillIn (kickoff labels)**
 
 `app/matches/page.tsx`: add `import { getMe } from "@/lib/api/me";`, fetch
 `const me = await getMe();`, and pass to the tabs: `<MatchTabs view={view}
@@ -546,7 +546,7 @@ timeZone)`, and delete the local `formatKickoff`. Then in
 `app/group/[groupId]/page.tsx` pass `timeZone={me.timezone}` to `<GroupDrillIn
 ... />` (me already fetched in Step 3).
 
-- [ ] **Step 5: Fix the admin results kickoff formatter**
+- [x] **Step 5: Fix the admin results kickoff formatter**
 
 `frontend/components/admin/MatchResultRow.tsx` currently has, at line ~14:
 `export function MatchResultRow({ match }: { match: AdminMatchRow }) {`, uses it
@@ -569,7 +569,7 @@ getMe();` at line ~18 for the admin gate), change the row mapping at line ~42
 from `<MatchResultRow key={m.matchId} match={m} />` to
 `<MatchResultRow key={m.matchId} match={m} timeZone={me.timezone} />`.
 
-- [ ] **Step 6: Verify gates**
+- [x] **Step 6: Verify gates**
 ```bash
 cd frontend && pnpm typecheck 2>&1 | tail -3
 ```
@@ -585,7 +585,7 @@ cd frontend && pnpm build 2>&1 | grep -E "Compiled|error|Error" | head
 ```
 Expected: "Compiled successfully".
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 ```bash
 git add frontend/lib/api/me.ts frontend/lib/tournament-format.ts \
         frontend/app/home/page.tsx frontend/app/ranking/page.tsx \
@@ -609,7 +609,7 @@ git commit -m "fix(frontend): render instant times in the user's timezone"
 - Modify: `frontend/messages/es-CO.json`
 - Modify: `frontend/messages/en.json`
 
-- [ ] **Step 1: API client**
+- [x] **Step 1: API client**
 
 Create `frontend/lib/api/settings.ts`:
 ```ts
@@ -623,7 +623,7 @@ export async function setTimezone(timezone: string): Promise<void> {
 }
 ```
 
-- [ ] **Step 2: Server action**
+- [x] **Step 2: Server action**
 
 Create `frontend/app/settings/actions.ts`:
 ```ts
@@ -638,7 +638,7 @@ export async function saveTimezoneAction(timezone: string): Promise<void> {
 }
 ```
 
-- [ ] **Step 3: TimezoneSetting client component**
+- [x] **Step 3: TimezoneSetting client component**
 
 Create `frontend/components/settings/TimezoneSetting.tsx`:
 ```tsx
@@ -722,7 +722,7 @@ export function TimezoneSetting({
 }
 ```
 
-- [ ] **Step 4: Settings page**
+- [x] **Step 4: Settings page**
 
 Create `frontend/app/settings/page.tsx`:
 ```tsx
@@ -756,7 +756,7 @@ export default async function SettingsPage() {
 }
 ```
 
-- [ ] **Step 5: Nav drawer item**
+- [x] **Step 5: Nav drawer item**
 
 In `frontend/components/shell/NavDrawer.tsx`, add a Settings link visible to ALL
 roles, just before the divider/sign-out. After the `role === "ADMIN"` Resultados
@@ -768,7 +768,7 @@ block and before the `<div className="my-1 border-t ...">` divider, insert:
 ```
 (`t` is already `useTranslations("nav")` in this component.)
 
-- [ ] **Step 6: i18n**
+- [x] **Step 6: i18n**
 
 Add to `frontend/messages/es-CO.json`: in the `nav` object add
 `"settings": "Ajustes"`, and add a new top-level `settings` namespace:
@@ -795,7 +795,7 @@ Add the mirror to `frontend/messages/en.json`: in `nav` add
   },
 ```
 
-- [ ] **Step 7: Verify gates + parity**
+- [x] **Step 7: Verify gates + parity**
 ```bash
 cd frontend && node -e "const es=require('./messages/es-CO.json'), en=require('./messages/en.json'); const p=(o)=>Object.keys(o).sort().join(','); console.log('nav parity:', p(es.nav)===p(en.nav)); console.log('settings parity:', p(es.settings)===p(en.settings));"
 ```
@@ -805,7 +805,7 @@ cd frontend && pnpm typecheck 2>&1 | tail -3 && pnpm lint 2>&1 | tail -6 && pnpm
 ```
 Expected: typecheck clean; no new lint; build compiles with `/settings` route.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 ```bash
 git add frontend/lib/api/settings.ts frontend/app/settings/ \
         frontend/components/settings/TimezoneSetting.tsx \
@@ -818,21 +818,21 @@ git commit -m "feat(frontend): /settings timezone preference + nav drawer item"
 
 ## Task 6: Verify end-to-end + ship
 
-- [ ] **Step 1: Full backend verify**
+- [x] **Step 1: Full backend verify**
 `cd backend && ./mvnw -B verify` — all ITs green (V012MigrationTest + 4 new
 MeControllerIT cases included).
 
-- [ ] **Step 2: Full frontend sweep**
+- [x] **Step 2: Full frontend sweep**
 `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` —
 typecheck clean; lint only the 2 pre-existing warnings; unit tests green
 (format-datetime suite present); build compiles.
 
-- [ ] **Step 3: Confirm date-only fields untouched**
+- [x] **Step 3: Confirm date-only fields untouched**
 `git diff b4bd2e6..HEAD -- frontend/lib/tournament-format.ts` — confirm
 `dateLong`, `dateRangeShort`, `hostLine`, `yearGlyph`, `daysUntil`,
 `formatDayMonth`, `parseISODate` are unchanged; only `deadlineShort` changed.
 
-- [ ] **Step 4: Tick plan checkboxes, commit, push**
+- [x] **Step 4: Tick plan checkboxes, commit, push**
 Mark all Progress + verification checkboxes `[x]`, then:
 ```bash
 git add docs/superpowers/plans/2026-05-29-quiniela-plan-6-user-timezone.md
@@ -840,7 +840,7 @@ git commit -m "docs: Plan 6 complete — per-user timezone"
 git push origin master
 ```
 
-- [ ] **Step 5: Watch CI + smoke prod**
+- [x] **Step 5: Watch CI + smoke prod**
 Watch backend + frontend CI to green (`gh run watch <id> --exit-status`). Then:
 ```bash
 curl -sS -o /dev/null -w "%{http_code}\n" https://laquinieladelospanas.com/
@@ -850,11 +850,11 @@ Expected: landing 200; `/api/me` 401 (unauth, route exists). Full timezone
 behavior verified logged-in during the manual dry-run.
 
 **Verification:**
-- [ ] Backend `./mvnw verify` green (V012 + MeController tz tests)
-- [ ] Frontend typecheck + lint + test + build clean
-- [ ] Date-only formatters unchanged
-- [ ] Backend + frontend CI green on `master`
-- [ ] `/settings` reachable; `/api/me/timezone` 401 unauth in prod
+- [x] Backend `./mvnw verify` green (V012 + MeController tz tests)
+- [x] Frontend typecheck + lint + test + build clean
+- [x] Date-only formatters unchanged
+- [x] Backend + frontend CI green on `master`
+- [x] `/settings` reachable; `/api/me/timezone` 401 unauth in prod
 
 ---
 
