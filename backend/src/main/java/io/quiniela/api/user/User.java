@@ -40,6 +40,9 @@ public class User {
   @Column(name = "invite_path", unique = true)
   private String invitePath;
 
+  @Column(nullable = false)
+  private String timezone = "America/Bogota";
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -122,6 +125,14 @@ public class User {
 
   public void setInvitePath(String invitePath) {
     this.invitePath = invitePath;
+  }
+
+  public String getTimezone() {
+    return timezone;
+  }
+
+  public void setTimezone(String timezone) {
+    this.timezone = timezone;
   }
 
   public Instant getCreatedAt() {
