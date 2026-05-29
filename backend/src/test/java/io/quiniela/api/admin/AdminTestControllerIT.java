@@ -1,0 +1,182 @@
+package io.quiniela.api.admin;
+
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import io.quiniela.api.auth.JwtService;
+import io.quiniela.api.support.AbstractIntegrationTest;
+import io.quiniela.api.user.User;
+import io.quiniela.api.user.UserRepository;
+import io.quiniela.api.user.UserRole;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
+class AdminTestControllerIT extends AbstractIntegrationTest {
+
+  @Autowired WebApplicationContext wac;
+  @Autowired UserRepository users;
+  @Autowired JwtService jwt;
+  @Autowired javax.sql.DataSource dataSource;
+
+  MockMvc mockMvc;
+  JdbcTemplate jdbc;
+
+  @BeforeEach
+  void setUp() {
+    mockMvc = MockMvcBuilders.webAppContextSetup(wac).apply(springSecurity()).build();
+    jdbc = new JdbcTemplate(dataSource);
+    jdbc.update("UPDATE tournament SET test_mode = true WHERE id = 1");
+  }
+
+  @AfterEach
+  void restoreTestMode() {
+    jdbc.update("UPDATE tournament SET test_mode = true WHERE id = 1");
+    jdbc.update(
+        "UPDATE match SET score_t1=NULL, score_t2=NULL, winner_id=NULL, played=false WHERE id=1");
+  }
+
+  private String adminToken() {
+    var u = new User("g-admintest", "admintest@example.com", "Admin T", null, UserRole.ADMIN);
+    u.setInvitePath("admintest-abc");
+    u = users.save(u);
+    return jwt.issue(u);
+  }
+
+  private String playerToken() {
+    var u = new User("g-playertest", "playertest@example.com", "Player T", null, UserRole.PLAYER);
+    u.setInvitePath("playertest-abc");
+    u = users.save(u);
+    return jwt.issue(u);
+  }
+
+  @Test
+  void stateRequiresAdmin() throws Exception {
+    mockMvc
+        .perform(get("/api/admin/test/state").header("Authorization", "Bearer " + playerToken()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void stateReturnsTestModeAndCurrentRound() throws Exception {
+    mockMvc
+        .perform(get("/api/admin/test/state").header("Authorization", "Bearer " + adminToken()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.testMode").value(true))
+        .andExpect(jsonPath("$.currentRoundCode").value("GROUP"));
+  }
+
+  @Test
+  void modeToggleWorksForAdmin() throws Exception {
+    String token = adminToken();
+    mockMvc
+        .perform(
+            put("/api/admin/test/mode")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":false}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.testMode").value(false));
+    mockMvc
+        .perform(
+            put("/api/admin/test/mode")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":true}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.testMode").value(true));
+  }
+
+  @Test
+  void cleanResetsBetsResultsPointsPaymentsButKeepsFixtures() throws Exception {
+    String token = adminToken();
+    var player = new User("g-cleanme", "cleanme@example.com", "Clean", null, UserRole.PLAYER);
+    player.setInvitePath("cleanme-abc");
+    player = users.save(player);
+    jdbc.update("UPDATE match SET score_t1=2, score_t2=1, played=true WHERE id=1");
+    Long qid =
+        jdbc.queryForObject(
+            "INSERT INTO quiniela (pool_id, user_id, points, created_at, updated_at) "
+                + "VALUES (1, ?, 7, NOW(), NOW()) RETURNING id",
+            Long.class,
+            player.getId());
+    jdbc.update(
+        "INSERT INTO bet (quiniela_id, match_id, score_t1, score_t2, created_at, updated_at) "
+            + "VALUES (?, 1, 2, 1, NOW(), NOW())",
+        qid);
+    jdbc.update(
+        "INSERT INTO payment (pool_id, user_id, paid, paid_at, marked_paid_by, created_at, updated_at) "
+            + "VALUES (1, ?, true, NOW(), ?, NOW(), NOW())",
+        player.getId(),
+        player.getId());
+
+    long teamsBefore = jdbc.queryForObject("SELECT COUNT(*) FROM team", Long.class);
+
+    mockMvc
+        .perform(post("/api/admin/test/clean").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk());
+
+    org.assertj.core.api.Assertions.assertThat(
+            jdbc.queryForObject("SELECT COUNT(*) FROM bet", Long.class))
+        .isZero();
+    org.assertj.core.api.Assertions.assertThat(
+            jdbc.queryForObject("SELECT points FROM quiniela WHERE id = ?", Integer.class, qid))
+        .isZero();
+    org.assertj.core.api.Assertions.assertThat(
+            jdbc.queryForObject("SELECT played FROM match WHERE id = 1", Boolean.class))
+        .isFalse();
+    org.assertj.core.api.Assertions.assertThat(
+            jdbc.queryForObject(
+                "SELECT paid FROM payment WHERE pool_id = 1 AND user_id = ?",
+                Boolean.class,
+                player.getId()))
+        .isFalse();
+    org.assertj.core.api.Assertions.assertThat(
+            jdbc.queryForObject("SELECT COUNT(*) FROM team", Long.class))
+        .isEqualTo(teamsBefore);
+  }
+
+  @Test
+  void cleanIsForbiddenForNonAdmin() throws Exception {
+    mockMvc
+        .perform(post("/api/admin/test/clean").header("Authorization", "Bearer " + playerToken()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void cleanReturns409WhenTestModeOff() throws Exception {
+    String token = adminToken();
+    jdbc.update("UPDATE tournament SET test_mode = false WHERE id = 1");
+    mockMvc
+        .perform(post("/api/admin/test/clean").header("Authorization", "Bearer " + token))
+        .andExpect(status().isConflict());
+  }
+
+  @Test
+  void deadlinesUpdateInTestMode() throws Exception {
+    String token = adminToken();
+    mockMvc
+        .perform(
+            put("/api/admin/test/deadlines")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"groupStageDeadline\":\"2020-01-01T00:00:00Z\",\"knockoutDeadline\":\"2020-02-01T00:00:00Z\"}"))
+        .andExpect(status().isOk());
+    String gs =
+        jdbc.queryForObject(
+            "SELECT TO_CHAR(group_stage_deadline AT TIME ZONE 'UTC', 'YYYY-MM-DD') FROM tournament WHERE id = 1",
+            String.class);
+    org.assertj.core.api.Assertions.assertThat(gs).startsWith("2020-01-01");
+  }
+}
