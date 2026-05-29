@@ -99,8 +99,14 @@ same explicit-and-local pattern as `AdminResultsService.requireAdmin`
 - `GET /api/payments/my-subgroup` → caller's invitees with each one's `paid`
   flag, plus the caller's subgroup `collectedCents / expectedCents` totals and
   the caller's own `settled` flag (read-only here — only the admin writes it).
-  - `expectedCents` = (subgroup size) × `entry_fee_cents`.
-  - `collectedCents` = Σ of paid members' `amount_cents` (fallback
+  - Subgroup totals cover **invitees only** (not the caller). The caller's own
+    entry fee is tracked on the caller's own `payment` row, marked by the
+    caller's inviter (the admin, for a captain). So a captain's `collected`
+    is the money owed *to* them by their players; their own $20 is part of
+    what they later remit, captured by their own `paid` flag, not double
+    counted here.
+  - `expectedCents` = (number of invitees) × `entry_fee_cents`.
+  - `collectedCents` = Σ over paid invitees of `amount_cents` (fallback
     `entry_fee_cents` when null).
 - `PUT /api/payments/{userId}/paid` — body `{ paid: boolean, amountCents?: int, note?: string }`.
   - Authz: caller is admin or `{userId}`'s inviter; else 403.
