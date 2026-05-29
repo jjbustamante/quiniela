@@ -23,4 +23,11 @@ test.describe('home page', () => {
       .analyze();
     expect(results.violations).toEqual([]);
   });
+
+  test('landing page has no nav drawer trigger (unauthenticated)', async ({ page }) => {
+    await page.goto('/');
+    // The ☰ drawer lives in the TopBar, which only renders for authenticated
+    // sessions. The public landing must not expose it.
+    await expect(page.getByRole('button', { name: /menú|menu/i })).toHaveCount(0);
+  });
 });

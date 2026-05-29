@@ -29,12 +29,12 @@
 
 ## Progress
 
-- [ ] Task 1: nav i18n keys (menu, home, payments, results)
-- [ ] Task 2: NavDrawer component + unit test
-- [ ] Task 3: Wire NavDrawer into TopBar; remove `back` prop + UserMenu + avatar dropdown; delete UserMenu (+ test); fix TopBar.test
-- [ ] Task 4: Fix BottomNav call sites on the 3 secondary pages (+ captain meta)
-- [ ] Task 5: Remove lobby "Pagos" button + now-unused imports
-- [ ] Task 6: e2e smoke for the drawer + full verify + ship
+- [x] Task 1: nav i18n keys (menu, home, payments, results)
+- [x] Task 2: NavDrawer component + unit test
+- [x] Task 3: Wire NavDrawer into TopBar; remove `back` prop + UserMenu + avatar dropdown; delete UserMenu (+ test); fix TopBar.test
+- [x] Task 4: Fix BottomNav call sites on the 3 secondary pages (+ captain meta)
+- [x] Task 5: Remove lobby "Pagos" button + now-unused imports
+- [x] Task 6: e2e smoke for the drawer + full verify + ship
 
 ---
 
@@ -47,7 +47,7 @@
 The `nav` namespace currently holds only the 4 bottom-tab labels. Add four
 drawer keys to BOTH files (sign-out reuses `common.signOut`, do not add it here).
 
-- [ ] **Step 1: Add keys to `es-CO.json`**
+- [x] **Step 1: Add keys to `es-CO.json`**
 
 The current `nav` block is:
 ```json
@@ -72,7 +72,7 @@ Replace it with:
   },
 ```
 
-- [ ] **Step 2: Add the mirror keys to `en.json`**
+- [x] **Step 2: Add the mirror keys to `en.json`**
 
 The current `nav` block is:
 ```json
@@ -97,7 +97,7 @@ Replace it with:
   },
 ```
 
-- [ ] **Step 3: Verify JSON validity + key parity**
+- [x] **Step 3: Verify JSON validity + key parity**
 
 Run:
 ```bash
@@ -105,7 +105,7 @@ cd frontend && node -e "const es=require('./messages/es-CO.json').nav, en=requir
 ```
 Expected: both lists identical, `parity: true`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 ```bash
 git add frontend/messages/es-CO.json frontend/messages/en.json
 git commit -m "feat(frontend): nav drawer i18n keys"
@@ -123,7 +123,7 @@ This mirrors the proven mechanics of `components/shell/UserMenu.tsx` (Escape +
 outside-click close, poster styling) but as a left drawer with role-gated nav
 items and a sign-out form.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `frontend/components/shell/NavDrawer.test.tsx`:
 ```tsx
@@ -191,13 +191,13 @@ describe("NavDrawer", () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 ```bash
 cd frontend && pnpm test -- NavDrawer 2>&1 | tail -20
 ```
 Expected: FAIL — `NavDrawer` not found / module missing.
 
-- [ ] **Step 3: Implement `NavDrawer.tsx`**
+- [x] **Step 3: Implement `NavDrawer.tsx`**
 
 Create `frontend/components/shell/NavDrawer.tsx`:
 ```tsx
@@ -292,13 +292,13 @@ export function NavDrawer({ role }: { role: Role }) {
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes**
+- [x] **Step 4: Run to verify it passes**
 ```bash
 cd frontend && pnpm test -- NavDrawer 2>&1 | tail -20
 ```
 Expected: PASS — all 5 cases green.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 ```bash
 git add frontend/components/shell/NavDrawer.tsx frontend/components/shell/NavDrawer.test.tsx
 git commit -m "feat(frontend): NavDrawer component"
@@ -314,7 +314,7 @@ git commit -m "feat(frontend): NavDrawer component"
 - Delete: `frontend/components/shell/UserMenu.test.tsx`
 - Modify: `frontend/components/shell/TopBar.test.tsx` (already skip-only; confirm still valid)
 
-- [ ] **Step 1: Rewrite `TopBar.tsx`**
+- [x] **Step 1: Rewrite `TopBar.tsx`**
 
 Replace the entire file with:
 ```tsx
@@ -383,30 +383,30 @@ export async function TopBar({ title, meta }: TopBarProps) {
 Notes: `back` prop is gone; `UserMenu` import + usage gone; the avatar is now a
 static non-interactive `<span aria-hidden>` (identity mark only).
 
-- [ ] **Step 2: Delete UserMenu + its test**
+- [x] **Step 2: Delete UserMenu + its test**
 ```bash
 cd frontend && git rm components/shell/UserMenu.tsx components/shell/UserMenu.test.tsx
 ```
 
-- [ ] **Step 3: Confirm TopBar.test.tsx still valid**
+- [x] **Step 3: Confirm TopBar.test.tsx still valid**
 
 `TopBar.test.tsx` currently contains only skipped placeholder tests (no
 references to UserMenu or `back`). Read it to confirm — no change needed. If it
 references `UserMenu` or `back`, remove those references (it should not).
 
-- [ ] **Step 4: Run unit tests + typecheck**
+- [x] **Step 4: Run unit tests + typecheck**
 ```bash
 cd frontend && pnpm test 2>&1 | tail -15 && pnpm typecheck 2>&1 | tail -3
 ```
 Expected: all tests pass (UserMenu test gone, NavDrawer test green), typecheck clean.
 
-- [ ] **Step 5: Build (catches server/client boundary errors)**
+- [x] **Step 5: Build (catches server/client boundary errors)**
 ```bash
 cd frontend && pnpm build 2>&1 | grep -E "Compiled|error|Error|Failed" | head -10
 ```
 Expected: "Compiled successfully".
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 ```bash
 git add frontend/components/shell/
 git commit -m "feat(frontend): TopBar uses NavDrawer; drop back prop + UserMenu dropdown"
@@ -424,7 +424,7 @@ git commit -m "feat(frontend): TopBar uses NavDrawer; drop back prop + UserMenu 
 `BottomNav`'s `activeKey` is already optional. These three pages pass a WRONG
 key today, so the bottom bar falsely highlights a core tab. Pass none.
 
-- [ ] **Step 1: `captain/payments/page.tsx`**
+- [x] **Step 1: `captain/payments/page.tsx`**
 
 Change `<BottomNav activeKey="ranking" />` to `<BottomNav />`. Also fix the
 misleading TopBar meta: change `<TopBar title={t("title")} meta={tNav("ranking")} />`
@@ -432,22 +432,22 @@ to `<TopBar title={t("title")} />`. If `tNav` (`getTranslations("nav")`) is now
 unused on the page, remove its declaration + keep imports tidy (only remove if
 no other `tNav(...)` call remains — grep the file).
 
-- [ ] **Step 2: `admin/payments/page.tsx`**
+- [x] **Step 2: `admin/payments/page.tsx`**
 
 Change `<BottomNav activeKey="myQuiniela" />` to `<BottomNav />`.
 
-- [ ] **Step 3: `admin/results/page.tsx`**
+- [x] **Step 3: `admin/results/page.tsx`**
 
 Change `<BottomNav activeKey="myQuiniela" />` to `<BottomNav />`.
 
-- [ ] **Step 4: Verify gates**
+- [x] **Step 4: Verify gates**
 ```bash
 cd frontend && pnpm typecheck 2>&1 | tail -3 && pnpm lint 2>&1 | tail -6
 ```
 Expected: typecheck clean; no NEW lint errors. If removing `tNav` left an
 unused-import or unused-var, fix it.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 ```bash
 git add frontend/app/captain/payments/page.tsx frontend/app/admin/payments/page.tsx frontend/app/admin/results/page.tsx
 git commit -m "fix(frontend): secondary pages stop falsely highlighting a bottom-nav tab"
@@ -463,7 +463,7 @@ git commit -m "fix(frontend): secondary pages stop falsely highlighting a bottom
 The drawer supersedes the lobby Pagos shortcut. Grep confirms `Link` is used
 ONLY by this button on this page, and `tPay` only for its label.
 
-- [ ] **Step 1: Remove the button block**
+- [x] **Step 1: Remove the button block**
 
 Delete this block from the action row (currently lines ~122–129):
 ```tsx
@@ -478,7 +478,7 @@ Delete this block from the action row (currently lines ~122–129):
 ```
 The action row then ends with just `<PaulFillAllButton />` + `<InviteFriendsButton ... />`.
 
-- [ ] **Step 2: Remove now-unused imports + binding**
+- [x] **Step 2: Remove now-unused imports + binding**
 
 - Remove line 1: `import Link from "next/link";`
 - Remove line 29: `const tPay = await getTranslations("payments");`
@@ -486,14 +486,14 @@ The action row then ends with just `<PaulFillAllButton />` + `<InviteFriendsButt
 (Confirm by grep that no other `Link` or `tPay(` usage remains on the page
 before removing — Step 4's lint/typecheck will catch a miss.)
 
-- [ ] **Step 3: Verify gates**
+- [x] **Step 3: Verify gates**
 ```bash
 cd frontend && pnpm typecheck 2>&1 | tail -3 && pnpm lint 2>&1 | tail -6
 ```
 Expected: typecheck clean (no "Link is declared but never used" / "tPay ..."),
 no new lint errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 ```bash
 git add frontend/app/home/page.tsx
 git commit -m "refactor(frontend): drop lobby Pagos button (superseded by nav drawer)"
@@ -513,7 +513,7 @@ assert the drawer is **absent** on the public landing (negative control) — the
 authenticated-flow coverage stays manual (Plan 3 Task 6 dry-run). This keeps the
 e2e honest without standing up auth in CI.
 
-- [ ] **Step 1: Add a smoke assertion**
+- [x] **Step 1: Add a smoke assertion**
 
 Append to the `home page` describe block in `frontend/e2e/smoke.e2e.ts`:
 ```ts
@@ -525,20 +525,20 @@ Append to the `home page` describe block in `frontend/e2e/smoke.e2e.ts`:
   });
 ```
 
-- [ ] **Step 2: Run e2e**
+- [x] **Step 2: Run e2e**
 ```bash
 cd frontend && pnpm e2e 2>&1 | tail -20
 ```
 Expected: all smoke tests pass (existing + the new one).
 
-- [ ] **Step 3: Full gate sweep**
+- [x] **Step 3: Full gate sweep**
 ```bash
 cd frontend && pnpm typecheck 2>&1 | tail -3 && pnpm lint 2>&1 | tail -6 && pnpm test 2>&1 | tail -8 && pnpm build 2>&1 | grep -E "Compiled|error|Error" | head -8
 ```
 Expected: typecheck clean; lint only the 2 pre-existing warnings; unit tests
 green (NavDrawer suite present, UserMenu suite gone); build "Compiled successfully".
 
-- [ ] **Step 4: Tick plan checkboxes + commit**
+- [x] **Step 4: Tick plan checkboxes + commit**
 
 Mark all Progress + verification checkboxes `[x]` in this plan file, then:
 ```bash
@@ -546,7 +546,7 @@ git add docs/superpowers/plans/2026-05-28-quiniela-plan-5-nav-drawer.md frontend
 git commit -m "test(frontend): nav drawer smoke + Plan 5 complete"
 ```
 
-- [ ] **Step 5: Push + watch CI**
+- [x] **Step 5: Push + watch CI**
 ```bash
 cd /home/juan/Workspace/jjbustamante/quiniela && git push origin master
 ```
@@ -554,7 +554,7 @@ Watch the frontend CI run to green (`gh run watch <id> --exit-status`). Backend
 is untouched so only frontend CI matters; it will build → Trivy → deploy to
 Cloud Run on `master`.
 
-- [ ] **Step 6: Smoke prod**
+- [x] **Step 6: Smoke prod**
 ```bash
 curl -sS -o /dev/null -w "%{http_code}\n" https://laquinieladelospanas.com/
 ```
@@ -562,12 +562,12 @@ Expected: 200. (Full drawer behavior verified in-browser during the manual
 dry-run — it needs an authenticated session.)
 
 **Verification:**
-- [ ] `pnpm typecheck` clean
-- [ ] `pnpm lint` no new warnings/errors
-- [ ] `pnpm test` green (NavDrawer suite, no UserMenu suite)
-- [ ] `pnpm build` compiles
-- [ ] `pnpm e2e` green
-- [ ] Frontend CI green on `master`; prod landing returns 200
+- [x] `pnpm typecheck` clean
+- [x] `pnpm lint` no new warnings/errors
+- [x] `pnpm test` green (NavDrawer suite, no UserMenu suite)
+- [x] `pnpm build` compiles
+- [x] `pnpm e2e` green
+- [x] Frontend CI green on `master`; prod landing returns 200
 
 ---
 
