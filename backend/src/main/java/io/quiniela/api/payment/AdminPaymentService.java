@@ -238,6 +238,11 @@ public class AdminPaymentService {
 
   private static LedgerMember toMember(MemberRow row) {
     return new LedgerMember(
-        row.userId(), row.displayName(), row.role(), row.paid(), row.amountCents(), row.note());
+        row.userId(),
+        row.displayName(),
+        row.role().toUpperCase(java.util.Locale.ROOT),
+        row.paid(),
+        row.amountCents(),
+        row.note());
   }
 }

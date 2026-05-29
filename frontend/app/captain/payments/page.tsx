@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
+import { getMe } from "@/lib/api/me";
 import { getMySubgroup } from "@/lib/api/payments";
 import { TopBar } from "@/components/shell/TopBar";
 import { BottomNav } from "@/components/shell/BottomNav";
@@ -11,6 +12,9 @@ import { markPaidAction } from "./actions";
 export default async function CaptainPaymentsPage() {
   const session = await auth();
   if (!session?.userId) redirect("/");
+
+  const me = await getMe();
+  if (me.role === "PLAYER") redirect("/home");
 
   const view = await getMySubgroup();
   const t = await getTranslations("payments");
