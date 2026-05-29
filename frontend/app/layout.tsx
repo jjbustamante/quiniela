@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import { TestModeBanner } from "@/components/shell/TestModeBanner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -35,6 +36,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
+          <TestModeBanner />
           {children}
         </NextIntlClientProvider>
       </body>

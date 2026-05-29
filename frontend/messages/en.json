@@ -167,5 +167,8 @@
     "kickoffShort": "{date} · {time}",
     "scorePlaceholderT1": "T1",
     "scorePlaceholderT2": "T2"
+  },
+  "testMode": {
+    "banner": "TEST MODE · data is not real"
   }
 }
