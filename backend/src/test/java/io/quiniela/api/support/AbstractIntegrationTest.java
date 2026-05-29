@@ -40,7 +40,8 @@ public abstract class AbstractIntegrationTest {
 
   @org.junit.jupiter.api.BeforeEach
   void cleanWritableTables() {
-    // Order matters: bet → quiniela → pool_membership → users (FK chain).
+    // Order matters: payment first (marked_paid_by/marked_settled_by are non-cascade FKs to users).
+    jdbcTemplate.execute("DELETE FROM payment");
     jdbcTemplate.execute("DELETE FROM bet");
     jdbcTemplate.execute("DELETE FROM quiniela");
     jdbcTemplate.execute("DELETE FROM pool_membership");
