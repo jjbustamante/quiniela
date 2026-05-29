@@ -41,6 +41,9 @@ public class Tournament {
   @Column(name = "opening_venue")
   private String openingVenue;
 
+  @Column(name = "test_mode", nullable = false)
+  private boolean testMode;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -79,5 +82,13 @@ public class Tournament {
 
   public String getOpeningVenue() {
     return openingVenue;
+  }
+
+  public boolean isTestMode() {
+    return testMode;
+  }
+
+  public void setTestMode(boolean testMode) {
+    this.testMode = testMode;
   }
 }
