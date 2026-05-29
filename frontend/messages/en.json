@@ -128,6 +128,18 @@
     "trendFlat": "—",
     "prizeFor": "Prize"
   },
+  "payments": {
+    "title": "PAYMENTS",
+    "collected": "Collected",
+    "expected": "Expected",
+    "settled": "SETTLED",
+    "notSettled": "NOT SETTLED",
+    "subgroupEmpty": "You haven't invited anyone yet",
+    "paid": "PAID",
+    "unpaid": "PENDING",
+    "orphans": "NO CAPTAIN",
+    "potPaid": "PAID"
+  },
   "admin": {
     "resultsTitle": "RESULTS",
     "resultsSubtitle": "Record the actual final score for each match.",
