@@ -70,7 +70,7 @@ export default async function AdminPaymentsPage() {
         )}
       </div>
 
-      <BottomNav activeKey="myQuiniela" />
+      <BottomNav />
     </main>
   );
 }

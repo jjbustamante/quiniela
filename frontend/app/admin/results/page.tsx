@@ -46,7 +46,7 @@ export default async function AdminResultsPage() {
         ))}
       </div>
 
-      <BottomNav activeKey="myQuiniela" />
+      <BottomNav />
     </main>
   );
 }

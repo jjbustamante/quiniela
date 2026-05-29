@@ -18,14 +18,13 @@ export default async function CaptainPaymentsPage() {
 
   const view = await getMySubgroup();
   const t = await getTranslations("payments");
-  const tNav = await getTranslations("nav");
 
   const collectedLabel = formatPot(view.collectedCents, "USD");
   const expectedLabel = formatPot(view.expectedCents, "USD");
 
   return (
     <main className="flex min-h-screen flex-col pb-24">
-      <TopBar title={t("title")} meta={tNav("ranking")} />
+      <TopBar title={t("title")} />
 
       <div className="mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-4xl">
         {/* Collection summary strip */}
@@ -66,7 +65,7 @@ export default async function CaptainPaymentsPage() {
         )}
       </div>
 
-      <BottomNav activeKey="ranking" />
+      <BottomNav />
     </main>
   );
 }
