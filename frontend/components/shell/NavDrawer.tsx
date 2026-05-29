@@ -78,6 +78,9 @@ export function NavDrawer({ role }: { role: Role }) {
                 {t("results")}
               </Link>
             )}
+            <Link href="/settings" className={linkClass} onClick={close}>
+              {t("settings")}
+            </Link>
             <div className="my-1 border-t-[1.5px] border-dashed border-[var(--color-line-ink)]" />
             <form action={signOutAction}>
               <button

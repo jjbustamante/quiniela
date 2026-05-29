@@ -65,7 +65,8 @@
     "menu": "Menú",
     "home": "Inicio",
     "payments": "Pagos",
-    "results": "Resultados"
+    "results": "Resultados",
+    "settings": "Ajustes"
   },
   "auth_error": {
     "title": "No pudimos iniciar tu sesión",
@@ -144,6 +145,14 @@
     "unpaid": "PENDIENTE",
     "orphans": "SIN CAPITÁN",
     "potPaid": "PAGAS"
+  },
+  "settings": {
+    "title": "AJUSTES",
+    "timezoneLabel": "Zona horaria",
+    "timezoneHelp": "Las horas de los partidos se muestran en esta zona.",
+    "useDevice": "Usar la de mi dispositivo",
+    "save": "Guardar",
+    "saved": "Guardado"
   },
   "admin": {
     "resultsTitle": "RESULTADOS",

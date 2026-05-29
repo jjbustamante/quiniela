@@ -65,7 +65,8 @@
     "menu": "Menu",
     "home": "Home",
     "payments": "Payments",
-    "results": "Results"
+    "results": "Results",
+    "settings": "Settings"
   },
   "auth_error": {
     "title": "We couldn't sign you in",
@@ -144,6 +145,14 @@
     "unpaid": "PENDING",
     "orphans": "NO CAPTAIN",
     "potPaid": "PAID"
+  },
+  "settings": {
+    "title": "SETTINGS",
+    "timezoneLabel": "Timezone",
+    "timezoneHelp": "Match times are shown in this zone.",
+    "useDevice": "Use my device's timezone",
+    "save": "Save",
+    "saved": "Saved"
   },
   "admin": {
     "resultsTitle": "RESULTS",
