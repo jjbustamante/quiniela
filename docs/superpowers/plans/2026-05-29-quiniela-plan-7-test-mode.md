@@ -27,13 +27,13 @@
 
 ## Progress
 
-- [ ] Task 1: V013 migration + Tournament.testMode entity field
-- [ ] Task 2: PublicSummary.testMode (backend + frontend type/fallback) + IT
-- [ ] Task 3: TestModeBanner component in layout + i18n banner key
-- [ ] Task 4: AdminTestService + AdminTestController — state + mode toggle + clean + deadlines + IT
-- [ ] Task 5: Simulation engine (simulate/round + simulate/all) + IT
-- [ ] Task 6: /admin/test page + actions + nav drawer item + i18n
-- [ ] Task 7: verify + ship
+- [x] Task 1: V013 migration + Tournament.testMode entity field
+- [x] Task 2: PublicSummary.testMode (backend + frontend type/fallback) + IT
+- [x] Task 3: TestModeBanner component in layout + i18n banner key
+- [x] Task 4: AdminTestService + AdminTestController — state + mode toggle + clean + deadlines + IT
+- [x] Task 5: Simulation engine (simulate/round + simulate/all) + IT
+- [x] Task 6: /admin/test page + actions + nav drawer item + i18n
+- [x] Task 7: verify + ship
 
 ---
 
@@ -44,7 +44,7 @@
 - Modify: `backend/src/main/java/io/quiniela/api/tournament/Tournament.java`
 - Create: `backend/src/test/java/io/quiniela/api/support/V013MigrationTest.java`
 
-- [ ] **Step 1: Write the failing migration test**
+- [x] **Step 1: Write the failing migration test**
 
 Create `V013MigrationTest.java`:
 ```java
@@ -78,11 +78,11 @@ class V013MigrationTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 `cd backend && ./mvnw verify` → FAIL (no `test_mode` column).
 
-- [ ] **Step 3: Write the migration**
+- [x] **Step 3: Write the migration**
 
 Create `V013__test_mode.sql`:
 ```sql
@@ -93,7 +93,7 @@ Create `V013__test_mode.sql`:
 ALTER TABLE tournament ADD COLUMN test_mode BOOLEAN NOT NULL DEFAULT true;
 ```
 
-- [ ] **Step 4: Add the entity field + accessors**
+- [x] **Step 4: Add the entity field + accessors**
 
 In `backend/src/main/java/io/quiniela/api/tournament/Tournament.java`, add the
 field after `openingVenue` (before `createdAt`):
@@ -112,11 +112,11 @@ Add a getter + setter near the other accessors (after `getOpeningVenue()`):
   }
 ```
 
-- [ ] **Step 5: Run to verify it passes**
+- [x] **Step 5: Run to verify it passes**
 
 `cd backend && ./mvnw verify` → PASS (V013MigrationTest green; all prior ITs green). spotless:apply first if format fails.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 ```bash
 git add backend/src/main/resources/db/migration/V013__test_mode.sql \
         backend/src/main/java/io/quiniela/api/tournament/Tournament.java \
@@ -133,7 +133,7 @@ git commit -m "feat(backend): V013 — tournament.test_mode flag + entity field"
 - Modify: `backend/src/test/java/io/quiniela/api/tournament/PublicSummaryControllerIT.java`
 - Modify: `frontend/lib/api/summary.ts`
 
-- [ ] **Step 1: Add a failing IT assertion**
+- [x] **Step 1: Add a failing IT assertion**
 
 In `PublicSummaryControllerIT.java`, in the existing test that asserts the
 summary shape (the one that checks `$.pool.currency` etc.), add:
@@ -143,11 +143,11 @@ summary shape (the one that checks `$.pool.currency` etc.), add:
 (Add it to the existing `returnsSeededTournamentAndPool` chain — the seeded
 tournament has `test_mode` default true, so it will be a boolean `true`.)
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 `cd backend && ./mvnw verify` → FAIL (no `testMode` in the response).
 
-- [ ] **Step 3: Add `testMode` to the response**
+- [x] **Step 3: Add `testMode` to the response**
 
 In `PublicSummaryController.java`:
 - Add `boolean testMode` as the LAST component of the `SummaryResponse` record:
@@ -155,11 +155,11 @@ In `PublicSummaryController.java`:
 - In the `get()` method, pass `tournament.isTestMode()` as the new last arg to
   the `new SummaryResponse(...)` constructor call.
 
-- [ ] **Step 4: Run to verify it passes**
+- [x] **Step 4: Run to verify it passes**
 
 `cd backend && ./mvnw verify` → PASS.
 
-- [ ] **Step 5: Frontend type + fallback**
+- [x] **Step 5: Frontend type + fallback**
 
 In `frontend/lib/api/summary.ts`:
 - Add `testMode: boolean;` to the `PublicSummary` type (top level, after
@@ -167,11 +167,11 @@ In `frontend/lib/api/summary.ts`:
 - Add `testMode: false` to the `FALLBACK` constant (so an unreachable backend
   never shows the banner).
 
-- [ ] **Step 6: Frontend gate**
+- [x] **Step 6: Frontend gate**
 
 `cd frontend && pnpm typecheck 2>&1 | tail -3` → clean.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 ```bash
 git add backend/src/main/java/io/quiniela/api/tournament/PublicSummaryController.java \
         backend/src/test/java/io/quiniela/api/tournament/PublicSummaryControllerIT.java \
@@ -189,7 +189,7 @@ git commit -m "feat: expose tournament.testMode on /api/public/summary"
 - Modify: `frontend/messages/es-CO.json`
 - Modify: `frontend/messages/en.json`
 
-- [ ] **Step 1: i18n banner key**
+- [x] **Step 1: i18n banner key**
 
 In `frontend/messages/es-CO.json`, add a top-level `testMode` namespace:
 ```json
@@ -204,7 +204,7 @@ In `frontend/messages/en.json`:
   },
 ```
 
-- [ ] **Step 2: TestModeBanner component**
+- [x] **Step 2: TestModeBanner component**
 
 Create `frontend/components/shell/TestModeBanner.tsx`:
 ```tsx
@@ -228,7 +228,7 @@ export async function TestModeBanner() {
 }
 ```
 
-- [ ] **Step 3: Mount it in the layout**
+- [x] **Step 3: Mount it in the layout**
 
 In `frontend/app/layout.tsx`, add the import and render it as the first child
 inside `<NextIntlClientProvider>`, immediately above `{children}`:
@@ -242,7 +242,7 @@ import { TestModeBanner } from "@/components/shell/TestModeBanner";
         </NextIntlClientProvider>
 ```
 
-- [ ] **Step 4: Gates + parity**
+- [x] **Step 4: Gates + parity**
 ```bash
 cd frontend && node -e "const es=require('./messages/es-CO.json'), en=require('./messages/en.json'); const p=(o)=>Object.keys(o).sort().join(','); console.log('testMode parity:', p(es.testMode)===p(en.testMode));"
 ```
@@ -252,7 +252,7 @@ cd frontend && pnpm typecheck 2>&1 | tail -3 && pnpm build 2>&1 | grep -E "Compi
 ```
 Expected: clean + "Compiled successfully".
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 ```bash
 git add frontend/components/shell/TestModeBanner.tsx frontend/app/layout.tsx \
         frontend/messages/es-CO.json frontend/messages/en.json
@@ -271,7 +271,7 @@ git commit -m "feat(frontend): global test-mode banner"
 This task builds everything EXCEPT the simulate endpoints (Task 5 adds those to
 the same service/controller).
 
-- [ ] **Step 1: Write the failing IT**
+- [x] **Step 1: Write the failing IT**
 
 Create `AdminTestControllerIT.java` mirroring `AdminPaymentControllerIT` /
 `MatchesControllerIT` bootstrap (MockMvc + `springSecurity()` + `JwtService` +
@@ -478,11 +478,11 @@ class AdminTestControllerIT extends AbstractIntegrationTest {
 > score_t1=NULL,score_t2=NULL,winner_id=NULL,played=false WHERE id=1")` to this
 > class's `@AfterEach` and report it.
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 `cd backend && ./mvnw verify` → FAIL (no controller/service).
 
-- [ ] **Step 3: Create `AdminTestService.java`**
+- [x] **Step 3: Create `AdminTestService.java`**
 
 ```java
 package io.quiniela.api.admin;
@@ -646,7 +646,7 @@ public class AdminTestService {
 }
 ```
 
-- [ ] **Step 4: Create `AdminTestController.java`**
+- [x] **Step 4: Create `AdminTestController.java`**
 
 ```java
 package io.quiniela.api.admin;
@@ -708,11 +708,11 @@ public class AdminTestController {
 }
 ```
 
-- [ ] **Step 5: Run to verify it passes**
+- [x] **Step 5: Run to verify it passes**
 
 `cd backend && ./mvnw verify` → PASS (spotless:apply first if format fails).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 ```bash
 git add backend/src/main/java/io/quiniela/api/admin/AdminTestService.java \
         backend/src/main/java/io/quiniela/api/admin/AdminTestController.java \
@@ -732,7 +732,7 @@ git commit -m "feat(backend): admin test API — state, mode toggle, clean, dead
 Uses the `Match` JPA entity + `MatchRepository` (has setters + parent getters) +
 `RoundRepository` for sequence ordering.
 
-- [ ] **Step 1: Add failing IT cases**
+- [x] **Step 1: Add failing IT cases**
 
 Add to `AdminTestControllerIT.java` (the imports for it are already present;
 add `post` is already imported). Add these tests:
@@ -812,11 +812,11 @@ add `post` is already imported). Add these tests:
 > against the seed's bracket wiring, so we assert the robust invariants (group
 > fully played, simulateAll returns a round count) instead.
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 `cd backend && ./mvnw verify` → FAIL (no simulate endpoints).
 
-- [ ] **Step 3: Add the engine to `AdminTestService`**
+- [x] **Step 3: Add the engine to `AdminTestService`**
 
 Add these imports to `AdminTestService.java`:
 ```java
@@ -959,7 +959,7 @@ Add the records + methods:
 > `simulateAll`, so the auth/test-mode checks live on the public methods only
 > (no double-checking).
 
-- [ ] **Step 4: Add the controller endpoints**
+- [x] **Step 4: Add the controller endpoints**
 
 In `AdminTestController.java`, add:
 ```java
@@ -978,11 +978,11 @@ In `AdminTestController.java`, add:
   }
 ```
 
-- [ ] **Step 5: Run to verify they pass**
+- [x] **Step 5: Run to verify they pass**
 
 `cd backend && ./mvnw verify` → PASS (spotless:apply first if format fails).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 ```bash
 git add backend/src/main/java/io/quiniela/api/admin/AdminTestService.java \
         backend/src/main/java/io/quiniela/api/admin/AdminTestController.java \
@@ -1003,7 +1003,7 @@ git commit -m "feat(backend): test-mode result simulator (round + all) with KO a
 - Modify: `frontend/messages/es-CO.json`
 - Modify: `frontend/messages/en.json`
 
-- [ ] **Step 1: API client**
+- [x] **Step 1: API client**
 
 Create `frontend/lib/api/test-mode.ts`:
 ```ts
@@ -1048,7 +1048,7 @@ export async function simulateAll(): Promise<void> {
 }
 ```
 
-- [ ] **Step 2: Server actions**
+- [x] **Step 2: Server actions**
 
 Create `frontend/app/admin/test/actions.ts`:
 ```ts
@@ -1092,7 +1092,7 @@ export async function simulateAllAction(): Promise<void> {
 }
 ```
 
-- [ ] **Step 3: TestPanel client component**
+- [x] **Step 3: TestPanel client component**
 
 Create `frontend/components/admin/TestPanel.tsx`:
 ```tsx
@@ -1255,7 +1255,7 @@ function fromLocalInput(v: string): string | null {
 }
 ```
 
-- [ ] **Step 4: Page (admin-gated)**
+- [x] **Step 4: Page (admin-gated)**
 
 Create `frontend/app/admin/test/page.tsx`:
 ```tsx
@@ -1303,7 +1303,7 @@ export default async function AdminTestPage() {
 }
 ```
 
-- [ ] **Step 5: Nav drawer item (admin-only)**
+- [x] **Step 5: Nav drawer item (admin-only)**
 
 In `frontend/components/shell/NavDrawer.tsx`, add a "Modo prueba" link inside the
 existing `{role === "ADMIN" && (...)}` region — alongside the "Resultados" link.
@@ -1331,7 +1331,7 @@ Replace with:
 ```
 (`t` is `useTranslations("nav")` in this component — add a `nav.testMode` key in Step 6.)
 
-- [ ] **Step 6: i18n**
+- [x] **Step 6: i18n**
 
 In `frontend/messages/es-CO.json`: add `"testMode": "Modo prueba"` to the `nav`
 object, and add a `test` namespace:
@@ -1381,7 +1381,7 @@ In `frontend/messages/en.json`: add `"testMode": "Test mode"` to `nav`, and:
   },
 ```
 
-- [ ] **Step 7: Gates + parity**
+- [x] **Step 7: Gates + parity**
 ```bash
 cd frontend && node -e "const es=require('./messages/es-CO.json'), en=require('./messages/en.json'); const p=(o)=>Object.keys(o).sort().join(','); console.log('nav:', p(es.nav)===p(en.nav)); console.log('test:', p(es.test)===p(en.test));"
 ```
@@ -1396,7 +1396,7 @@ Expected: typecheck clean; no new lint errors; build compiles with `/admin/test`
 > `// eslint-disable-next-line no-alert` comment on the `confirm(...)` line — but
 > only if lint actually errors on it.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 ```bash
 git add frontend/lib/api/test-mode.ts frontend/app/admin/test/ \
         frontend/components/admin/TestPanel.tsx frontend/components/shell/NavDrawer.tsx \
@@ -1408,20 +1408,20 @@ git commit -m "feat(frontend): /admin/test panel + nav drawer item"
 
 ## Task 7: Verify end-to-end + ship
 
-- [ ] **Step 1: Full backend verify**
+- [x] **Step 1: Full backend verify**
 `cd backend && ./mvnw -B verify` — all ITs green (V013MigrationTest, the
 PublicSummary testMode assertion, and AdminTestControllerIT's full set included).
 
-- [ ] **Step 2: Full frontend sweep**
+- [x] **Step 2: Full frontend sweep**
 `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` —
 typecheck clean; lint only the 2 pre-existing warnings; unit tests green; build
 compiles with `/admin/test`.
 
-- [ ] **Step 3: Confirm clean keeps fixtures (re-read the IT)**
+- [x] **Step 3: Confirm clean keeps fixtures (re-read the IT)**
 Confirm `AdminTestControllerIT.cleanResetsBetsResultsPointsPaymentsButKeepsFixtures`
 asserts the team count is unchanged — the football-data fixtures must survive clean.
 
-- [ ] **Step 4: Tick checkboxes, commit, push**
+- [x] **Step 4: Tick checkboxes, commit, push**
 Mark all Progress + verification checkboxes `[x]`, then:
 ```bash
 git add docs/superpowers/plans/2026-05-29-quiniela-plan-7-test-mode.md
@@ -1429,7 +1429,7 @@ git commit -m "docs: Plan 7 complete — admin test mode"
 git push origin master
 ```
 
-- [ ] **Step 5: Watch CI + smoke prod**
+- [x] **Step 5: Watch CI + smoke prod**
 Watch backend + frontend CI to green. Then:
 ```bash
 curl -sS -o /dev/null -w "%{http_code}\n" https://laquinieladelospanas.com/
@@ -1440,11 +1440,11 @@ confirm the banner appears on the live site (test_mode defaults true) — it sho
 show "MODO PRUEBA" until you toggle it off.
 
 **Verification:**
-- [ ] Backend `./mvnw verify` green (V013 + testMode summary + AdminTest ITs)
-- [ ] Frontend typecheck + lint + test + build clean
-- [ ] Clean keeps team/round fixtures (IT asserts team count unchanged)
-- [ ] Backend + frontend CI green on `master`
-- [ ] Banner visible on prod (test_mode default true); `/api/admin/test/state` 401 unauth
+- [x] Backend `./mvnw verify` green (V013 + testMode summary + AdminTest ITs)
+- [x] Frontend typecheck + lint + test + build clean
+- [x] Clean keeps team/round fixtures (IT asserts team count unchanged)
+- [x] Backend + frontend CI green on `master`
+- [x] Banner visible on prod (test_mode default true); `/api/admin/test/state` 401 unauth
 
 ---
 
