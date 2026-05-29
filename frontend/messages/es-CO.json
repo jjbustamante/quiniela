@@ -130,6 +130,7 @@
   },
   "payments": {
     "title": "PAGOS",
+    "navLabel": "PAGOS",
     "collected": "Recaudado",
     "expected": "Esperado",
     "settled": "ENTREGADO",

@@ -130,6 +130,7 @@
   },
   "payments": {
     "title": "PAYMENTS",
+    "navLabel": "PAYMENTS",
     "collected": "Collected",
     "expected": "Expected",
     "settled": "SETTLED",

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
@@ -25,6 +26,7 @@ export default async function HomePage() {
     getPublicSummary(),
   ]);
   const t = await getTranslations("lobby");
+  const tPay = await getTranslations("payments");
 
   const { tournament, pool } = summary;
   const days = daysUntil(tournament.startDate);
@@ -117,6 +119,14 @@ export default async function HomePage() {
         <section className="mx-3 mt-4 flex flex-col gap-2 sm:flex-row">
           <div className="flex-1"><PaulFillAllButton /></div>
           <InviteFriendsButton role={me.role} invitePath={me.invitePath} />
+          {me.role !== "PLAYER" && (
+            <Link
+              href={me.role === "ADMIN" ? "/admin/payments" : "/captain/payments"}
+              className="bg-[var(--color-bg-paper)] border-[1.5px] border-[var(--color-line-ink)] px-4 py-3.5 font-display text-sm font-extrabold uppercase tracking-[0.04em] text-[var(--color-text-primary)] hover:bg-[var(--color-accent-gold)]"
+            >
+              {tPay("navLabel")}
+            </Link>
+          )}
         </section>
 
         {/* Live chips — pinned at the bottom of the lobby content so the user
