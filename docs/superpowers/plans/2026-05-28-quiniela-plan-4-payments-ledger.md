@@ -732,7 +732,8 @@ export async function markSettled(captainId: number, settled: boolean): Promise<
 
 **Step 3: `page.tsx`** — server component; guard non-admins by redirecting to
 `/home` (mirror `app/admin/results/page.tsx`'s admin gate — read `me.role`
-via `getMe()`, redirect if `!== "admin"`). Render: pot + `paidCount /
+via `getMe()`, redirect if `me.role !== "ADMIN"` — UPPERCASE, see Task 7
+casing note). Render: pot + `paidCount /
 memberCount` chip; one `CaptainGroup` per captain (captain row with settled
 toggle + expected/collected subtotal, nested invitee rows with paid toggles);
 an orphans section.
@@ -753,7 +754,7 @@ git commit -m "feat(frontend): admin payments ledger screen"
 
 **Files:**
 - Modify: `frontend/messages/es-CO.json` + `frontend/messages/en.json` — add a `payments` namespace (`title`, `paid`, `unpaid`, `settled`, `notSettled`, `collected`, `expected`, `subgroupEmpty`, `potChip`, `markPaid`, `markSettled`).
-- Modify: `frontend/app/home/page.tsx` — add a "Pagos" link in the action row: `me.role === "admin"` → `/admin/payments`; `me.role === "captain"` → `/captain/payments`; players see nothing (mirror the `InviteFriendsButton` role gate already there).
+- Modify: `frontend/app/home/page.tsx` — add a "Pagos" link in the action row gated on role. **Note the casing**: `getMe()` returns `me.role` UPPERCASE (`"ADMIN" | "CAPTAIN" | "PLAYER"`) even though the DB stores lowercase — match the existing `InviteFriendsButton` which gates on `role === "PLAYER"`. So: `me.role === "ADMIN"` → link to `/admin/payments`; `me.role === "CAPTAIN"` → link to `/captain/payments`; `me.role === "PLAYER"` → render nothing.
 
 **Step 1:** add keys to both message files (Spanish copy is the source of truth; English mirrors). **Step 2:** add the gated link. **Step 3:** `pnpm typecheck && pnpm lint`. **Step 4:** commit:
 ```
