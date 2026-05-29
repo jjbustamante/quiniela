@@ -52,6 +52,7 @@ class PublicSummaryControllerIT extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.prizeSplit[1].rank").value(2))
         .andExpect(jsonPath("$.prizeSplit[1].percentage").value(15))
         .andExpect(jsonPath("$.prizeSplit[2].rank").value(3))
-        .andExpect(jsonPath("$.prizeSplit[2].percentage").value(5));
+        .andExpect(jsonPath("$.prizeSplit[2].percentage").value(5))
+        .andExpect(jsonPath("$.testMode").isBoolean());
   }
 }

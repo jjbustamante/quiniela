@@ -72,7 +72,10 @@ public class PublicSummaryController {
   public record PrizeSplitEntry(int rank, int percentage, long payoutCents) {}
 
   public record SummaryResponse(
-      TournamentSummary tournament, PoolSummary pool, List<PrizeSplitEntry> prizeSplit) {}
+      TournamentSummary tournament,
+      PoolSummary pool,
+      List<PrizeSplitEntry> prizeSplit,
+      boolean testMode) {}
 
   @GetMapping("/summary")
   public ResponseEntity<SummaryResponse> get() {
@@ -125,6 +128,7 @@ public class PublicSummaryController {
                 groupStageMatches,
                 totalGroups),
             new PoolSummary(pool.getCurrency(), pool.getEntryFeeCents(), potCents, panaCount),
-            prizeSplit));
+            prizeSplit,
+            tournament.isTestMode()));
   }
 }

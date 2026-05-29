@@ -24,6 +24,7 @@ export type PublicSummary = {
     panaCount: number;
   };
   prizeSplit: PrizeSplitEntry[];
+  testMode: boolean;
 };
 
 /**
@@ -53,6 +54,7 @@ const FALLBACK: PublicSummary = {
     { rank: 2, percentage: 15, payoutCents: 0 },
     { rank: 3, percentage: 5, payoutCents: 0 },
   ],
+  testMode: false,
 };
 
 export async function getPublicSummary(): Promise<PublicSummary> {
