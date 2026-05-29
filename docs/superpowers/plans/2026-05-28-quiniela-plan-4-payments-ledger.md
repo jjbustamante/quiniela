@@ -43,13 +43,13 @@ Scope: core ledger only. Prize-split editor UI, CSV export, and the lobby
 
 ## Progress
 
-- [ ] Task 1: V011 payment migration + migration test
-- [ ] Task 2: Payment entity + PaymentId + PaymentRepository
-- [ ] Task 3: PaymentService + PaymentController (captain: my-subgroup + mark paid) + IT
-- [ ] Task 4: AdminPaymentService + AdminPaymentController (full ledger + mark settled) + IT
-- [ ] Task 5: Frontend captain payments — lib/api/payments.ts + /captain/payments + actions
-- [ ] Task 6: Frontend admin payments — /admin/payments + actions
-- [ ] Task 7: i18n keys + lobby "Pagos" entry-point link
+- [x] Task 1: V011 payment migration + migration test
+- [x] Task 2: Payment entity + PaymentId + PaymentRepository
+- [x] Task 3: PaymentService + PaymentController (captain: my-subgroup + mark paid) + IT
+- [x] Task 4: AdminPaymentService + AdminPaymentController (full ledger + mark settled) + IT
+- [x] Task 5: Frontend captain payments — lib/api/payments.ts + /captain/payments + actions
+- [x] Task 6: Frontend admin payments — /admin/payments + actions
+- [x] Task 7: i18n keys + lobby "Pagos" entry-point link
 - [ ] Task 8: Verify end-to-end + ship
 
 ---
@@ -776,9 +776,9 @@ git commit -m "feat(frontend): payments i18n + lobby entry point"
 **Step 6:** Smoke prod: `curl -s -o /dev/null -w "%{http_code}" https://quiniela-api-ko2t5go6hq-uc.a.run.app/api/payments/my-subgroup` → expect 401 (unauth).
 
 **Verification:**
-- [ ] Backend `./mvnw verify` green
-- [ ] Frontend typecheck + lint clean
-- [ ] `PublicSummaryController` unchanged (pot semantics preserved)
+- [x] Backend `./mvnw verify` green
+- [x] Frontend typecheck + lint clean
+- [x] `PublicSummaryController` unchanged (pot semantics preserved)
 - [ ] Backend + frontend CI green on `master`
 - [ ] `/api/payments/my-subgroup` returns 401 unauth in prod
 
