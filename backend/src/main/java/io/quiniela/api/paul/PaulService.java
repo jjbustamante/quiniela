@@ -102,6 +102,11 @@ public class PaulService {
   /**
    * Paul "decides to play": create his quiniela (idempotent) and snapshot every OFFICIAL prediction
    * as one of his bets. Skips matches he already has a bet for, so repeated calls are no-ops.
+   *
+   * <p>Scope assumption (v1): only group-stage matches have OFFICIAL predictions, so this snapshots
+   * the group bracket. If knockout OFFICIAL predictions are added later, this would also snapshot
+   * those — gate by stage here before generating knockout officials so Paul never bets on still-TBD
+   * knockout fixtures.
    */
   @Transactional
   public RevealResult reveal() {
