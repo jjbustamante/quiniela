@@ -95,3 +95,29 @@ resource "google_secret_manager_secret" "football_data_api_key" {
 
   depends_on = [google_project_service.enabled]
 }
+
+# ─── gemini-api-key ──────────────────────────────────────────────────────────
+# Google AI Studio (Gemini Developer API) key. Powers Octopus Paul's AI
+# predictions via Spring AI's google-genai chat model. The quiniela-api
+# Cloud Run service reads this as GEMINI_API_KEY, but the chat model only
+# autoconfigures when SPRING_AI_MODEL_CHAT=google-genai is ALSO set (see
+# cloud_run.tf) — without both, Paul silently falls back to the stub predictor.
+#
+# Populate after `tofu apply` (get a key at aistudio.google.com/apikey):
+#   echo -n "$YOUR_GEMINI_API_KEY" | gcloud secrets versions add \
+#     gemini-api-key --data-file=-
+
+resource "google_secret_manager_secret" "gemini_api_key" {
+  project   = var.project_id
+  secret_id = "gemini-api-key"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.enabled]
+}
+
+# Note: NO google_secret_manager_secret_version here — same as
+# football_data_api_key / google_oauth_client_secret. The value is pasted in
+# out-of-band; Tofu manages only the secret name + IAM.
