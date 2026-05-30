@@ -31,6 +31,9 @@ public class Team {
   @Column(name = "flag_emoji", length = 8)
   private String flagEmoji;
 
+  @Column(name = "fifa_ranking")
+  private Integer fifaRanking;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -58,5 +61,9 @@ public class Team {
 
   public String getFlagEmoji() {
     return flagEmoji;
+  }
+
+  public Integer getFifaRanking() {
+    return fifaRanking;
   }
 }
