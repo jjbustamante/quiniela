@@ -19,3 +19,9 @@ app:
     jwt-secret: test-only-jwt-secret-must-be-at-least-32-chars-long
   football-data:
     enabled: false
+  paul:
+    provider: google
+    models:
+      - gemini-2.5-pro
+      - gemini-2.5-flash
+    ensemble-model: gemini-2.5-pro
