@@ -86,10 +86,8 @@
     "comingSoon": "Próximamente",
     "rankingHeadline": "LA TABLA,\nMUY PRONTO.",
     "matchesHeadline": "EL FIXTURE,\nEN CARGA.",
-    "compareHeadline": "DUELOS,\nMUY PRONTO.",
     "rankingHelp": "La tabla de posiciones aparece cuando arranca el torneo.",
-    "matchesHelp": "Los partidos aparecen cuando se cargue el fixture del Mundial.",
-    "compareHelp": "Compara tu quiniela contra la de tus amigos."
+    "matchesHelp": "Los partidos aparecen cuando se cargue el fixture del Mundial."
   },
   "compare": {
     "title": "Duelos",

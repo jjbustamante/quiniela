@@ -86,10 +86,8 @@
     "comingSoon": "Coming soon",
     "rankingHeadline": "THE TABLE,\nCOMING SOON.",
     "matchesHeadline": "THE FIXTURE,\nLOADING.",
-    "compareHeadline": "DUELS,\nCOMING SOON.",
     "rankingHelp": "Standings appear once the tournament kicks off.",
-    "matchesHelp": "Matches appear once the World Cup fixture is loaded.",
-    "compareHelp": "Compare your bracket against your friends."
+    "matchesHelp": "Matches appear once the World Cup fixture is loaded."
   },
   "compare": {
     "title": "Duels",
