@@ -28,7 +28,7 @@ public class CompareController {
 
   @GetMapping("/h2h")
   public ResponseEntity<CompareService.H2HView> h2h(
-      @AuthenticationPrincipal Jwt jwt, @RequestParam("vs") Long vs) {
+      @AuthenticationPrincipal Jwt jwt, @RequestParam(value = "vs", required = false) Long vs) {
     if (jwt == null) return ResponseEntity.status(401).build();
     Long userId = Long.parseLong(jwt.getSubject());
     return ResponseEntity.ok(service.getH2H(userId, vs));

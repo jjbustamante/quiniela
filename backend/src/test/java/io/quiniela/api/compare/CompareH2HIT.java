@@ -129,6 +129,14 @@ class CompareH2HIT extends AbstractIntegrationTest {
   }
 
   @Test
+  void returns400WhenVsMissing() throws Exception {
+    long me = createUserWithBetOnMatch1("h2h-novs-me", 1, 0);
+    mockMvc
+        .perform(get("/api/compare/h2h").header("Authorization", "Bearer " + token(me)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   void tallySumsPointsOnPlayedMatches() throws Exception {
     jdbc.update(
         "UPDATE tournament SET group_stage_deadline = NOW() - INTERVAL '1 hour' WHERE id = 1");

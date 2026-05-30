@@ -288,7 +288,7 @@ public class CompareService {
         }
       }
 
-      if (m.played() && m.actualT1() != null && m.actualT2() != null) {
+      if (revealed && m.played() && m.actualT1() != null && m.actualT2() != null) {
         boolean knockout = !"GROUP".equals(m.roundCode());
         if (mine != null) {
           myPoints += scoreMatchForBet(knockout, mine[0], mine[1], m.actualT1(), m.actualT2());
