@@ -48,6 +48,33 @@ public class CompareService {
 
   public record GroupConsensusView(List<MatchConsensus> matches) {}
 
+  public record H2HMatch(
+      Long matchId,
+      String roundCode,
+      String team1Code,
+      String team1Flag,
+      String team2Code,
+      String team2Flag,
+      String kickoffAt,
+      Integer actualScoreT1,
+      Integer actualScoreT2,
+      boolean played,
+      boolean revealed,
+      Integer myScoreT1,
+      Integer myScoreT2,
+      Integer rivalScoreT1,
+      Integer rivalScoreT2,
+      String state) {} // "agree" | "differ" | "hidden"
+
+  public record H2HView(
+      Long rivalUserId,
+      String rivalDisplayName,
+      int agreeCount,
+      int differCount,
+      Integer myPoints,
+      Integer rivalPoints,
+      List<H2HMatch> matches) {}
+
   private record MatchMeta(
       long id,
       String roundCode,
@@ -180,5 +207,84 @@ public class CompareService {
               rebel));
     }
     return new GroupConsensusView(out);
+  }
+
+  @Transactional(readOnly = true)
+  public H2HView getH2H(Long userId, Long rivalUserId) {
+    if (rivalUserId == null) throw new IllegalArgumentException("vs (rival user id) required");
+
+    Integer rivalCount =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM quiniela q WHERE q.pool_id = ? AND q.user_id = ?",
+            Integer.class,
+            POOL_ID,
+            rivalUserId);
+    boolean rivalInPool = rivalCount != null && rivalCount > 0;
+    if (!rivalInPool && !rivalUserId.equals(userId)) {
+      throw new IllegalArgumentException("Unknown rival");
+    }
+    String rivalName =
+        jdbc.query(
+            "SELECT display_name FROM users WHERE id = ?",
+            rs -> rs.next() ? rs.getString(1) : null,
+            rivalUserId);
+
+    var deadlines = lockClock.fetchTournamentDeadlines(TOURNAMENT_ID);
+    Instant now = Instant.now();
+    Map<Long, int[]> myBets = fetchBetsForUser(userId);
+    Map<Long, int[]> rivalBets = fetchBetsForUser(rivalUserId);
+
+    int agree = 0;
+    int differ = 0;
+    List<H2HMatch> matches = new ArrayList<>();
+    for (MatchMeta m : fetchMatchMeta()) {
+      boolean revealed = LockClock.isMatchRevealable(now, deadlines, m.roundCode());
+      int[] mine = myBets.get(m.id());
+      int[] theirs = rivalBets.get(m.id());
+      Integer myT1 = mine == null ? null : mine[0];
+      Integer myT2 = mine == null ? null : mine[1];
+      Integer rvT1 = (revealed && theirs != null) ? theirs[0] : null;
+      Integer rvT2 = (revealed && theirs != null) ? theirs[1] : null;
+
+      String state;
+      if (!revealed) {
+        state = "hidden";
+      } else if (mine != null && theirs != null && mine[0] == theirs[0] && mine[1] == theirs[1]) {
+        state = "agree";
+        agree++;
+      } else if (mine != null && theirs != null) {
+        state = "differ";
+        differ++;
+      } else {
+        // Revealed, but one (or both) of us never picked — counts as a difference only
+        // when at least one side has a pick, so agreeCount + differCount always equals
+        // the number of revealed matches where at least one side participated.
+        state = "differ";
+        if (mine != null || theirs != null) {
+          differ++;
+        }
+      }
+
+      matches.add(
+          new H2HMatch(
+              m.id(),
+              m.roundCode(),
+              m.t1Code(),
+              m.t1Flag(),
+              m.t2Code(),
+              m.t2Flag(),
+              m.kickoffAt(),
+              m.actualT1(),
+              m.actualT2(),
+              m.played(),
+              revealed,
+              myT1,
+              myT2,
+              rvT1,
+              rvT2,
+              state));
+    }
+    // myPoints / rivalPoints populated in Task 4 (optional points tally).
+    return new H2HView(rivalUserId, rivalName, agree, differ, null, null, matches);
   }
 }
