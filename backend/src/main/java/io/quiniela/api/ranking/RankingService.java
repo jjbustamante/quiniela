@@ -31,10 +31,12 @@ public class RankingService {
               RANK() OVER (ORDER BY q.points DESC) AS rk,
               u.id            AS user_id,
               u.display_name  AS display_name,
-              q.points        AS points
+              q.points        AS points,
+              u.is_bot        AS is_bot
             FROM quiniela q
             JOIN users u ON u.id = q.user_id
             WHERE q.pool_id = ?
+              AND u.role <> 'admin'
             ORDER BY q.points DESC, u.display_name ASC
             """,
             (rs, n) -> {
@@ -42,13 +44,46 @@ public class RankingService {
               long userId = rs.getLong("user_id");
               String displayName = rs.getString("display_name");
               int points = rs.getInt("points");
+              boolean isBot = rs.getBoolean("is_bot");
               boolean isYou = callerUserId != null && callerUserId == userId;
-              return new RankingEntry(rank, userId, displayName, points, null, isYou);
+              return new RankingEntry(rank, userId, displayName, points, null, isYou, isBot);
             },
             DEFAULT_POOL_ID);
 
     String updatedAt = computeUpdatedAt();
     return new RankingView(List.copyOf(new ArrayList<>(entries)), updatedAt);
+  }
+
+  /**
+   * Prize-eligible ranking: excludes ADMIN-role accounts and bots (Pulpo Paul). Backs future
+   * pot-payout logic. Pot-payout math itself is out of scope for v1.
+   */
+  @Transactional(readOnly = true)
+  public java.util.List<RankingEntry> getPrizeEligible() {
+    return jdbc.query(
+        """
+        SELECT
+          RANK() OVER (ORDER BY q.points DESC) AS rk,
+          u.id            AS user_id,
+          u.display_name  AS display_name,
+          q.points        AS points
+        FROM quiniela q
+        JOIN users u ON u.id = q.user_id
+        WHERE q.pool_id = ?
+          AND u.role <> 'admin'
+          AND u.is_bot = false
+        ORDER BY q.points DESC, u.display_name ASC
+        """,
+        (rs, n) ->
+            new RankingEntry(
+                rs.getInt("rk"),
+                rs.getLong("user_id"),
+                rs.getString("display_name"),
+                rs.getInt("points"),
+                null,
+                false,
+                false),
+        DEFAULT_POOL_ID);
   }
 
   /**

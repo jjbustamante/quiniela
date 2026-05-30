@@ -8,6 +8,8 @@ export type RankingEntry = {
   /** Rank change vs previous round. Null in v1 until the snapshot table lands. */
   delta: number | null;
   isYou: boolean;
+  /** True for Pulpo Paul — shown on the board but never prize-eligible. */
+  isBot: boolean;
 };
 
 export type RankingView = {
