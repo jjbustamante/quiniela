@@ -91,6 +91,26 @@
     "matchesHelp": "Matches appear once the World Cup fixture is loaded.",
     "compareHelp": "Compare your bracket against your friends."
   },
+  "compare": {
+    "title": "Duels",
+    "modeH2H": "1 vs 1",
+    "modeGroup": "Group",
+    "pickRival": "Pick a rival",
+    "rivalLabel": "vs.",
+    "summary": "Agree {agree} · Differ {differ}",
+    "summaryWinning": "Agree {agree} · Differ {differ} · {points}",
+    "colMatch": "Match",
+    "colYou": "You",
+    "colReal": "Actual",
+    "agreeSection": "Agree ({count})",
+    "majority": "With the majority",
+    "rebel": "Rebel 🔥",
+    "youTag": "you",
+    "lockedTitle": "NOT YET,\nHANG TIGHT.",
+    "lockedHelp": "Everyone's picks are revealed once the bracket locks.",
+    "emptyGroup": "Not enough predictions to compare yet.",
+    "noRival": "Pick a rival to see the duel."
+  },
   "invite_sheet": {
     "title": "Invite a friend",
     "linkLabel": "YOUR PERSONAL LINK",

@@ -91,6 +91,26 @@
     "matchesHelp": "Los partidos aparecen cuando se cargue el fixture del Mundial.",
     "compareHelp": "Compara tu quiniela contra la de tus amigos."
   },
+  "compare": {
+    "title": "Duelos",
+    "modeH2H": "1 vs 1",
+    "modeGroup": "Grupo",
+    "pickRival": "Elige un rival",
+    "rivalLabel": "vs.",
+    "summary": "Coinciden {agree} · Difieren {differ}",
+    "summaryWinning": "Coinciden {agree} · Difieren {differ} · {points}",
+    "colMatch": "Partido",
+    "colYou": "Tú",
+    "colReal": "Real",
+    "agreeSection": "Coinciden ({count})",
+    "majority": "Con la mayoría",
+    "rebel": "Rebelde 🔥",
+    "youTag": "tú",
+    "lockedTitle": "AÚN NO,\nPACIENCIA.",
+    "lockedHelp": "Los picks de los demás se revelan cuando se cierre la quiniela.",
+    "emptyGroup": "Todavía no hay suficientes pronósticos para comparar.",
+    "noRival": "Elige un rival para ver el duelo."
+  },
   "invite_sheet": {
     "title": "Invita a un pana",
     "linkLabel": "TU ENLACE PERSONAL",
