@@ -209,6 +209,27 @@ public class CompareService {
     return new GroupConsensusView(out);
   }
 
+  /** Mirror of V005 score_match_for_bet for the h2h tally. */
+  static int scoreMatchForBet(
+      boolean knockout, int betT1, int betT2, Integer actualT1, Integer actualT2) {
+    if (actualT1 == null || actualT2 == null) return 0;
+    int base;
+    if (betT1 == actualT1 && betT2 == actualT2) {
+      base = 5;
+    } else {
+      int betWinner = Integer.compare(betT1, betT2);
+      int actWinner = Integer.compare(actualT1, actualT2);
+      if (betWinner == actWinner) {
+        if (betWinner == 0) base = 2; // correct draw
+        else if ((betT1 - betT2) == (actualT1 - actualT2)) base = 3; // winner + goal diff
+        else base = 2; // winner only
+      } else {
+        base = 0;
+      }
+    }
+    return knockout ? base * 2 : base;
+  }
+
   @Transactional(readOnly = true)
   public H2HView getH2H(Long userId, Long rivalUserId) {
     if (rivalUserId == null) throw new IllegalArgumentException("vs (rival user id) required");
@@ -236,6 +257,8 @@ public class CompareService {
 
     int agree = 0;
     int differ = 0;
+    int myPoints = 0;
+    int rivalPoints = 0;
     List<H2HMatch> matches = new ArrayList<>();
     for (MatchMeta m : fetchMatchMeta()) {
       boolean revealed = LockClock.isMatchRevealable(now, deadlines, m.roundCode());
@@ -265,6 +288,17 @@ public class CompareService {
         }
       }
 
+      if (m.played() && m.actualT1() != null && m.actualT2() != null) {
+        boolean knockout = !"GROUP".equals(m.roundCode());
+        if (mine != null) {
+          myPoints += scoreMatchForBet(knockout, mine[0], mine[1], m.actualT1(), m.actualT2());
+        }
+        if (theirs != null) {
+          rivalPoints +=
+              scoreMatchForBet(knockout, theirs[0], theirs[1], m.actualT1(), m.actualT2());
+        }
+      }
+
       matches.add(
           new H2HMatch(
               m.id(),
@@ -284,7 +318,6 @@ public class CompareService {
               rvT2,
               state));
     }
-    // myPoints / rivalPoints populated in Task 4 (optional points tally).
-    return new H2HView(rivalUserId, rivalName, agree, differ, null, null, matches);
+    return new H2HView(rivalUserId, rivalName, agree, differ, myPoints, rivalPoints, matches);
   }
 }

@@ -36,10 +36,12 @@ class CompareH2HIT extends AbstractIntegrationTest {
   }
 
   @AfterEach
-  void restoreDeadlines() {
+  void restoreDeadlinesAndMatch() {
     jdbc.update(
         "UPDATE tournament SET group_stage_deadline = TIMESTAMPTZ '2026-06-11 17:00 UTC',"
             + " knockout_deadline = TIMESTAMPTZ '2026-06-28 17:00 UTC' WHERE id = 1");
+    // Reset match 1 result so a played-match test can't leak into later tests.
+    jdbc.update("UPDATE match SET score_t1 = NULL, score_t2 = NULL, played = FALSE WHERE id = 1");
   }
 
   private long createUserWithBetOnMatch1(String slug, int t1, int t2) {
@@ -124,5 +126,21 @@ class CompareH2HIT extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.agreeCount").value(1))
         .andExpect(jsonPath("$.differCount").value(0))
         .andExpect(jsonPath("$.matches[0].state").value("agree"));
+  }
+
+  @Test
+  void tallySumsPointsOnPlayedMatches() throws Exception {
+    jdbc.update(
+        "UPDATE tournament SET group_stage_deadline = NOW() - INTERVAL '1 hour' WHERE id = 1");
+    long me = createUserWithBetOnMatch1("h2h-tally-me", 2, 1); // exact -> 5 pts
+    long rival = createUserWithBetOnMatch1("h2h-tally-rival", 3, 1); // correct winner only -> 2 pts
+    // Record the real result for match 1 as 2-1 and mark played (fires scoring trigger).
+    jdbc.update("UPDATE match SET score_t1 = 2, score_t2 = 1, played = TRUE WHERE id = 1");
+
+    mockMvc
+        .perform(get("/api/compare/h2h?vs=" + rival).header("Authorization", "Bearer " + token(me)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.myPoints").value(5))
+        .andExpect(jsonPath("$.rivalPoints").value(2));
   }
 }
