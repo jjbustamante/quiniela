@@ -22,6 +22,7 @@
 - Re-filling or retroactively changing bets a user already placed.
 - Search-grounding / live news at prediction time.
 - An English (or any non-Spanish) UI. v1 generates Spanish reasoning; the schema is language-tagged so translation can be added later without a migration headache.
+- **Pot-payout math** (aggregating entry fees and applying the 80/15/5 `prize_split`). This does not exist today and is not built here. v1 only establishes *eligibility* — a prize-eligible ranking view — so whenever payout is built, Paul and the admin are already correctly excluded.
 
 ## Decisions (from brainstorming)
 
@@ -36,6 +37,9 @@
 | `suggest`/`fill` behavior | Return a **random** cached candidate prediction (gives Paul personality; zero per-request LLM cost) |
 | Paul's official bet | **LLM ensemble judge**: a final call synthesizes the candidate predictions into Paul's official pick |
 | Reasoning language | Stored Spanish + tagged `reasoning_lang`; translation is a future lazy-cached LLM step |
+| Pot eligibility model | Identity-based: leaderboard excludes `ADMIN` role; prize ranking also excludes `is_bot`. No per-bracket flag |
+| Admin on leaderboard | Hidden entirely — admin is management-only; Juan plays via his Captain account |
+| Paul on leaderboard | Shown as an **exhibition** competitor (badge), never prize-eligible |
 
 ## Lifecycle
 
@@ -61,6 +65,9 @@ Nullable so playoff-pending slots stay null. The context builder degrades gracef
 
 ### `V015__paul_predictions.sql`
 ```sql
+-- Identity-based pot eligibility (see "Pool eligibility" section).
+ALTER TABLE users ADD COLUMN is_bot BOOLEAN NOT NULL DEFAULT FALSE;
+
 CREATE TABLE paul_prediction (
     id             BIGSERIAL PRIMARY KEY,
     match_id       BIGINT NOT NULL REFERENCES match(id) ON DELETE CASCADE,
@@ -80,12 +87,13 @@ CREATE TABLE paul_prediction (
 CREATE INDEX idx_paul_prediction_match ON paul_prediction(match_id);
 
 -- Paul bot user. NO quiniela yet — absence of a quiniela means "not competing".
-INSERT INTO users (google_sub, email, display_name, role)
-VALUES ('paul-bot-oracle', 'paul@laquinieladelospanas.com', 'Pulpo Paul 🐙', 'player')
+-- is_bot = true keeps him out of the prize ranking even after he reveals.
+INSERT INTO users (google_sub, email, display_name, role, is_bot)
+VALUES ('paul-bot-oracle', 'paul@laquinieladelospanas.com', 'Pulpo Paul 🐙', 'player', TRUE)
 ON CONFLICT (google_sub) DO NOTHING;
 ```
 - Multiple `CANDIDATE` rows per match (one per model). One `OFFICIAL` row per match (the ensemble result, `model = 'ensemble'`).
-- The Paul bot user is seeded so it has a stable id, but its quiniela is created only at reveal, so Paul cannot leak onto the leaderboard early.
+- The Paul bot user is seeded so it has a stable id, but its quiniela is created only at reveal, so Paul cannot leak onto the leaderboard early. He is role `player` (so he shows on the leaderboard once revealed) but `is_bot = true` (so he is never prize-eligible).
 
 ### Future (not in v1): translation cache
 When the app gains i18n, add:
@@ -99,6 +107,29 @@ CREATE TABLE paul_prediction_translation (
 );
 ```
 Reader path: want `en`? look up cache → miss → LLM-translate from the `reasoning_lang` original → store → return. Additive; no change to v1 tables.
+
+## Pool eligibility (who counts for the pot)
+
+The system currently has **no** prize logic and **no** eligibility concept: the ranking query (`RankingService.java:29-48`, native SQL `RANK() OVER (ORDER BY q.points DESC)`) joins every quiniela in the pool to users with **no** role/payment/eligibility filter, and a quiniela is auto-created the moment anyone bets or runs Paul's fill (`BracketService.java:87`, `PaulService.java:57`). Pool membership auto-joins on signup (`AuthController.java:116`). So today the leaderboard *is* the de-facto prize ranking, and both Paul and the admin would appear in it. `prize_split` (80/15/5) is seeded but no payout code reads it.
+
+We formalize two distinct concepts, **identity-based** (no per-bracket flag):
+
+| Actor | On competitive leaderboard? | Prize-eligible? |
+|---|---|---|
+| Players + Juan's **Captain** account | ✅ shown | ✅ eligible |
+| **Pulpo Paul** (bot) | ✅ shown (exhibition) | ❌ never |
+| **Admin** account (management) | ❌ hidden | ❌ never |
+
+Rules:
+- **Leaderboard (display):** `WHERE u.role <> 'ADMIN'`. Real players + captains + Paul show; the admin never does (even if testing auto-creates a quiniela for it).
+- **Prize-eligible ranking:** the leaderboard filter **AND** `u.is_bot = false`. Excludes Paul; admin already excluded by role.
+- Only **`ADMIN` role** and **bots** are excluded. **Captains are full players** (eligible) — the bootstrap (`AdminBootstrapService`) promotes only the management email to `ADMIN`; Juan's personal account stays `captain` and competes normally.
+- Pot-payout math itself stays out of scope (see Non-goals); this just guarantees the eligible-ranking input is correct.
+
+### Ranking changes
+- The display ranking query in `RankingService` (RankingService.java:29-48) → add `AND u.role <> 'ADMIN'`.
+- Add a prize-eligible query/method that additionally filters `u.is_bot = false`. Used by future payout; can also back an admin "premios" preview.
+- The ranking row DTO gains an `isBot` (or `exhibition`) boolean so the frontend can badge Paul.
 
 ## Backend components (`io.quiniela.api.paul`)
 
@@ -134,12 +165,13 @@ Reader path: want `en`? look up cache → miss → LLM-translate from the `reaso
 ## Frontend (minimal v1)
 
 - Surface Paul's Spanish reasoning on suggest/fill (the `PaulMascot` component already exists).
-- After reveal: Paul appears on the ranking with an octopus avatar + a "¡Pulpo Paul decidió jugar! 🐙" banner. He is just another quiniela once revealed, so the existing leaderboard renders him with no special-casing.
+- After reveal: Paul appears on the ranking with an octopus avatar + a "¡Pulpo Paul decidió jugar! 🐙" banner. His row carries an **exhibition badge** (e.g. "fuera de premio") driven by the `isBot` field on `RankingRow`, so users see he competes for glory but not money. The admin account never appears (filtered server-side by role).
 
 ## Testing (TDD)
 
 - **Unit:** `MatchContextBuilder` (null ranking, missing standings), random-pick logic, fallback path, ensemble prompt builder.
 - **Integration:** mock the `ChatModel`/`ChatClient` bean → deterministic responses. Assert `paul_prediction` rows are written; assert `fill` copies candidates and skips already-bet matches; assert `reveal` is idempotent and snapshots only `OFFICIAL` rows. Reuse existing `PaulControllerIT` patterns.
+- **Eligibility:** assert the leaderboard hides `ADMIN`-role accounts; assert the prize-eligible query also excludes `is_bot` (Paul); assert a revealed Paul **does** appear on the display leaderboard but **not** in the prize-eligible list; assert a `captain` account is both shown and prize-eligible.
 
 ## Open items for the implementation plan
 
