@@ -45,7 +45,7 @@ public class RankingService {
               String displayName = rs.getString("display_name");
               int points = rs.getInt("points");
               boolean isBot = rs.getBoolean("is_bot");
-              boolean isYou = callerUserId != null && callerUserId == userId;
+              boolean isYou = callerUserId != null && callerUserId.equals(userId);
               return new RankingEntry(rank, userId, displayName, points, null, isYou, isBot);
             },
             DEFAULT_POOL_ID);
@@ -62,7 +62,7 @@ public class RankingService {
    * a payout input, not a viewer-facing board, and bots are filtered out by definition.
    */
   @Transactional(readOnly = true)
-  public java.util.List<RankingEntry> getPrizeEligible() {
+  public List<RankingEntry> getPrizeEligible() {
     return jdbc.query(
         """
         SELECT
