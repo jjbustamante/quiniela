@@ -27,10 +27,10 @@
 
 ## Progress
 
-- [ ] Task 1: group standings helper + unit-style IT for the tiebreak
-- [ ] Task 2: seedKnockoutBracket (fill R32 + wire the tree) hooked into GROUP simulation
-- [ ] Task 3: third-place SF-loser advancement + extend clean to reset the bracket
-- [ ] Task 4: verify end-to-end (simulate/all → champion) + ship
+- [x] Task 1: group standings helper + unit-style IT for the tiebreak
+- [x] Task 2: seedKnockoutBracket (fill R32 + wire the tree) hooked into GROUP simulation
+- [x] Task 3: third-place SF-loser advancement + extend clean to reset the bracket
+- [x] Task 4: verify end-to-end (simulate/all → champion) + ship
 
 ---
 
@@ -47,7 +47,7 @@ once Task 2 lands. To keep Task 1 self-contained and test-first, the test here
 asserts the helper's ordering indirectly is deferred — instead Task 1 ships the
 helper + a direct package-visible entry the IT can call.
 
-- [ ] **Step 1: Add the standings record + helper (package-visible for testing)**
+- [x] **Step 1: Add the standings record + helper (package-visible for testing)**
 
 In `AdminTestService.java`, add this record near the other records:
 ```java
@@ -119,7 +119,7 @@ Add this helper (package-visible so the IT can call it directly):
 > Use this second form (it is the correct one); the first is shown only to
 > explain why it's wrong.
 
-- [ ] **Step 2: Write the failing tiebreak IT**
+- [x] **Step 2: Write the failing tiebreak IT**
 
 Add to `AdminTestControllerIT.java`. This needs the service bean — add an
 autowired field if not present: `@Autowired io.quiniela.api.admin.AdminTestService adminTestService;`
@@ -177,13 +177,13 @@ autowired field if not present: `@Autowired io.quiniela.api.admin.AdminTestServi
   }
 ```
 
-- [ ] **Step 3: Run to verify it fails then passes**
+- [x] **Step 3: Run to verify it fails then passes**
 
 `cd backend && ./mvnw verify` — the test fails before the helper exists, passes
 after. (If you add helper + test together, run once and confirm green + that no
 prior IT regressed.) spotless:apply if format fails.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 ```bash
 git add backend/src/main/java/io/quiniela/api/admin/AdminTestService.java \
         backend/src/test/java/io/quiniela/api/admin/AdminTestControllerIT.java
@@ -198,7 +198,7 @@ git commit -m "feat(backend): group standings helper for knockout seeding"
 - Modify: `backend/src/main/java/io/quiniela/api/admin/AdminTestService.java`
 - Modify: `backend/src/test/java/io/quiniela/api/admin/AdminTestControllerIT.java`
 
-- [ ] **Step 1: Write the failing IT**
+- [x] **Step 1: Write the failing IT**
 
 Add to `AdminTestControllerIT.java`:
 ```java
@@ -266,11 +266,11 @@ Add to `AdminTestControllerIT.java`:
   }
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 `cd backend && ./mvnw verify` → FAIL (R32 teams stay null; no seeder).
 
-- [ ] **Step 3: Add `seedKnockoutBracket()` + helpers**
+- [x] **Step 3: Add `seedKnockoutBracket()` + helpers**
 
 In `AdminTestService.java`, add:
 ```java
@@ -381,7 +381,7 @@ In `AdminTestService.java`, add:
   }
 ```
 
-- [ ] **Step 4: Hook the seeder into the GROUP simulation**
+- [x] **Step 4: Hook the seeder into the GROUP simulation**
 
 In `simulateCurrentRound()`, the block currently is:
 ```java
@@ -403,11 +403,11 @@ Change it to also seed the bracket when the group round was the one played:
     return new SimulateRoundResult(roundCode, played, advancedTo);
 ```
 
-- [ ] **Step 5: Run to verify it passes**
+- [x] **Step 5: Run to verify it passes**
 
 `cd backend && ./mvnw verify` → PASS (the seeding IT green; all prior green). spotless:apply if format fails.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 ```bash
 git add backend/src/main/java/io/quiniela/api/admin/AdminTestService.java \
         backend/src/test/java/io/quiniela/api/admin/AdminTestControllerIT.java
@@ -426,7 +426,7 @@ The generic `advanceFromRound` fills children from parent **winners** — correc
 for FINAL, wrong for THIRD_PLACE (which needs SF **losers**). And `clean` must
 reset the simulated bracket so a re-sim starts fresh.
 
-- [ ] **Step 1: Write the failing ITs**
+- [x] **Step 1: Write the failing ITs**
 
 Add to `AdminTestControllerIT.java`:
 ```java
@@ -523,11 +523,11 @@ Add to `AdminTestControllerIT.java`:
   }
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 `cd backend && ./mvnw verify` → FAIL (third-place empty; clean leaves bracket wired).
 
-- [ ] **Step 3: Fill third-place from SF losers**
+- [x] **Step 3: Fill third-place from SF losers**
 
 In `simulateCurrentRound()`, after the `advanceFromRound` call in the knockout
 branch, add a special case: when the round just played is `SF`, fill the
@@ -577,7 +577,7 @@ Add the helper:
 > — but THIRD_PLACE is seq 6, lower, so it plays first. Either way both have
 > teams and get played by `simulateAll`'s loop.
 
-- [ ] **Step 4: Extend `clean` to reset the simulated bracket**
+- [x] **Step 4: Extend `clean` to reset the simulated bracket**
 
 In `clean(...)`, after the existing `UPDATE match SET score_t1=NULL...` and
 before the `quiniela` update, add the bracket reset:
@@ -592,11 +592,11 @@ before the `quiniela` update, add the bracket reset:
 ```
 (Group matches keep their loader-provided teams; every knockout match is reset.)
 
-- [ ] **Step 5: Run to verify they pass**
+- [x] **Step 5: Run to verify they pass**
 
 `cd backend && ./mvnw verify` → PASS (both new ITs green; all prior green). spotless:apply if format fails.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 ```bash
 git add backend/src/main/java/io/quiniela/api/admin/AdminTestService.java \
         backend/src/test/java/io/quiniela/api/admin/AdminTestControllerIT.java
@@ -607,15 +607,15 @@ git commit -m "feat(backend): third-place from SF losers + clean resets the brac
 
 ## Task 4: Verify end-to-end + ship
 
-- [ ] **Step 1: Full backend verify**
+- [x] **Step 1: Full backend verify**
 `cd backend && ./mvnw -B verify` — all ITs green (the 4 new AdminTest cases + every prior test). Report the aggregate "Tests run:" line.
 
-- [ ] **Step 2: Confirm no scope bleed**
+- [x] **Step 2: Confirm no scope bleed**
 `git diff <plan-start>..HEAD --stat` — only `AdminTestService.java` +
 `AdminTestControllerIT.java` changed. No migration, no frontend, no other backend
 file. (Plan start = the commit before Task 1.)
 
-- [ ] **Step 3: Tick checkboxes, commit, push**
+- [x] **Step 3: Tick checkboxes, commit, push**
 Mark all Progress + verification checkboxes `[x]`, then:
 ```bash
 git add docs/superpowers/plans/2026-05-29-quiniela-plan-8-knockout-seeding.md
@@ -623,7 +623,7 @@ git commit -m "docs: Plan 8 complete — knockout bracket seeding"
 git push origin master
 ```
 
-- [ ] **Step 4: Watch CI + smoke prod**
+- [x] **Step 4: Watch CI + smoke prod**
 Watch backend CI to green (`gh run watch <id> --exit-status`) — backend-only
 change, so only backend CI matters; it deploys to Cloud Run on master. Then:
 ```bash
@@ -635,9 +635,9 @@ Simular todo → check /matches + bracket pages show a played knockout through t
 Final).
 
 **Verification:**
-- [ ] Backend `./mvnw verify` green (4 new knockout-seeding ITs)
-- [ ] Only AdminTestService + its IT changed (no migration/frontend)
-- [ ] Backend CI green on `master`; `/api/admin/test/state` 401 unauth in prod
+- [x] Backend `./mvnw verify` green (4 new knockout-seeding ITs)
+- [x] Only AdminTestService + its IT changed (no migration/frontend)
+- [x] Backend CI green on `master`; `/api/admin/test/state` 401 unauth in prod
 
 ---
 
