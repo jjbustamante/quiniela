@@ -137,13 +137,10 @@ public class AdminTestService {
       return; // incomplete data; don't wire a broken bracket
 
     for (int i = 0; i < 16; i++) {
-      Long home = seeds.get(i);
-      Long away = seeds.get(31 - i);
-      jdbc.update(
-          "UPDATE match SET team_1_id = ?, team_2_id = ?, updated_at = NOW() WHERE id = ?",
-          home,
-          away,
-          r32.get(i).getId());
+      Match m = r32.get(i);
+      m.setTeam1Id(seeds.get(i));
+      m.setTeam2Id(seeds.get(31 - i));
+      matches.save(m);
     }
 
     wireParents("R32", "R16");
@@ -166,11 +163,10 @@ public class AdminTestService {
     List<Match> children =
         matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, childRoundId);
     for (int i = 0; i < children.size() && (2 * i + 1) < parents.size(); i++) {
-      jdbc.update(
-          "UPDATE match SET match_parent_1_id = ?, match_parent_2_id = ?, updated_at = NOW() WHERE id = ?",
-          parents.get(2 * i).getId(),
-          parents.get(2 * i + 1).getId(),
-          children.get(i).getId());
+      Match child = children.get(i);
+      child.setMatchParent1Id(parents.get(2 * i).getId());
+      child.setMatchParent2Id(parents.get(2 * i + 1).getId());
+      matches.save(child);
     }
   }
 
@@ -187,11 +183,10 @@ public class AdminTestService {
       List<Match> ms =
           matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, roundId);
       if (ms.isEmpty()) continue;
-      jdbc.update(
-          "UPDATE match SET match_parent_1_id = ?, match_parent_2_id = ?, updated_at = NOW() WHERE id = ?",
-          sf1,
-          sf2,
-          ms.get(0).getId());
+      Match m = ms.get(0);
+      m.setMatchParent1Id(sf1);
+      m.setMatchParent2Id(sf2);
+      matches.save(m);
     }
   }
 
@@ -277,6 +272,13 @@ public class AdminTestService {
             "UPDATE match SET score_t1=NULL, score_t2=NULL, winner_id=NULL, played=false "
                 + "WHERE tournament_id = ?",
             TOURNAMENT_ID);
+    jdbc.update(
+        "UPDATE match SET team_1_id=NULL, team_2_id=NULL, "
+            + "match_parent_1_id=NULL, match_parent_2_id=NULL, updated_at=NOW() "
+            + "WHERE tournament_id = ? AND round_id <> "
+            + "(SELECT id FROM round WHERE tournament_id = ? AND code = 'GROUP')",
+        TOURNAMENT_ID,
+        TOURNAMENT_ID);
     jdbc.update("UPDATE quiniela SET points = 0, updated_at = NOW() WHERE pool_id = ?", POOL_ID);
     jdbc.update(
         "UPDATE payment SET paid=false, paid_at=NULL, marked_paid_by=NULL, "
@@ -322,14 +324,17 @@ public class AdminTestService {
       if (m.getTeam1Id() == null || m.getTeam2Id() == null) continue;
       int s1 = randomGoals();
       int s2 = randomGoals();
+      // Knockout rounds need a winner: break ties by giving one goal to a random
+      // team (simulates extra time / penalties). The DB trigger derives winner_id
+      // from the scores, so we must avoid a draw in the persisted score columns.
+      if (knockout && s1 == s2) {
+        if (ThreadLocalRandom.current().nextBoolean()) s1++;
+        else s2++;
+      }
       Long winner;
       if (s1 > s2) winner = m.getTeam1Id();
-      else if (s2 > s1) winner = m.getTeam2Id();
-      else
-        winner =
-            knockout
-                ? (ThreadLocalRandom.current().nextBoolean() ? m.getTeam1Id() : m.getTeam2Id())
-                : null;
+      else winner = m.getTeam2Id();
+      if (!knockout && s1 == s2) winner = null;
       m.setScoreT1(s1);
       m.setScoreT2(s2);
       m.setWinnerId(winner);
@@ -341,6 +346,9 @@ public class AdminTestService {
     String advancedTo = null;
     if (knockout) {
       advancedTo = advanceFromRound(round.getId());
+      if ("SF".equals(roundCode)) {
+        fillThirdPlaceFromSfLosers(round.getId());
+      }
     } else if ("GROUP".equals(roundCode) && played > 0) {
       seedKnockoutBracket();
       advancedTo = "R32";
@@ -365,15 +373,34 @@ public class AdminTestService {
       if (p1 == null || p2 == null) continue;
       if (!winnerByMatch.containsKey(p1) || !winnerByMatch.containsKey(p2)) continue;
       if (child.getTeam1Id() == null) {
-        jdbc.update(
-            "UPDATE match SET team_1_id = ?, team_2_id = ?, updated_at = NOW() WHERE id = ?",
-            winnerByMatch.get(p1),
-            winnerByMatch.get(p2),
-            child.getId());
+        child.setTeam1Id(winnerByMatch.get(p1));
+        child.setTeam2Id(winnerByMatch.get(p2));
+        matches.save(child);
         advancedRoundCode = roundCodeOf(child.getRoundId());
       }
     }
     return advancedRoundCode;
+  }
+
+  /** After SF is played, set the third-place match's teams to the two SF losers. */
+  private void fillThirdPlaceFromSfLosers(Long sfRoundId) {
+    List<Match> sf =
+        matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, sfRoundId);
+    List<Long> losers = new java.util.ArrayList<>();
+    for (Match m : sf) {
+      if (m.getWinnerId() == null || m.getTeam1Id() == null || m.getTeam2Id() == null) continue;
+      losers.add(m.getWinnerId().equals(m.getTeam1Id()) ? m.getTeam2Id() : m.getTeam1Id());
+    }
+    if (losers.size() < 2) return;
+    Long thirdRoundId =
+        rounds.findByTournamentIdAndCode(TOURNAMENT_ID, "THIRD_PLACE").orElseThrow().getId();
+    List<Match> third =
+        matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, thirdRoundId);
+    if (third.isEmpty()) return;
+    Match thirdMatch = third.get(0);
+    thirdMatch.setTeam1Id(losers.get(0));
+    thirdMatch.setTeam2Id(losers.get(1));
+    matches.save(thirdMatch);
   }
 
   private String roundCodeOf(Long roundId) {

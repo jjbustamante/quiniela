@@ -336,6 +336,94 @@ class AdminTestControllerIT extends AbstractIntegrationTest {
   }
 
   @Test
+  void simulateAllReachesAChampionAndThirdPlaceGetsSfLosers() throws Exception {
+    String token = adminToken();
+    jdbc.update(
+        "UPDATE match SET score_t1=NULL, score_t2=NULL, winner_id=NULL, played=false WHERE tournament_id=1");
+    jdbc.update(
+        "UPDATE match m SET team_1_id=NULL, team_2_id=NULL, match_parent_1_id=NULL, match_parent_2_id=NULL "
+            + "WHERE m.tournament_id=1 AND m.round_id <> "
+            + "(SELECT id FROM round WHERE tournament_id=1 AND code='GROUP')");
+
+    mockMvc
+        .perform(post("/api/admin/test/simulate/all").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk());
+
+    Boolean finalPlayed =
+        jdbc.queryForObject(
+            "SELECT m.played FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='FINAL'",
+            Boolean.class);
+    org.assertj.core.api.Assertions.assertThat(finalPlayed).isTrue();
+    Long finalWinner =
+        jdbc.queryForObject(
+            "SELECT m.winner_id FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='FINAL'",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(finalWinner).isNotNull();
+
+    var sfRows =
+        jdbc.queryForList(
+            "SELECT m.team_1_id AS t1, m.team_2_id AS t2, m.winner_id AS w "
+                + "FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='SF' ORDER BY m.kickoff_at ASC");
+    org.assertj.core.api.Assertions.assertThat(sfRows).hasSize(2);
+    java.util.Set<Long> expectedLosers = new java.util.HashSet<>();
+    for (var row : sfRows) {
+      long t1 = ((Number) row.get("t1")).longValue();
+      long t2 = ((Number) row.get("t2")).longValue();
+      long w = ((Number) row.get("w")).longValue();
+      expectedLosers.add(w == t1 ? t2 : t1);
+    }
+    var thirdTeams =
+        jdbc.queryForList(
+            "SELECT team_1_id FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='THIRD_PLACE' "
+                + "UNION ALL "
+                + "SELECT team_2_id FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='THIRD_PLACE'",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(new java.util.HashSet<>(thirdTeams))
+        .isEqualTo(expectedLosers);
+  }
+
+  @Test
+  void cleanResetsSimulatedBracketButKeepsGroupTeams() throws Exception {
+    String token = adminToken();
+    jdbc.update(
+        "UPDATE match SET score_t1=NULL, score_t2=NULL, winner_id=NULL, played=false WHERE tournament_id=1");
+    mockMvc
+        .perform(post("/api/admin/test/simulate/all").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk());
+
+    long groupTeamsBefore =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='GROUP' AND m.team_1_id IS NOT NULL",
+            Long.class);
+
+    mockMvc
+        .perform(post("/api/admin/test/clean").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk());
+
+    Long koWithTeamsOrParents =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code <> 'GROUP' "
+                + "AND (m.team_1_id IS NOT NULL OR m.team_2_id IS NOT NULL "
+                + "     OR m.match_parent_1_id IS NOT NULL OR m.match_parent_2_id IS NOT NULL)",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(koWithTeamsOrParents).isZero();
+
+    long groupTeamsAfter =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='GROUP' AND m.team_1_id IS NOT NULL",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(groupTeamsAfter).isEqualTo(groupTeamsBefore);
+  }
+
+  @Test
   void deadlinesUpdateInTestMode() throws Exception {
     String token = adminToken();
     mockMvc

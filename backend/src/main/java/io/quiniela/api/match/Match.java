@@ -95,8 +95,16 @@ public class Match {
     return team1Id;
   }
 
+  public void setTeam1Id(Long team1Id) {
+    this.team1Id = team1Id;
+  }
+
   public Long getTeam2Id() {
     return team2Id;
+  }
+
+  public void setTeam2Id(Long team2Id) {
+    this.team2Id = team2Id;
   }
 
   public Integer getScoreT1() {
@@ -139,7 +147,15 @@ public class Match {
     return matchParent1Id;
   }
 
+  public void setMatchParent1Id(Long matchParent1Id) {
+    this.matchParent1Id = matchParent1Id;
+  }
+
   public Long getMatchParent2Id() {
     return matchParent2Id;
+  }
+
+  public void setMatchParent2Id(Long matchParent2Id) {
+    this.matchParent2Id = matchParent2Id;
   }
 }
