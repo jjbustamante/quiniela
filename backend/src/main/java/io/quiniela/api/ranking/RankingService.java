@@ -57,6 +57,9 @@ public class RankingService {
   /**
    * Prize-eligible ranking: excludes ADMIN-role accounts and bots (Pulpo Paul). Backs future
    * pot-payout logic. Pot-payout math itself is out of scope for v1.
+   *
+   * <p>The {@code isYou}/{@code isBot} entry fields are hardcoded {@code false} here: this list is
+   * a payout input, not a viewer-facing board, and bots are filtered out by definition.
    */
   @Transactional(readOnly = true)
   public java.util.List<RankingEntry> getPrizeEligible() {
