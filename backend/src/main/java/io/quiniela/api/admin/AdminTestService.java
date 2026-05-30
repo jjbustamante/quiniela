@@ -97,6 +97,104 @@ public class AdminTestService {
     return byGroup;
   }
 
+  /**
+   * After the group round is played, fill the 32 R32 team slots from group standings and wire the
+   * parent-pointer tree (R16<-R32, QF<-R16, SF<-QF, FINAL<-SF, THIRD_PLACE<-SF) so advanceFromRound
+   * can carry winners onward. Idempotent: no-op if R32 already has teams. Test-only (caller is
+   * gated). NOTE: a valid test bracket, NOT FIFA's official slotting matrix.
+   */
+  private void seedKnockoutBracket() {
+    Long r32RoundId = rounds.findByTournamentIdAndCode(TOURNAMENT_ID, "R32").orElseThrow().getId();
+    List<Match> r32 =
+        matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, r32RoundId);
+    if (r32.isEmpty()) return;
+    if (r32.get(0).getTeam1Id() != null) return; // already seeded
+
+    var byGroup = groupStandings();
+
+    List<Standing> winners = new java.util.ArrayList<>();
+    List<Standing> runnersUp = new java.util.ArrayList<>();
+    List<Standing> thirds = new java.util.ArrayList<>();
+    for (List<Standing> g : byGroup.values()) {
+      if (g.size() > 0) winners.add(g.get(0));
+      if (g.size() > 1) runnersUp.add(g.get(1));
+      if (g.size() > 2) thirds.add(g.get(2));
+    }
+    thirds.sort(
+        java.util.Comparator.comparingInt(Standing::points)
+            .reversed()
+            .thenComparing(java.util.Comparator.comparingInt(Standing::goalDiff).reversed())
+            .thenComparing(java.util.Comparator.comparingInt(Standing::goalsFor).reversed())
+            .thenComparingLong(Standing::teamId));
+    List<Standing> bestThirds = thirds.subList(0, Math.min(8, thirds.size()));
+
+    List<Long> seeds = new java.util.ArrayList<>();
+    winners.forEach(s -> seeds.add(s.teamId()));
+    runnersUp.forEach(s -> seeds.add(s.teamId()));
+    bestThirds.forEach(s -> seeds.add(s.teamId()));
+
+    if (seeds.size() < 32 || r32.size() < 16)
+      return; // incomplete data; don't wire a broken bracket
+
+    for (int i = 0; i < 16; i++) {
+      Long home = seeds.get(i);
+      Long away = seeds.get(31 - i);
+      jdbc.update(
+          "UPDATE match SET team_1_id = ?, team_2_id = ?, updated_at = NOW() WHERE id = ?",
+          home,
+          away,
+          r32.get(i).getId());
+    }
+
+    wireParents("R32", "R16");
+    wireParents("R16", "QF");
+    wireParents("QF", "SF");
+    wireFinalAndThird();
+  }
+
+  /**
+   * For each child match in childCode (ordered by kickoff), set its two parents to consecutive
+   * parent-round matches (also ordered by kickoff): child i <- parents[2i], parents[2i+1].
+   */
+  private void wireParents(String parentCode, String childCode) {
+    Long parentRoundId =
+        rounds.findByTournamentIdAndCode(TOURNAMENT_ID, parentCode).orElseThrow().getId();
+    Long childRoundId =
+        rounds.findByTournamentIdAndCode(TOURNAMENT_ID, childCode).orElseThrow().getId();
+    List<Match> parents =
+        matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, parentRoundId);
+    List<Match> children =
+        matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, childRoundId);
+    for (int i = 0; i < children.size() && (2 * i + 1) < parents.size(); i++) {
+      jdbc.update(
+          "UPDATE match SET match_parent_1_id = ?, match_parent_2_id = ?, updated_at = NOW() WHERE id = ?",
+          parents.get(2 * i).getId(),
+          parents.get(2 * i + 1).getId(),
+          children.get(i).getId());
+    }
+  }
+
+  /** FINAL and THIRD_PLACE both take the two SF matches as parents. */
+  private void wireFinalAndThird() {
+    Long sfRoundId = rounds.findByTournamentIdAndCode(TOURNAMENT_ID, "SF").orElseThrow().getId();
+    List<Match> sf =
+        matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, sfRoundId);
+    if (sf.size() < 2) return;
+    Long sf1 = sf.get(0).getId();
+    Long sf2 = sf.get(1).getId();
+    for (String code : new String[] {"FINAL", "THIRD_PLACE"}) {
+      Long roundId = rounds.findByTournamentIdAndCode(TOURNAMENT_ID, code).orElseThrow().getId();
+      List<Match> ms =
+          matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, roundId);
+      if (ms.isEmpty()) continue;
+      jdbc.update(
+          "UPDATE match SET match_parent_1_id = ?, match_parent_2_id = ?, updated_at = NOW() WHERE id = ?",
+          sf1,
+          sf2,
+          ms.get(0).getId());
+    }
+  }
+
   void requireAdmin(Long callerId) {
     User caller =
         users
@@ -243,6 +341,9 @@ public class AdminTestService {
     String advancedTo = null;
     if (knockout) {
       advancedTo = advanceFromRound(round.getId());
+    } else if ("GROUP".equals(roundCode) && played > 0) {
+      seedKnockoutBracket();
+      advancedTo = "R32";
     }
     return new SimulateRoundResult(roundCode, played, advancedTo);
   }

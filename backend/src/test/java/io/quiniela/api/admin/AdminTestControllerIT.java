@@ -277,6 +277,65 @@ class AdminTestControllerIT extends AbstractIntegrationTest {
   }
 
   @Test
+  void simulatingGroupSeedsR32AndWiresBracket() throws Exception {
+    String token = adminToken();
+    jdbc.update(
+        "UPDATE match SET score_t1=NULL, score_t2=NULL, winner_id=NULL, played=false WHERE tournament_id=1");
+    jdbc.update(
+        "UPDATE match m SET team_1_id=NULL, team_2_id=NULL, match_parent_1_id=NULL, match_parent_2_id=NULL "
+            + "WHERE m.tournament_id=1 AND m.round_id <> "
+            + "(SELECT id FROM round WHERE tournament_id=1 AND code='GROUP')");
+
+    mockMvc
+        .perform(post("/api/admin/test/simulate/round").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.roundCode").value("GROUP"));
+
+    Long r32WithoutTeams =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='R32' AND (m.team_1_id IS NULL OR m.team_2_id IS NULL)",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(r32WithoutTeams).isZero();
+
+    Long r32Count =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='R32'",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(r32Count).isEqualTo(16L);
+
+    Long childrenWithoutParents =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code IN ('R16','QF','SF','FINAL','THIRD_PLACE') "
+                + "AND (m.match_parent_1_id IS NULL OR m.match_parent_2_id IS NULL)",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(childrenWithoutParents).isZero();
+
+    Long totalR32Slots =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM ("
+                + "  SELECT team_1_id AS t FROM match m JOIN round r ON r.id=m.round_id "
+                + "    WHERE m.tournament_id=1 AND r.code='R32' "
+                + "  UNION ALL "
+                + "  SELECT team_2_id FROM match m JOIN round r ON r.id=m.round_id "
+                + "    WHERE m.tournament_id=1 AND r.code='R32') x",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(totalR32Slots).isEqualTo(32L);
+    Long uniqueR32Teams =
+        jdbc.queryForObject(
+            "SELECT COUNT(DISTINCT t) FROM ("
+                + "  SELECT team_1_id AS t FROM match m JOIN round r ON r.id=m.round_id "
+                + "    WHERE m.tournament_id=1 AND r.code='R32' "
+                + "  UNION ALL "
+                + "  SELECT team_2_id FROM match m JOIN round r ON r.id=m.round_id "
+                + "    WHERE m.tournament_id=1 AND r.code='R32') x",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(uniqueR32Teams).isEqualTo(32L);
+  }
+
+  @Test
   void deadlinesUpdateInTestMode() throws Exception {
     String token = adminToken();
     mockMvc
