@@ -48,6 +48,55 @@ public class AdminTestService {
 
   public record DeadlinesView(String groupStageDeadline, String knockoutDeadline) {}
 
+  /** A team's standing within its group, after the group matches are played. */
+  record Standing(Long teamId, String groupCode, int points, int goalDiff, int goalsFor) {}
+
+  /**
+   * Compute standings for every group from played GROUP matches. Returns, per group code, its teams
+   * ordered best-first by: points (3/1/0) -> goal difference -> goals for -> team id (deterministic
+   * final tiebreak).
+   */
+  java.util.Map<String, List<Standing>> groupStandings() {
+    Long groupRoundId =
+        rounds.findByTournamentIdAndCode(TOURNAMENT_ID, "GROUP").orElseThrow().getId();
+    List<Match> groupMatches =
+        matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, groupRoundId);
+
+    record Acc(String group, int pts, int gf, int ga) {}
+    java.util.Map<Long, Acc> acc = new java.util.HashMap<>();
+    for (Match m : groupMatches) {
+      if (!Boolean.TRUE.equals(m.getPlayed())) continue;
+      Long t1 = m.getTeam1Id();
+      Long t2 = m.getTeam2Id();
+      if (t1 == null || t2 == null) continue;
+      int s1 = m.getScoreT1() == null ? 0 : m.getScoreT1();
+      int s2 = m.getScoreT2() == null ? 0 : m.getScoreT2();
+      String g = m.getGroupCode();
+      int p1 = s1 > s2 ? 3 : s1 == s2 ? 1 : 0;
+      int p2 = s2 > s1 ? 3 : s1 == s2 ? 1 : 0;
+      Acc a1 = acc.getOrDefault(t1, new Acc(g, 0, 0, 0));
+      Acc a2 = acc.getOrDefault(t2, new Acc(g, 0, 0, 0));
+      acc.put(t1, new Acc(g, a1.pts() + p1, a1.gf() + s1, a1.ga() + s2));
+      acc.put(t2, new Acc(g, a2.pts() + p2, a2.gf() + s2, a2.ga() + s1));
+    }
+
+    java.util.Map<String, List<Standing>> byGroup = new java.util.TreeMap<>();
+    acc.forEach(
+        (teamId, a) ->
+            byGroup
+                .computeIfAbsent(a.group(), k -> new java.util.ArrayList<>())
+                .add(new Standing(teamId, a.group(), a.pts(), a.gf() - a.ga(), a.gf())));
+    for (List<Standing> list : byGroup.values()) {
+      list.sort(
+          java.util.Comparator.comparingInt(Standing::points)
+              .reversed()
+              .thenComparing(java.util.Comparator.comparingInt(Standing::goalDiff).reversed())
+              .thenComparing(java.util.Comparator.comparingInt(Standing::goalsFor).reversed())
+              .thenComparingLong(Standing::teamId));
+    }
+    return byGroup;
+  }
+
   void requireAdmin(Long callerId) {
     User caller =
         users

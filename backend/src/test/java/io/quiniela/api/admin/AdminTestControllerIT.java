@@ -28,6 +28,7 @@ class AdminTestControllerIT extends AbstractIntegrationTest {
   @Autowired UserRepository users;
   @Autowired JwtService jwt;
   @Autowired javax.sql.DataSource dataSource;
+  @Autowired io.quiniela.api.admin.AdminTestService adminTestService;
 
   MockMvc mockMvc;
   JdbcTemplate jdbc;
@@ -227,6 +228,52 @@ class AdminTestControllerIT extends AbstractIntegrationTest {
                 + "WHERE m.tournament_id=1 AND r.code='GROUP' AND m.played=false",
             Long.class);
     org.assertj.core.api.Assertions.assertThat(groupUnplayed).isZero();
+  }
+
+  @Test
+  void groupStandingsRanksByPointsThenGoalDiffThenGoalsForThenId() {
+    jdbc.update(
+        "UPDATE match SET score_t1=NULL, score_t2=NULL, winner_id=NULL, played=false WHERE tournament_id=1");
+    var ids =
+        jdbc.queryForList(
+            "SELECT m.id FROM match m JOIN round r ON r.id=m.round_id "
+                + "WHERE m.tournament_id=1 AND r.code='GROUP' AND m.group_code='A' "
+                + "ORDER BY m.kickoff_at ASC",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(ids).hasSize(6);
+    var teamIds =
+        jdbc.queryForList(
+            "SELECT DISTINCT t.id FROM team t WHERE t.tournament_id=1 AND t.group_code='A' ORDER BY t.id",
+            Long.class);
+    org.assertj.core.api.Assertions.assertThat(teamIds).hasSize(4);
+
+    for (Long id : ids) {
+      jdbc.update(
+          "UPDATE match SET score_t1=1, score_t2=0, winner_id=team_1_id, played=true WHERE id=?",
+          id);
+    }
+
+    var standings = adminTestService.groupStandings();
+    org.assertj.core.api.Assertions.assertThat(standings).containsKey("A");
+    var groupA = standings.get("A");
+    org.assertj.core.api.Assertions.assertThat(groupA).hasSize(4);
+    for (int i = 0; i + 1 < groupA.size(); i++) {
+      var hi = groupA.get(i);
+      var lo = groupA.get(i + 1);
+      boolean ordered =
+          hi.points() > lo.points()
+              || (hi.points() == lo.points() && hi.goalDiff() > lo.goalDiff())
+              || (hi.points() == lo.points()
+                  && hi.goalDiff() == lo.goalDiff()
+                  && hi.goalsFor() > lo.goalsFor())
+              || (hi.points() == lo.points()
+                  && hi.goalDiff() == lo.goalDiff()
+                  && hi.goalsFor() == lo.goalsFor()
+                  && hi.teamId() < lo.teamId());
+      org.assertj.core.api.Assertions.assertThat(ordered)
+          .as("standings entry %d ordered before %d", i, i + 1)
+          .isTrue();
+    }
   }
 
   @Test
