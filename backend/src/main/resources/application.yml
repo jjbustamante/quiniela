@@ -22,6 +22,20 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:}
+        chat:
+          options:
+            temperature: 0.8
+    # Enable Gemini chat model in prod via SPRING_AI_MODEL_CHAT=google-genai.
+    # Tests disable it via src/test/resources/application.yml (model.chat=none)
+    # because @ConditionalOnProperty(matchIfMissing=true) evaluates the property
+    # before placeholder resolution stabilises in the autoconfigure phase.
+    model:
+      chat: ${SPRING_AI_MODEL_CHAT:none}
+
 server:
   port: ${PORT:8080}
 
@@ -59,3 +73,13 @@ app:
     base-url: ${APP_FOOTBALL_DATA_BASE_URL:https://api.football-data.org/v4}
     api-key: ${APP_FOOTBALL_DATA_API_KEY:}          # required when enabled
     competition-code: ${APP_FOOTBALL_DATA_COMPETITION:WC}  # FIFA World Cup
+
+  paul:
+    provider: google
+    # Candidate models (best available Gemini variants). One CANDIDATE prediction
+    # per match per model. Add Vertex/OpenAI/Anthropic here later (provider-agnostic).
+    models:
+      - gemini-2.5-pro
+      - gemini-2.5-flash
+    # Model used for the ensemble-judge synthesis of Paul's OFFICIAL bet.
+    ensemble-model: gemini-2.5-pro

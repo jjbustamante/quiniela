@@ -1,4 +1,8 @@
 spring:
+  ai:
+    # Disable Gemini chat autoconfiguration in tests (no API key available).
+    model:
+      chat: none
   flyway:
     # Pick up both prod migrations (classpath:db/migration) and the
     # test-only fixture seed (classpath:db/test-migration) that restores
