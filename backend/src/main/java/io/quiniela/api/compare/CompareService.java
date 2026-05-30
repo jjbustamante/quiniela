@@ -1,0 +1,184 @@
+package io.quiniela.api.compare;
+
+import io.quiniela.api.bracket.LockClock;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.sql.DataSource;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class CompareService {
+
+  private static final Long POOL_ID = 1L;
+  private static final Long TOURNAMENT_ID = 1L;
+
+  private final JdbcTemplate jdbc;
+  private final LockClock lockClock;
+
+  public CompareService(DataSource ds, LockClock lockClock) {
+    this.jdbc = new JdbcTemplate(ds);
+    this.lockClock = lockClock;
+  }
+
+  public record ScoreCount(int scoreT1, int scoreT2, int count) {}
+
+  public record MatchConsensus(
+      Long matchId,
+      String roundCode,
+      String team1Code,
+      String team1Flag,
+      String team2Code,
+      String team2Flag,
+      String kickoffAt,
+      Integer actualScoreT1,
+      Integer actualScoreT2,
+      boolean played,
+      boolean revealed,
+      Integer myScoreT1,
+      Integer myScoreT2,
+      List<ScoreCount> distribution,
+      int totalPicks,
+      boolean majority,
+      boolean rebel) {}
+
+  public record GroupConsensusView(List<MatchConsensus> matches) {}
+
+  private record MatchMeta(
+      long id,
+      String roundCode,
+      String t1Code,
+      String t1Flag,
+      String t2Code,
+      String t2Flag,
+      String kickoffAt,
+      Integer actualT1,
+      Integer actualT2,
+      boolean played) {}
+
+  private List<MatchMeta> fetchMatchMeta() {
+    return jdbc.query(
+        """
+        SELECT m.id, r.code AS round_code, m.kickoff_at, m.score_t1, m.score_t2, m.played,
+               t1.code AS t1_code, t1.flag_emoji AS t1_flag,
+               t2.code AS t2_code, t2.flag_emoji AS t2_flag
+        FROM match m
+        JOIN round r ON r.id = m.round_id
+        LEFT JOIN team t1 ON t1.id = m.team_1_id
+        LEFT JOIN team t2 ON t2.id = m.team_2_id
+        WHERE m.tournament_id = ?
+        ORDER BY m.kickoff_at ASC, m.id ASC
+        """,
+        (rs, n) ->
+            new MatchMeta(
+                rs.getLong("id"),
+                rs.getString("round_code"),
+                rs.getString("t1_code"),
+                rs.getString("t1_flag"),
+                rs.getString("t2_code"),
+                rs.getString("t2_flag"),
+                rs.getTimestamp("kickoff_at").toInstant().toString(),
+                (Integer) rs.getObject("score_t1"),
+                (Integer) rs.getObject("score_t2"),
+                rs.getBoolean("played")),
+        TOURNAMENT_ID);
+  }
+
+  private Map<Long, int[]> fetchBetsForUser(Long userId) {
+    Map<Long, int[]> out = new HashMap<>();
+    jdbc.query(
+        """
+        SELECT b.match_id, b.score_t1, b.score_t2
+        FROM bet b JOIN quiniela q ON q.id = b.quiniela_id
+        WHERE q.pool_id = ? AND q.user_id = ?
+        """,
+        rs -> {
+          out.put(rs.getLong("match_id"), new int[] {rs.getInt("score_t1"), rs.getInt("score_t2")});
+        },
+        POOL_ID,
+        userId);
+    return out;
+  }
+
+  @Transactional(readOnly = true)
+  public GroupConsensusView getGroupConsensus(Long userId) {
+    var deadlines = lockClock.fetchTournamentDeadlines(TOURNAMENT_ID);
+    Instant now = Instant.now();
+
+    Map<Long, int[]> myBets = fetchBetsForUser(userId);
+
+    Map<Long, Map<String, Integer>> dist = new HashMap<>();
+    jdbc.query(
+        """
+        SELECT b.match_id, b.score_t1, b.score_t2, COUNT(*) AS cnt
+        FROM bet b JOIN quiniela q ON q.id = b.quiniela_id
+        WHERE q.pool_id = ?
+        GROUP BY b.match_id, b.score_t1, b.score_t2
+        """,
+        rs -> {
+          long mid = rs.getLong("match_id");
+          String key = rs.getInt("score_t1") + ":" + rs.getInt("score_t2");
+          dist.computeIfAbsent(mid, k -> new HashMap<>()).put(key, rs.getInt("cnt"));
+        },
+        POOL_ID);
+
+    List<MatchConsensus> out = new ArrayList<>();
+    for (MatchMeta m : fetchMatchMeta()) {
+      boolean revealed = LockClock.isMatchRevealable(now, deadlines, m.roundCode());
+      int[] mine = myBets.get(m.id());
+      Integer myT1 = mine == null ? null : mine[0];
+      Integer myT2 = mine == null ? null : mine[1];
+
+      List<ScoreCount> distribution = new ArrayList<>();
+      int total = 0;
+      boolean majority = false;
+      boolean rebel = false;
+
+      if (revealed) {
+        Map<String, Integer> counts = dist.getOrDefault(m.id(), Map.of());
+        int max = 0;
+        for (var e : counts.entrySet()) {
+          String[] parts = e.getKey().split(":");
+          int c = e.getValue();
+          total += c;
+          max = Math.max(max, c);
+          distribution.add(
+              new ScoreCount(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), c));
+        }
+        distribution.sort((a, b) -> b.count() - a.count());
+        if (mine != null) {
+          int myCount = counts.getOrDefault(myT1 + ":" + myT2, 0);
+          int peak = max;
+          long peakCount = counts.values().stream().filter(v -> v == peak).count();
+          majority = myCount > 0 && myCount == max && peakCount == 1;
+          rebel = myCount == 1 && total > 1;
+        }
+      }
+
+      out.add(
+          new MatchConsensus(
+              m.id(),
+              m.roundCode(),
+              m.t1Code(),
+              m.t1Flag(),
+              m.t2Code(),
+              m.t2Flag(),
+              m.kickoffAt(),
+              m.actualT1(),
+              m.actualT2(),
+              m.played(),
+              revealed,
+              myT1,
+              myT2,
+              distribution,
+              total,
+              majority,
+              rebel));
+    }
+    return new GroupConsensusView(out);
+  }
+}
