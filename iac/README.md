@@ -107,11 +107,7 @@ Three secrets are declared by Tofu but their values are never written by Tofu (m
   ```
   Once populated, the backend `quiniela-api` Cloud Run service will fetch real teams + matches from football-data.org on its first startup (when the team table is empty). Set `APP_FOOTBALL_DATA_ENABLED=false` to disable loading without removing the secret.
 
-- **`gemini-api-key`** — create a key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey) (Google AI Studio, free tier). Paste it with:
-  ```bash
-  echo -n "$YOUR_GEMINI_API_KEY" | gcloud secrets versions add gemini-api-key --data-file=-
-  ```
-  Powers Octopus Paul's AI predictions. The `quiniela-api` service also sets `SPRING_AI_MODEL_CHAT=google-genai` (in `cloud_run.tf`) — both the env toggle and a real key are required, or Paul silently falls back to the deterministic stub predictor.
+- **Octopus Paul (Vertex AI)** — no secret to populate. Paul calls Gemini through Vertex AI (`aiplatform.googleapis.com`) using the `quiniela-api` runtime SA's ADC; access is granted by `roles/aiplatform.user` (see `service_accounts.tf`) and billed to the project's GCP credits. The provider is selected by `APP_PAUL_PROVIDER=vertex` in `cloud_run.tf`. If the API is disabled or the binding is missing, Paul falls back to a deterministic stub predictor (still works, just not "smart").
 
 ## What's NOT in OpenTofu (yet)
 
