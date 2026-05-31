@@ -48,15 +48,18 @@ public class BracketService {
 
   public record MatchView(
       Long id,
+      Long team1Id,
       String team1Code,
       String team1Name,
       String team1Flag,
+      Long team2Id,
       String team2Code,
       String team2Name,
       String team2Flag,
       String kickoffAt,
       Integer betScoreT1,
       Integer betScoreT2,
+      Long betPredictedWinnerId,
       Integer actualScoreT1,
       Integer actualScoreT2,
       boolean played) {}
@@ -101,8 +104,6 @@ public class BracketService {
         deadlines.groupStageDeadline() != null && now.isAfter(deadlines.groupStageDeadline());
     boolean knockoutLocked =
         deadlines.knockoutDeadline() != null && now.isAfter(deadlines.knockoutDeadline());
-    // Knockout rounds become visible/interactive once the group stage closes.
-    boolean knockoutUnlocked = groupLocked;
 
     List<GroupView> groups = new ArrayList<>();
     for (String code : List.of("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L")) {
@@ -118,11 +119,14 @@ public class BracketService {
       if ("GROUP".equals(r.getCode())) continue;
       List<Match> ms =
           matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(DEFAULT_TOURNAMENT_ID, r.getId());
+      // A round is only unlocked (bettable) once the group stage closes AND its
+      // matches have teams assigned — earlier rounds fill teams as prior rounds resolve.
+      boolean roundUnlocked = groupLocked && ms.stream().anyMatch(m -> m.getTeam1Id() != null);
       List<MatchView> mvs = ms.stream().map(m -> toView(m, teamById, betByMatch)).toList();
       int filled = (int) mvs.stream().filter(v -> v.betScoreT1() != null).count();
       ko.add(
           new KnockoutRoundView(
-              r.getCode(), r.getName(), filled, ms.size(), knockoutUnlocked, knockoutLocked, mvs));
+              r.getCode(), r.getName(), filled, ms.size(), roundUnlocked, knockoutLocked, mvs));
     }
 
     int totalMatches = (int) matches.count();
@@ -142,15 +146,18 @@ public class BracketService {
     Bet b = betByMatch.get(m.getId());
     return new MatchView(
         m.getId(),
+        m.getTeam1Id(),
         t1 == null ? null : t1.getCode(),
         t1 == null ? null : t1.getName(),
         t1 == null ? null : t1.getFlagEmoji(),
+        m.getTeam2Id(),
         t2 == null ? null : t2.getCode(),
         t2 == null ? null : t2.getName(),
         t2 == null ? null : t2.getFlagEmoji(),
         m.getKickoffAt().toString(),
         b == null ? null : b.getScoreT1(),
         b == null ? null : b.getScoreT2(),
+        b == null ? null : b.getPredictedWinnerId(),
         m.getScoreT1(),
         m.getScoreT2(),
         Boolean.TRUE.equals(m.getPlayed()));
@@ -162,9 +169,9 @@ public class BracketService {
     }
   }
 
-  public record SaveBetRequest(Long matchId, Integer scoreT1, Integer scoreT2) {}
+  public record SaveBetRequest(Long matchId, Integer scoreT1, Integer scoreT2, Long predictedWinnerId) {}
 
-  public record BetView(Long matchId, Integer scoreT1, Integer scoreT2) {}
+  public record BetView(Long matchId, Integer scoreT1, Integer scoreT2, Long predictedWinnerId) {}
 
   @Transactional
   public BetView saveBet(Long userId, SaveBetRequest req) {
@@ -180,9 +187,6 @@ public class BracketService {
             .findById(req.matchId())
             .orElseThrow(() -> new IllegalArgumentException("Unknown match"));
 
-    // Lock check: group-stage matches lock at tournament.group_stage_deadline.
-    // Knockout matches use tournament.knockout_deadline (per-round refinement is
-    // a v1.1 improvement — kept coarse here).
     io.quiniela.api.match.Round round = rounds.findById(match.getRoundId()).orElseThrow();
     var t = lockClock.fetchTournamentDeadlines(match.getTournamentId());
     java.time.Instant now = java.time.Instant.now();
@@ -190,6 +194,14 @@ public class BracketService {
     java.time.Instant deadline = isGroup ? t.groupStageDeadline() : t.knockoutDeadline();
     if (deadline != null && now.isAfter(deadline)) {
       throw new BracketLockedException("Bets locked for this round");
+    }
+
+    // For knockout draw bets, predictedWinnerId must be one of the match's teams.
+    Long predictedWinnerId = req.predictedWinnerId();
+    if (!isGroup && req.scoreT1().equals(req.scoreT2()) && predictedWinnerId != null) {
+      if (!predictedWinnerId.equals(match.getTeam1Id()) && !predictedWinnerId.equals(match.getTeam2Id())) {
+        throw new IllegalArgumentException("predictedWinnerId must be a team in this match");
+      }
     }
 
     Quiniela q =
@@ -202,7 +214,9 @@ public class BracketService {
             .orElseGet(() -> new Bet(q.getId(), req.matchId(), req.scoreT1(), req.scoreT2()));
     bet.setScoreT1(req.scoreT1());
     bet.setScoreT2(req.scoreT2());
+    // Clear predictedWinnerId for non-draw or group bets; only relevant for knockout draws.
+    bet.setPredictedWinnerId(!isGroup && req.scoreT1().equals(req.scoreT2()) ? predictedWinnerId : null);
     bets.save(bet);
-    return new BetView(req.matchId(), req.scoreT1(), req.scoreT2());
+    return new BetView(req.matchId(), req.scoreT1(), req.scoreT2(), bet.getPredictedWinnerId());
   }
 }

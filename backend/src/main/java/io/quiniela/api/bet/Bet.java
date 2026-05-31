@@ -28,6 +28,9 @@ public class Bet {
   @Column(name = "score_t2", nullable = false)
   private Integer scoreT2;
 
+  @Column(name = "predicted_winner_id")
+  private Long predictedWinnerId;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -77,5 +80,13 @@ public class Bet {
 
   public void setScoreT2(Integer scoreT2) {
     this.scoreT2 = scoreT2;
+  }
+
+  public Long getPredictedWinnerId() {
+    return predictedWinnerId;
+  }
+
+  public void setPredictedWinnerId(Long predictedWinnerId) {
+    this.predictedWinnerId = predictedWinnerId;
   }
 }

@@ -9,8 +9,9 @@ export async function saveBetAction(
   scoreT1: number,
   scoreT2: number,
   roundCode: string,
+  predictedWinnerId?: number | null,
 ) {
-  await saveBet(matchId, scoreT1, scoreT2);
+  await saveBet(matchId, scoreT1, scoreT2, predictedWinnerId);
   revalidatePath(`/knockout/${roundCode}`);
 }
 

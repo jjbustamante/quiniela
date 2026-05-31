@@ -17,7 +17,7 @@ export function KnockoutDrillIn({
 }: {
   matches: MatchView[];
   roundCode: string;
-  saveBetAction: (matchId: number, t1: number, t2: number, roundCode: string) => Promise<void>;
+  saveBetAction: (matchId: number, t1: number, t2: number, roundCode: string, predictedWinnerId?: number | null) => Promise<void>;
   acceptPaulAction: (matchId: number, roundCode: string) => Promise<void>;
   locked?: boolean;
   timeZone: string;
@@ -56,11 +56,14 @@ export function KnockoutDrillIn({
           return (
             <NumpadScoreInput
               side="both"
+              knockout
               match={
                 editingMatch
                   ? {
+                      team1Id: editingMatch.team1Id,
                       team1Name: editingMatch.team1Name,
                       team1Flag: editingMatch.team1Flag,
+                      team2Id: editingMatch.team2Id,
                       team2Name: editingMatch.team2Name,
                       team2Flag: editingMatch.team2Flag,
                     }
@@ -68,7 +71,7 @@ export function KnockoutDrillIn({
               }
               onConfirm={(s) =>
                 startTransition(() => {
-                  saveBetAction(editing.matchId, s.t1, s.t2, roundCode);
+                  saveBetAction(editing.matchId, s.t1, s.t2, roundCode, s.predictedWinnerId);
                   setEditing(null);
                 })
               }
