@@ -148,7 +148,7 @@ resource "google_cloud_run_v2_service" "api" {
         value = join(",", [
           "gemini-2.5-pro",
           "gemini-2.5-flash",
-          "gemini-3-pro-preview",
+          "gemini-3-flash-preview",
           "openai:openai/gpt-oss-120b-maas",
           "openai:qwen/qwen3-next-80b-a3b-instruct-maas",
         ])
