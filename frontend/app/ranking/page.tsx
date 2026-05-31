@@ -54,6 +54,11 @@ export default async function RankingPage() {
           </section>
         ) : (
           <section className="mx-3 mt-3 flex flex-col gap-1.5">
+            {ranking.entries.some((e) => e.isBot) && (
+              <div className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)]">
+                🐙 ¡Pulpo Paul decidió jugar! Compite por la gloria, no por el premio.
+              </div>
+            )}
             <div className="flex items-stretch border-b-[1.5px] border-[var(--color-line-ink)] px-1 py-1">
               <span className="chrome-label chrome-label-muted w-16 shrink-0 px-2.5">
                 {t("headerRank")}
