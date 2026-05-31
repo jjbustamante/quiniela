@@ -14,7 +14,7 @@ public class FakePaulOracleConfig {
   @Bean
   @Primary
   PaulOracle fakePaulOracle() {
-    return (system, user, model) -> {
+    return (system, user, provider, model) -> {
       if (model.equals(failModel.get())) {
         throw new RuntimeException("simulated model failure: " + model);
       }

@@ -12,7 +12,8 @@ public class GeminiPaulOracle implements PaulOracle {
   }
 
   @Override
-  public PaulPredictionResult predict(String systemPrompt, String userPrompt, String model) {
+  public PaulPredictionResult predict(
+      String systemPrompt, String userPrompt, String provider, String model) {
     // M8 note: ChatClientRequestSpec.options() takes a ChatOptions.Builder<?>, not a built
     // ChatOptions. GoogleGenAiChatOptions.Builder extends DefaultToolCallingChatOptions$Builder
     // which implements ChatOptions.Builder, so pass the builder directly (do NOT call .build()).
