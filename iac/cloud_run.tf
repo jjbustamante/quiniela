@@ -122,22 +122,22 @@ resource "google_cloud_run_v2_service" "api" {
         }
       }
 
-      # Octopus Paul AI predictions (Spring AI + Google GenAI / Gemini).
-      # SPRING_AI_MODEL_CHAT is the activation toggle: without it the chat
-      # autoconfig stays off and Paul falls back to the deterministic stub.
+      # Octopus Paul AI predictions via Vertex AI (Google GenAI SDK, Vertex mode).
+      # APP_PAUL_PROVIDER=vertex selects VertexPaulOracle; it authenticates with
+      # the runtime SA's ADC (no API key) and bills to GCP credits. project_id +
+      # location target the Vertex endpoint. Without these, Paul falls back to the
+      # deterministic stub.
       env {
-        name  = "SPRING_AI_MODEL_CHAT"
-        value = "google-genai"
+        name  = "APP_PAUL_PROVIDER"
+        value = "vertex"
       }
-
       env {
-        name = "GEMINI_API_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.gemini_api_key.secret_id
-            version = "latest"
-          }
-        }
+        name  = "APP_PAUL_PROJECT_ID"
+        value = var.project_id
+      }
+      env {
+        name  = "APP_PAUL_LOCATION"
+        value = var.region
       }
 
       ports {
@@ -173,14 +173,14 @@ resource "google_cloud_run_v2_service" "api" {
     # football_data_api_key has no Tofu-managed version (populated
     # manually via gcloud), so we depend on the secret resource itself.
     google_secret_manager_secret.football_data_api_key,
-    # gemini_api_key likewise has no Tofu-managed version (populated manually).
-    google_secret_manager_secret.gemini_api_key,
     # IAM binding must exist + propagate before Cloud Run can mount the
     # secret. Without this depends_on, Tofu can apply the revision in
     # parallel with the binding and the new revision fails with
     # "Permission denied on secret".
     google_secret_manager_secret_iam_member.api_runtime_football_data,
-    google_secret_manager_secret_iam_member.api_runtime_gemini,
+    # Vertex AI IAM must propagate before the revision serves traffic, else
+    # Paul's first generateContent call 403s and falls back to the stub.
+    google_project_iam_member.api_runtime_vertex,
   ]
 }
 

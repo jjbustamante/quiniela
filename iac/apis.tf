@@ -16,6 +16,7 @@ locals {
     "iamcredentials.googleapis.com",       # Required for SA impersonation
     "cloudresourcemanager.googleapis.com", # Project-level API calls
     "billingbudgets.googleapis.com",       # Budget alerts — used in a later PR
+    "aiplatform.googleapis.com",           # Vertex AI Gemini — powers Octopus Paul predictions
   ]
 }
 

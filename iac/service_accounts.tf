@@ -119,9 +119,11 @@ resource "google_secret_manager_secret_iam_member" "api_runtime_football_data" {
   member    = "serviceAccount:${google_service_account.api_runtime.email}"
 }
 
-resource "google_secret_manager_secret_iam_member" "api_runtime_gemini" {
-  project   = var.project_id
-  secret_id = google_secret_manager_secret.gemini_api_key.secret_id
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${google_service_account.api_runtime.email}"
+# Vertex AI — Octopus Paul calls Gemini through aiplatform.googleapis.com using
+# this SA's ADC (no API key). roles/aiplatform.user grants predict/generateContent.
+# Replaces the former gemini-api-key secretAccessor binding (AI Studio path).
+resource "google_project_iam_member" "api_runtime_vertex" {
+  project = var.project_id
+  role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${google_service_account.api_runtime.email}"
 }

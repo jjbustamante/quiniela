@@ -46,6 +46,12 @@
         <!-- Spring AI 2.0.x targets Spring Boot 4. M8 is the latest pre-GA
              milestone as of 2026-05-30; swap to GA when released. -->
         <spring-ai.version>2.0.0-M8</spring-ai.version>
+        <!-- Google's unified GenAI SDK, used directly by VertexPaulOracle for the
+             Vertex AI path (ADC auth, billed to GCP credits). Spring AI's Vertex
+             module isn't published on the 2.0.x line, so we call the SDK directly
+             behind the PaulOracle seam. Pinned to the version the spring-ai
+             google-genai starter already resolves transitively. -->
+        <google-genai.version>1.54.0</google-genai.version>
         <!-- Match flyway-core managed by spring-boot-starter-parent. Maven plugin
              scope doesn't inherit dependency-management so we pin explicitly. -->
         <flyway.version>11.20.3</flyway.version>
@@ -179,11 +185,20 @@
         </dependency>
 
         <!-- Spring AI: Google GenAI (Gemini Developer API / AI Studio, API-key auth).
-             Provider-agnostic ChatClient — adding Vertex/Anthropic/OpenAI later is a
-             BOM-managed starter + a roster entry, not a rewrite. -->
+             Backs GeminiPaulOracle (the app.paul.provider=google path). -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-google-genai</artifactId>
+        </dependency>
+
+        <!-- Google's unified GenAI SDK, used directly by VertexPaulOracle for the
+             Vertex AI path (ADC auth, billed to GCP credits). Pinned explicitly
+             rather than relying on the transitive pull from spring-ai above, so
+             the Vertex path doesn't break if Spring AI changes its SDK version. -->
+        <dependency>
+            <groupId>com.google.genai</groupId>
+            <artifactId>google-genai</artifactId>
+            <version>${google-genai.version}</version>
         </dependency>
 
         <dependency>
