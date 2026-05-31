@@ -104,8 +104,32 @@ export default async function HomePage() {
           <span className="chrome-label chrome-label-muted">{t("knockoutsHeading")}</span>
           <div className="mt-2">
             {knockoutsUnlocked ? (
-              <div className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] p-4 text-sm text-[var(--color-text-primary)]">
-                {t("knockoutsOpen")}
+              <div className="flex flex-col gap-2">
+                {bracket.knockouts.filter((k) => k.unlocked).map((k) => {
+                  const done = k.filled === k.total && k.total > 0;
+                  const empty = k.filled === 0;
+                  const pillBg = k.locked
+                    ? "bg-[var(--color-bg-ink)] text-[var(--color-accent-gold)]"
+                    : done
+                      ? "bg-[var(--color-accent-green)] text-[var(--color-text-inverse)]"
+                      : empty
+                        ? "bg-[var(--color-accent-red)] text-[var(--color-text-inverse)]"
+                        : "bg-[var(--color-accent-gold)] text-[var(--color-text-primary)]";
+                  return (
+                    <a
+                      key={k.code}
+                      href={`/knockout/${k.code}`}
+                      className="poster flex items-center justify-between bg-[var(--color-bg-paper)] p-3 transition-colors hover:bg-[#fff]"
+                    >
+                      <span className="font-display text-base font-extrabold uppercase tracking-tight text-[var(--color-text-primary)]">
+                        {k.name}
+                      </span>
+                      <span className={`font-mono text-[10px] font-bold tracking-[0.08em] px-2 py-0.5 ${pillBg}`}>
+                        {k.locked ? "🔒" : `${k.filled}/${k.total}`}
+                      </span>
+                    </a>
+                  );
+                })}
               </div>
             ) : (
               <KnockoutLockedCard />
