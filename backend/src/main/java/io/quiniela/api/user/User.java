@@ -43,6 +43,9 @@ public class User {
   @Column(nullable = false)
   private String timezone = "America/Bogota";
 
+  @Column(name = "is_bot", nullable = false)
+  private Boolean isBot = false;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -133,6 +136,10 @@ public class User {
 
   public void setTimezone(String timezone) {
     this.timezone = timezone;
+  }
+
+  public Boolean getIsBot() {
+    return isBot;
   }
 
   public Instant getCreatedAt() {

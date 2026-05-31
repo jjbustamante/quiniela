@@ -42,7 +42,14 @@ resource "google_cloud_run_v2_service" "api" {
           cpu    = "1"
           memory = "1Gi"
         }
-        cpu_idle          = true # only bill CPU during requests
+        # CPU allocated for the instance's whole lifetime (not just during
+        # requests). Required so Octopus Paul's async generation/synthesis
+        # background job (POST /api/admin/paul/generate returns 202, work
+        # continues off the request thread) isn't CPU-throttled after the
+        # response is sent. The service still scales to zero when idle, so the
+        # cost delta for this low-traffic app is the CPU billed during the
+        # short alive-but-idle tail between requests — negligible here.
+        cpu_idle          = false
         startup_cpu_boost = true # faster Spring Boot cold start
       }
 
@@ -115,6 +122,24 @@ resource "google_cloud_run_v2_service" "api" {
         }
       }
 
+      # Octopus Paul AI predictions (Spring AI + Google GenAI / Gemini).
+      # SPRING_AI_MODEL_CHAT is the activation toggle: without it the chat
+      # autoconfig stays off and Paul falls back to the deterministic stub.
+      env {
+        name  = "SPRING_AI_MODEL_CHAT"
+        value = "google-genai"
+      }
+
+      env {
+        name = "GEMINI_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.gemini_api_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
       ports {
         container_port = 8080
       }
@@ -148,11 +173,14 @@ resource "google_cloud_run_v2_service" "api" {
     # football_data_api_key has no Tofu-managed version (populated
     # manually via gcloud), so we depend on the secret resource itself.
     google_secret_manager_secret.football_data_api_key,
+    # gemini_api_key likewise has no Tofu-managed version (populated manually).
+    google_secret_manager_secret.gemini_api_key,
     # IAM binding must exist + propagate before Cloud Run can mount the
     # secret. Without this depends_on, Tofu can apply the revision in
     # parallel with the binding and the new revision fails with
     # "Permission denied on secret".
     google_secret_manager_secret_iam_member.api_runtime_football_data,
+    google_secret_manager_secret_iam_member.api_runtime_gemini,
   ]
 }
 

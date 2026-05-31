@@ -41,10 +41,16 @@ public abstract class AbstractIntegrationTest {
   @org.junit.jupiter.api.BeforeEach
   void cleanWritableTables() {
     // Order matters: payment first (marked_paid_by/marked_settled_by are non-cascade FKs to users).
+    jdbcTemplate.execute("DELETE FROM paul_prediction");
     jdbcTemplate.execute("DELETE FROM payment");
     jdbcTemplate.execute("DELETE FROM bet");
     jdbcTemplate.execute("DELETE FROM quiniela");
     jdbcTemplate.execute("DELETE FROM pool_membership");
     jdbcTemplate.execute("DELETE FROM users");
+    // Re-seed the Paul bot user that the deletes above remove (Flyway only seeds once).
+    jdbcTemplate.update(
+        "INSERT INTO users (google_sub, email, display_name, role, is_bot) "
+            + "VALUES ('paul-bot-oracle', 'paul@laquinieladelospanas.com', 'Pulpo Paul 🐙', 'player', TRUE) "
+            + "ON CONFLICT (google_sub) DO NOTHING");
   }
 }

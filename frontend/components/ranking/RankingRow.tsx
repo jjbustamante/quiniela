@@ -64,6 +64,11 @@ export function RankingRow({
             {payoutLabel}
           </span>
         )}
+        {entry.isBot && (
+          <span className="shrink-0 bg-[var(--color-accent-violet,#7c3aed)] px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-[0.12em] text-[var(--color-text-inverse,#fff)]">
+            FUERA DE PREMIO
+          </span>
+        )}
       </div>
 
       {/* Points — monospace, right-aligned, fixed-width column */}

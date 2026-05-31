@@ -110,7 +110,7 @@ Reader path: want `en`? look up cache → miss → LLM-translate from the `reaso
 
 ## Pool eligibility (who counts for the pot)
 
-The system currently has **no** prize logic and **no** eligibility concept: `RankingRepository.findRankedByPoolId` returns every quiniela in the pool joined to users, with no filter, and a quiniela is auto-created the moment anyone bets or runs Paul's fill (`BracketService:178`, `PaulService:58`). So today the leaderboard *is* the de-facto prize ranking, and both Paul and the admin would appear in it. `prize_split` (80/15/5) is seeded but read by nobody.
+The system currently has **no** prize logic and **no** eligibility concept: the ranking query (`RankingService.java:29-48`, native SQL `RANK() OVER (ORDER BY q.points DESC)`) joins every quiniela in the pool to users with **no** role/payment/eligibility filter, and a quiniela is auto-created the moment anyone bets or runs Paul's fill (`BracketService.java:87`, `PaulService.java:57`). Pool membership auto-joins on signup (`AuthController.java:116`). So today the leaderboard *is* the de-facto prize ranking, and both Paul and the admin would appear in it. `prize_split` (80/15/5) is seeded but no payout code reads it.
 
 We formalize two distinct concepts, **identity-based** (no per-bracket flag):
 
@@ -127,9 +127,9 @@ Rules:
 - Pot-payout math itself stays out of scope (see Non-goals); this just guarantees the eligible-ranking input is correct.
 
 ### Ranking changes
-- `RankingRepository.findRankedByPoolId` → add `AND u.role <> 'ADMIN'` to the JPQL.
-- Add a prize-eligible query/method (e.g. `findPrizeEligibleByPoolId`) that additionally filters `u.isBot = false`. Used by future payout; can also back an admin "premios" preview.
-- `RankingRow` gains an `isBot` (or `exhibition`) boolean so the frontend can badge Paul.
+- The display ranking query in `RankingService` (RankingService.java:29-48) → add `AND u.role <> 'ADMIN'`.
+- Add a prize-eligible query/method that additionally filters `u.is_bot = false`. Used by future payout; can also back an admin "premios" preview.
+- The ranking row DTO gains an `isBot` (or `exhibition`) boolean so the frontend can badge Paul.
 
 ## Backend components (`io.quiniela.api.paul`)
 
