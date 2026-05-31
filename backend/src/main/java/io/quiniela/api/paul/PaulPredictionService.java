@@ -9,7 +9,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class PaulPredictionService {
@@ -23,6 +24,7 @@ public class PaulPredictionService {
   private final PaulOracle oracle;
   private final MatchContextBuilder context;
   private final PaulProperties props;
+  private final TransactionTemplate tx;
 
   public PaulPredictionService(
       MatchRepository matches,
@@ -31,7 +33,8 @@ public class PaulPredictionService {
       PaulPredictionRepository predictions,
       PaulOracle oracle,
       MatchContextBuilder context,
-      PaulProperties props) {
+      PaulProperties props,
+      PlatformTransactionManager txManager) {
     this.matches = matches;
     this.rounds = rounds;
     this.teams = teams;
@@ -39,21 +42,32 @@ public class PaulPredictionService {
     this.oracle = oracle;
     this.context = context;
     this.props = props;
+    this.tx = new TransactionTemplate(txManager);
   }
 
   /** Regenerate CANDIDATE predictions for every group match × every configured model. */
-  @Transactional
   public int generateAllGroup() {
+    return generateAllGroup(PaulProgress.NOOP);
+  }
+
+  /**
+   * Per-item-transactional variant: each (match, model) candidate is written in its own short
+   * transaction so a multi-minute batch never holds one connection open (and partial progress
+   * survives a crash). Reports against {@code progress} so the job tracker can show a live count.
+   */
+  public int generateAllGroup(PaulProgress progress) {
     Long groupRoundId =
         rounds.findByTournamentIdAndCode(TOURNAMENT_ID, "GROUP").orElseThrow().getId();
     List<Match> groupMatches =
         matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, groupRoundId);
 
+    progress.start(groupMatches.size() * props.models().size());
     int created = 0;
     for (Match m : groupMatches) {
       for (String model : props.models()) {
-        upsertCandidate(m, model);
+        tx.executeWithoutResult(s -> upsertCandidate(m, model));
         created++;
+        progress.tick();
       }
     }
     return created;

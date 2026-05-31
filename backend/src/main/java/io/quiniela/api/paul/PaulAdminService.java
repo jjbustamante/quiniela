@@ -11,24 +11,15 @@ import org.springframework.web.server.ResponseStatusException;
 public class PaulAdminService {
 
   private final UserRepository users;
-  private final PaulPredictionService predictionService;
-  private final PaulEnsembleService ensembleService;
+  private final PaulJobService jobService;
   private final PaulService paulService;
 
   public PaulAdminService(
-      UserRepository users,
-      PaulPredictionService predictionService,
-      PaulEnsembleService ensembleService,
-      PaulService paulService) {
+      UserRepository users, PaulJobService jobService, PaulService paulService) {
     this.users = users;
-    this.predictionService = predictionService;
-    this.ensembleService = ensembleService;
+    this.jobService = jobService;
     this.paulService = paulService;
   }
-
-  public record GenerateResult(int candidatesCreated) {}
-
-  public record SynthesizeResult(int officialsCreated) {}
 
   void requireAdmin(Long callerId) {
     User caller =
@@ -40,16 +31,27 @@ public class PaulAdminService {
     }
   }
 
-  public GenerateResult generate(Long callerId) {
+  /**
+   * Start candidate generation in the background. Returns the initial job status (202 at the API).
+   */
+  public PaulJobStatus generate(Long callerId) {
     requireAdmin(callerId);
-    return new GenerateResult(predictionService.generateAllGroup());
+    return jobService.startGenerate();
   }
 
-  public SynthesizeResult synthesize(Long callerId) {
+  /** Start official-pick synthesis in the background. Returns the initial job status (202). */
+  public PaulJobStatus synthesize(Long callerId) {
     requireAdmin(callerId);
-    return new SynthesizeResult(ensembleService.synthesizeAllGroup());
+    return jobService.startSynthesize();
   }
 
+  /** Current/last batch job status, for polling progress. */
+  public PaulJobStatus jobStatus(Long callerId) {
+    requireAdmin(callerId);
+    return jobService.current();
+  }
+
+  /** Reveal is DB-only (no LLM calls), so it stays synchronous. */
   public PaulService.RevealResult reveal(Long callerId) {
     requireAdmin(callerId);
     return paulService.reveal();

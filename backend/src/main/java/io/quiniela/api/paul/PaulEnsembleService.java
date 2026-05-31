@@ -7,7 +7,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class PaulEnsembleService {
@@ -20,31 +21,44 @@ public class PaulEnsembleService {
   private final PaulPredictionRepository predictions;
   private final PaulOracle oracle;
   private final PaulProperties props;
+  private final TransactionTemplate tx;
 
   public PaulEnsembleService(
       MatchRepository matches,
       RoundRepository rounds,
       PaulPredictionRepository predictions,
       PaulOracle oracle,
-      PaulProperties props) {
+      PaulProperties props,
+      PlatformTransactionManager txManager) {
     this.matches = matches;
     this.rounds = rounds;
     this.predictions = predictions;
     this.oracle = oracle;
     this.props = props;
+    this.tx = new TransactionTemplate(txManager);
   }
 
   /** For each group match with candidates, synthesize one OFFICIAL pick via the ensemble judge. */
-  @Transactional
   public int synthesizeAllGroup() {
+    return synthesizeAllGroup(PaulProgress.NOOP);
+  }
+
+  /**
+   * Per-item-transactional variant: each match's OFFICIAL pick is synthesized in its own short
+   * transaction (one LLM call each), reporting against {@code progress} for live job tracking.
+   */
+  public int synthesizeAllGroup(PaulProgress progress) {
     Long groupRoundId =
         rounds.findByTournamentIdAndCode(TOURNAMENT_ID, "GROUP").orElseThrow().getId();
     List<Match> groupMatches =
         matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, groupRoundId);
 
+    progress.start(groupMatches.size());
     int created = 0;
     for (Match m : groupMatches) {
-      if (synthesizeForMatch(m.getId())) created++;
+      Boolean did = tx.execute(s -> synthesizeForMatch(m.getId()));
+      if (Boolean.TRUE.equals(did)) created++;
+      progress.tick();
     }
     return created;
   }

@@ -3,6 +3,7 @@ package io.quiniela.api.paul;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,18 +22,25 @@ public class PaulAdminController {
     return Long.parseLong(jwt.getSubject());
   }
 
+  /** Kicks off candidate generation in the background; returns 202 with the initial job status. */
   @PostMapping("/generate")
-  public ResponseEntity<PaulAdminService.GenerateResult> generate(
-      @AuthenticationPrincipal Jwt jwt) {
+  public ResponseEntity<PaulJobStatus> generate(@AuthenticationPrincipal Jwt jwt) {
     if (jwt == null) return ResponseEntity.status(401).build();
-    return ResponseEntity.ok(service.generate(callerId(jwt)));
+    return ResponseEntity.accepted().body(service.generate(callerId(jwt)));
   }
 
+  /** Kicks off official-pick synthesis in the background; returns 202 with the initial status. */
   @PostMapping("/synthesize")
-  public ResponseEntity<PaulAdminService.SynthesizeResult> synthesize(
-      @AuthenticationPrincipal Jwt jwt) {
+  public ResponseEntity<PaulJobStatus> synthesize(@AuthenticationPrincipal Jwt jwt) {
     if (jwt == null) return ResponseEntity.status(401).build();
-    return ResponseEntity.ok(service.synthesize(callerId(jwt)));
+    return ResponseEntity.accepted().body(service.synthesize(callerId(jwt)));
+  }
+
+  /** Poll the current/last batch job's progress. */
+  @GetMapping("/status")
+  public ResponseEntity<PaulJobStatus> status(@AuthenticationPrincipal Jwt jwt) {
+    if (jwt == null) return ResponseEntity.status(401).build();
+    return ResponseEntity.ok(service.jobStatus(callerId(jwt)));
   }
 
   @PostMapping("/reveal")
