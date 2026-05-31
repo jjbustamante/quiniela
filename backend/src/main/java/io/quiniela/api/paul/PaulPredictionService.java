@@ -61,11 +61,12 @@ public class PaulPredictionService {
     List<Match> groupMatches =
         matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(TOURNAMENT_ID, groupRoundId);
 
-    progress.start(groupMatches.size() * props.models().size());
+    List<PaulProperties.ModelSpec> roster = props.roster();
+    progress.start(groupMatches.size() * roster.size());
     int created = 0;
     for (Match m : groupMatches) {
-      for (String model : props.models()) {
-        tx.executeWithoutResult(s -> upsertCandidate(m, model));
+      for (PaulProperties.ModelSpec spec : roster) {
+        tx.executeWithoutResult(s -> upsertCandidate(m, spec));
         created++;
         progress.tick();
       }
@@ -73,7 +74,8 @@ public class PaulPredictionService {
     return created;
   }
 
-  private void upsertCandidate(Match m, String model) {
+  private void upsertCandidate(Match m, PaulProperties.ModelSpec spec) {
+    String model = spec.model();
     Team t1 = m.getTeam1Id() == null ? null : teams.findById(m.getTeam1Id()).orElse(null);
     Team t2 = m.getTeam2Id() == null ? null : teams.findById(m.getTeam2Id()).orElse(null);
 
@@ -89,11 +91,12 @@ public class PaulPredictionService {
               name(t2),
               code(t2),
               ranking(t2));
-      PaulPredictionResult r = oracle.predict(context.systemPrompt(), userPrompt, model);
+      PaulPredictionResult r =
+          oracle.predict(context.systemPrompt(), userPrompt, spec.provider(), model);
       p =
           new PaulPrediction(
               m.getId(),
-              props.provider(),
+              spec.provider(),
               model,
               PaulPrediction.KIND_CANDIDATE,
               Math.max(0, r.scoreT1()),
@@ -107,7 +110,7 @@ public class PaulPredictionService {
       p =
           new PaulPrediction(
               m.getId(),
-              props.provider(),
+              spec.provider(),
               model,
               PaulPrediction.KIND_CANDIDATE,
               s[0],

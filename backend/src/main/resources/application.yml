@@ -75,11 +75,14 @@ app:
     competition-code: ${APP_FOOTBALL_DATA_COMPETITION:WC}  # FIFA World Cup
 
   paul:
-    provider: google
-    # Candidate models (best available Gemini variants). One CANDIDATE prediction
-    # per match per model. Add Vertex/OpenAI/Anthropic here later (provider-agnostic).
-    models:
-      - gemini-2.5-pro
-      - gemini-2.5-flash
+    provider: ${APP_PAUL_PROVIDER:google}
+    project-id: ${APP_PAUL_PROJECT_ID:}
+    location: ${APP_PAUL_LOCATION:us-central1}
+    # Candidate models — one CANDIDATE prediction per match per model. Each entry is
+    # either a bare model id (uses the default provider above) or "provider:modelId"
+    # to route a specific vendor. Multi-vendor Vertex ensemble: Gemini via the genai
+    # SDK; gpt-oss / Qwen via the Vertex OpenAI-compatible endpoint (global).
+    # Override the whole list in prod via APP_PAUL_MODELS (comma-separated).
+    models: ${APP_PAUL_MODELS:gemini-2.5-pro,gemini-2.5-flash}
     # Model used for the ensemble-judge synthesis of Paul's OFFICIAL bet.
-    ensemble-model: gemini-2.5-pro
+    ensemble-model: ${APP_PAUL_ENSEMBLE_MODEL:gemini-2.5-pro}

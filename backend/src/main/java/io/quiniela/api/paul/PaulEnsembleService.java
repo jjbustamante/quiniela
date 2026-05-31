@@ -68,10 +68,11 @@ public class PaulEnsembleService {
         predictions.findByMatchIdAndKind(matchId, PaulPrediction.KIND_CANDIDATE);
     if (candidates.isEmpty()) return false;
 
+    PaulProperties.ModelSpec es = props.ensembleSpec();
     PaulPrediction official;
     try {
       PaulPredictionResult r =
-          oracle.predict(systemPrompt(), candidatePrompt(candidates), props.ensembleModel());
+          oracle.predict(systemPrompt(), candidatePrompt(candidates), es.provider(), es.model());
       official =
           official(
               matchId,
@@ -111,7 +112,7 @@ public class PaulEnsembleService {
       Long matchId, int s1, int s2, BigDecimal conf, String reasoning, String source) {
     return new PaulPrediction(
         matchId,
-        props.provider(),
+        props.ensembleSpec().provider(),
         ENSEMBLE_MODEL_LABEL,
         PaulPrediction.KIND_OFFICIAL,
         s1,

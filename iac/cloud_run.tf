@@ -122,11 +122,10 @@ resource "google_cloud_run_v2_service" "api" {
         }
       }
 
-      # Octopus Paul AI predictions via Vertex AI (Google GenAI SDK, Vertex mode).
-      # APP_PAUL_PROVIDER=vertex selects VertexPaulOracle; it authenticates with
-      # the runtime SA's ADC (no API key) and bills to GCP credits. project_id +
-      # location target the Vertex endpoint. Without these, Paul falls back to the
-      # deterministic stub.
+      # Octopus Paul AI predictions via Vertex AI. APP_PAUL_PROVIDER=vertex selects
+      # the routing oracle; it authenticates with the runtime SA's ADC (no API key)
+      # and bills to GCP credits. project_id + location target the Vertex endpoint.
+      # Without these, Paul falls back to the deterministic stub.
       env {
         name  = "APP_PAUL_PROVIDER"
         value = "vertex"
@@ -138,6 +137,26 @@ resource "google_cloud_run_v2_service" "api" {
       env {
         name  = "APP_PAUL_LOCATION"
         value = var.region
+      }
+      # Multi-vendor candidate roster (one CANDIDATE prediction per match per entry).
+      # Bare ids use provider=vertex (Gemini, genai SDK); "openai:<id>" routes to the
+      # Vertex OpenAI-compatible endpoint (gpt-oss, Qwen — global location). Only
+      # models enabled + with quota in this project are listed; add Claude/Llama/
+      # Mistral/DeepSeek here once enabled in Model Garden. Comma-separated.
+      env {
+        name = "APP_PAUL_MODELS"
+        value = join(",", [
+          "gemini-2.5-pro",
+          "gemini-2.5-flash",
+          "gemini-3-pro-preview",
+          "openai:openai/gpt-oss-120b-maas",
+          "openai:qwen/qwen3-next-80b-a3b-instruct-maas",
+        ])
+      }
+      # Ensemble/judge model for Paul's OFFICIAL bet (a strong Gemini on Vertex).
+      env {
+        name  = "APP_PAUL_ENSEMBLE_MODEL"
+        value = "gemini-2.5-pro"
       }
 
       ports {

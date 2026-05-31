@@ -11,14 +11,18 @@ import org.springframework.context.annotation.Configuration;
 public class PaulOracleConfig {
 
   /**
-   * Vertex AI-backed oracle (Google {@code com.google.genai} SDK in Vertex mode, ADC auth, billed
-   * to GCP credits). Active when {@code app.paul.provider=vertex}. Declared first so it wins over
-   * the Gemini/stub beans via {@link ConditionalOnMissingBean}.
+   * Vertex routing oracle (the multi-vendor prod path). Active when {@code
+   * app.paul.provider=vertex}. Dispatches each candidate by its per-model provider: Gemini via
+   * {@link VertexPaulOracle} (genai SDK) and Model Garden MaaS models (gpt-oss, Qwen, …) via {@link
+   * OpenAiCompatVertexOracle}. Both authenticate with the runtime SA's ADC and bill to GCP credits.
+   * Declared first so it wins over the Gemini/stub beans via {@link ConditionalOnMissingBean}.
    */
   @Bean
   @ConditionalOnProperty(prefix = "app.paul", name = "provider", havingValue = "vertex")
-  PaulOracle vertexPaulOracle(PaulProperties props) {
-    return new VertexPaulOracle(props.projectId(), props.location());
+  PaulOracle routingPaulOracle(PaulProperties props) {
+    VertexPaulOracle gemini = new VertexPaulOracle(props.projectId(), props.location());
+    OpenAiCompatVertexOracle openAiCompat = new OpenAiCompatVertexOracle(props.projectId());
+    return new RoutingPaulOracle(gemini, openAiCompat);
   }
 
   /**
