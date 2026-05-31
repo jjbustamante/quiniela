@@ -7,7 +7,7 @@ Provisions the GCP resources that host this project: Artifact Registry, Cloud Ru
 - Enabled GCP APIs (Cloud Run, Cloud SQL, Artifact Registry, Secret Manager, IAM, ...)
 - Artifact Registry Docker repo `apps` for our images
 - **Cloud SQL Postgres** instance `quiniela-db` (db-f1-micro, ZONAL, deletion-protected) with database `quiniela` and app user `quiniela_app`
-- **Secret Manager** secrets: `database-password` (auto-generated), `nextauth-secret` (auto-generated), `google-oauth-client-secret` (empty placeholder — populated manually after creating the OAuth client in Console), `football-data-api-key` (empty placeholder — populated manually after signing up at football-data.org), `gemini-api-key` (empty placeholder — populated manually with a Google AI Studio key; powers Octopus Paul)
+- **Secret Manager** secrets: `database-password` (auto-generated), `nextauth-secret` (auto-generated), `google-oauth-client-secret` (empty placeholder — populated manually after creating the OAuth client in Console), `football-data-api-key` (empty placeholder — populated manually after signing up at football-data.org). Octopus Paul uses Vertex AI (no API-key secret — ADC + `roles/aiplatform.user` on the api runtime SA)
 - **Service accounts**:
   - `quiniela-deploy` — used by CI / `bin/deploy-*.sh` to push images and deploy Cloud Run services
   - `quiniela-api-runtime` — identity for the backend Cloud Run service; can connect to Cloud SQL and read DB password + NextAuth secret
