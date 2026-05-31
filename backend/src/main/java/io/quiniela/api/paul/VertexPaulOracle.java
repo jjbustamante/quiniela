@@ -20,9 +20,12 @@ public class VertexPaulOracle implements PaulOracle {
   private final Client client;
   private final ObjectMapper mapper;
 
-  public VertexPaulOracle(String projectId, String location, ObjectMapper mapper) {
+  public VertexPaulOracle(String projectId, String location) {
     this.client = Client.builder().vertexAI(true).project(projectId).location(location).build();
-    this.mapper = mapper;
+    // Construct our own Jackson 2 mapper rather than injecting one: Spring Boot 4
+    // defaults to Jackson 3 (tools.jackson), so no com.fasterxml ObjectMapper bean
+    // exists to inject. Jackson 2 is on the classpath transitively via google-genai.
+    this.mapper = new ObjectMapper();
   }
 
   @Override

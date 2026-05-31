@@ -1,6 +1,5 @@
 package io.quiniela.api.paul;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -18,8 +17,8 @@ public class PaulOracleConfig {
    */
   @Bean
   @ConditionalOnProperty(prefix = "app.paul", name = "provider", havingValue = "vertex")
-  PaulOracle vertexPaulOracle(PaulProperties props, ObjectMapper mapper) {
-    return new VertexPaulOracle(props.projectId(), props.location(), mapper);
+  PaulOracle vertexPaulOracle(PaulProperties props) {
+    return new VertexPaulOracle(props.projectId(), props.location());
   }
 
   /**
