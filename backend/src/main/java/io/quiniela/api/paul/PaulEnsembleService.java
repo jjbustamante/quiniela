@@ -93,10 +93,16 @@ public class PaulEnsembleService {
               PaulPrediction.SOURCE_FALLBACK);
     }
 
+    // Replace any existing official for this match. flush() only when a delete
+    // happened, so the insert doesn't collide with the old row on the UNIQUE
+    // (match_id, model, kind) constraint within this transaction.
     predictions
         .findByMatchIdAndModelAndKind(matchId, ENSEMBLE_MODEL_LABEL, PaulPrediction.KIND_OFFICIAL)
-        .ifPresent(predictions::delete);
-    predictions.flush();
+        .ifPresent(
+            existing -> {
+              predictions.delete(existing);
+              predictions.flush();
+            });
     predictions.save(official);
     return true;
   }

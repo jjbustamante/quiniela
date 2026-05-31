@@ -53,7 +53,7 @@ public class PaulJobService {
           HttpStatus.CONFLICT, "A Paul job is already running: " + status.get().phase());
     }
     status.set(PaulJobStatus.running(phase, Instant.now()));
-    executor.submit(
+    Runnable task =
         () -> {
           try {
             work.accept(
@@ -74,7 +74,16 @@ public class PaulJobService {
           } finally {
             running.set(false);
           }
-        });
+        };
+    try {
+      executor.submit(task);
+    } catch (RuntimeException e) {
+      // The task was never queued, so its finally-block won't run — release the
+      // guard here so a rejected submit (e.g. executor shut down) can't lock Paul out.
+      status.updateAndGet(s -> s.failed("Could not start job: " + e.getMessage(), Instant.now()));
+      running.set(false);
+      throw e;
+    }
     return status.get();
   }
 }
