@@ -169,7 +169,8 @@ public class BracketService {
     }
   }
 
-  public record SaveBetRequest(Long matchId, Integer scoreT1, Integer scoreT2, Long predictedWinnerId) {}
+  public record SaveBetRequest(
+      Long matchId, Integer scoreT1, Integer scoreT2, Long predictedWinnerId) {}
 
   public record BetView(Long matchId, Integer scoreT1, Integer scoreT2, Long predictedWinnerId) {}
 
@@ -199,7 +200,8 @@ public class BracketService {
     // For knockout draw bets, predictedWinnerId must be one of the match's teams.
     Long predictedWinnerId = req.predictedWinnerId();
     if (!isGroup && req.scoreT1().equals(req.scoreT2()) && predictedWinnerId != null) {
-      if (!predictedWinnerId.equals(match.getTeam1Id()) && !predictedWinnerId.equals(match.getTeam2Id())) {
+      if (!predictedWinnerId.equals(match.getTeam1Id())
+          && !predictedWinnerId.equals(match.getTeam2Id())) {
         throw new IllegalArgumentException("predictedWinnerId must be a team in this match");
       }
     }
@@ -215,7 +217,8 @@ public class BracketService {
     bet.setScoreT1(req.scoreT1());
     bet.setScoreT2(req.scoreT2());
     // Clear predictedWinnerId for non-draw or group bets; only relevant for knockout draws.
-    bet.setPredictedWinnerId(!isGroup && req.scoreT1().equals(req.scoreT2()) ? predictedWinnerId : null);
+    bet.setPredictedWinnerId(
+        !isGroup && req.scoreT1().equals(req.scoreT2()) ? predictedWinnerId : null);
     bets.save(bet);
     return new BetView(req.matchId(), req.scoreT1(), req.scoreT2(), bet.getPredictedWinnerId());
   }
