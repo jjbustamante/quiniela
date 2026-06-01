@@ -9,6 +9,10 @@
 
 ALTER TABLE bet ADD COLUMN predicted_winner_id BIGINT REFERENCES team(id);
 
+-- Drop the old 5-param overload so the new 7-param function (with 2 defaults)
+-- is the sole overload. Without this, calls with 5 args are ambiguous.
+DROP FUNCTION IF EXISTS score_match_for_bet(boolean, integer, integer, integer, integer);
+
 -- Update score_match_for_bet to accept the predicted/actual winner ids.
 -- For knockout regulation draws (both scores equal) the outcome component
 -- is based on predicted_winner_id vs actual_winner_id instead of the

@@ -43,6 +43,23 @@ class BracketLockUiIT extends AbstractIntegrationTest {
             + " group_stage_deadline = TIMESTAMPTZ '2026-06-11 17:00 UTC',"
             + " knockout_deadline    = TIMESTAMPTZ '2026-06-28 17:00 UTC'"
             + " WHERE id = 1");
+    // Remove any team seeded into R32 by lock tests.
+    jdbc.update(
+        "UPDATE match SET team_1_id = NULL WHERE round_id = "
+            + "(SELECT id FROM round WHERE tournament_id = 1 AND code = 'R32' LIMIT 1)");
+  }
+
+  /**
+   * Assigns one team to the first R32 match so the per-round unlocked check
+   * resolves to true (groupLocked AND teams present).
+   */
+  private void seedOneR32Team() {
+    jdbc.update(
+        "UPDATE match SET team_1_id = (SELECT id FROM team ORDER BY id LIMIT 1) "
+            + "WHERE id = (SELECT m.id FROM match m "
+            + "  JOIN round r ON r.id = m.round_id "
+            + "  WHERE r.tournament_id = 1 AND r.code = 'R32' "
+            + "  ORDER BY m.id LIMIT 1)");
   }
 
   @Test
@@ -72,6 +89,7 @@ class BracketLockUiIT extends AbstractIntegrationTest {
             + " group_stage_deadline = NOW() - INTERVAL '1 hour',"
             + " knockout_deadline    = NOW() + INTERVAL '30 days'"
             + " WHERE id = 1");
+    seedOneR32Team();
 
     String token = issueTokenFor("lock-ui-groups-locked");
 
@@ -90,6 +108,7 @@ class BracketLockUiIT extends AbstractIntegrationTest {
             + " group_stage_deadline = NOW() - INTERVAL '10 days',"
             + " knockout_deadline    = NOW() - INTERVAL '1 hour'"
             + " WHERE id = 1");
+    seedOneR32Team();
 
     String token = issueTokenFor("lock-ui-knockouts-locked");
 
