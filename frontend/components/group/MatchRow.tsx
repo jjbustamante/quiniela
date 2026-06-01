@@ -38,6 +38,14 @@ export function MatchRow({
   const t1Tint = filled && team1Hex ? `${team1Hex}14` : "transparent";
   const t2Tint = filled && team2Hex ? `${team2Hex}14` : "transparent";
 
+  const isDraw = filled && match.betScoreT1 === match.betScoreT2;
+  const advancingTeam =
+    isDraw && match.betPredictedWinnerId != null
+      ? match.betPredictedWinnerId === match.team1Id
+        ? { flag: match.team1Flag, name: match.team1Name }
+        : { flag: match.team2Flag, name: match.team2Name }
+      : null;
+
   return (
     <div className={`border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] ${locked ? "opacity-80" : ""}`}>
       <div className="flex items-stretch">
@@ -61,13 +69,19 @@ export function MatchRow({
           onClick={onTapScore}
           disabled={locked}
           aria-disabled={locked || undefined}
-          className={`w-[86px] shrink-0 font-display text-[26px] font-black leading-none tracking-[-0.04em] ${
+          className={`flex w-[86px] shrink-0 flex-col items-center justify-center gap-0.5 font-display text-[26px] font-black leading-none tracking-[-0.04em] ${
             filled
               ? "bg-[var(--color-bg-ink)] text-[var(--color-accent-gold)]"
               : "bg-[var(--color-bg-paper)] text-[var(--color-text-muted)]"
           } ${locked ? "cursor-not-allowed" : ""}`}
         >
           {filled ? `${match.betScoreT1}–${match.betScoreT2}` : "_·_"}
+          {advancingTeam && (
+            <span className="flex items-center gap-0.5 font-mono text-[9px] font-bold tracking-[0.06em] text-[var(--color-accent-gold)]/70">
+              <span className="text-[11px] leading-none">{advancingTeam.flag}</span>
+              <span className="truncate max-w-[56px]">{advancingTeam.name}</span>
+            </span>
+          )}
         </button>
 
         {/* Team 2 — name + flag + venue label */}
