@@ -134,9 +134,13 @@ resource "google_cloud_run_v2_service" "api" {
         name  = "APP_PAUL_PROJECT_ID"
         value = var.project_id
       }
+      # "global" (not the service region): gemini-3-* models are global-only on
+      # Vertex, and gemini-2.5-* + the OpenAI-compat MaaS models all work on global
+      # too — so the whole roster shares one endpoint. Regional (us-central1) 404s
+      # gemini-3 → those candidates fall back to the stub.
       env {
         name  = "APP_PAUL_LOCATION"
-        value = var.region
+        value = "global"
       }
       # Multi-vendor candidate roster (one CANDIDATE prediction per match per entry).
       # Bare ids use provider=vertex (Gemini, genai SDK); "openai:<id>" routes to the
