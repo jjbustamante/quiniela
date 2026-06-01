@@ -50,8 +50,8 @@ class BracketLockUiIT extends AbstractIntegrationTest {
   }
 
   /**
-   * Assigns one team to the first R32 match so the per-round unlocked check
-   * resolves to true (groupLocked AND teams present).
+   * Assigns one team to the first R32 match so the per-round unlocked check resolves to true
+   * (groupLocked AND teams present).
    */
   private void seedOneR32Team() {
     jdbc.update(
