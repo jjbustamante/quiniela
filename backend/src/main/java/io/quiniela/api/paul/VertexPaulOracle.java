@@ -37,14 +37,23 @@ public class VertexPaulOracle implements PaulOracle {
             + "\n\nResponde SOLO con un objeto JSON con exactamente estas claves: "
             + "{\"scoreT1\": entero >= 0, \"scoreT2\": entero >= 0, "
             + "\"confidence\": número entre 0 y 1, \"reasoning\": texto en español}.";
+    // maxOutputTokens must cover the model's INTERNAL reasoning + the JSON answer.
+    // gemini-3-* are thinking models: with the default (small) budget they spend it
+    // all on reasoning, hit finishReason=MAX_TOKENS, and return empty/truncated text
+    // → JSON parse fails → fallback. 8192 leaves ample room for both.
     GenerateContentConfig config =
         GenerateContentConfig.builder()
             .temperature(0.8f)
             .responseMimeType("application/json")
+            .maxOutputTokens(8192)
             .build();
     try {
       GenerateContentResponse response = client.models.generateContent(model, prompt, config);
-      return mapper.readValue(response.text(), PaulPredictionResult.class);
+      String text = response.text();
+      if (text == null || text.isBlank()) {
+        throw new IllegalStateException("empty response text (likely truncated by token budget)");
+      }
+      return mapper.readValue(text, PaulPredictionResult.class);
     } catch (Exception e) {
       // Surface as unchecked so the prediction/ensemble services fall back to the
       // deterministic stub (a single failed call must not abort the whole batch).
