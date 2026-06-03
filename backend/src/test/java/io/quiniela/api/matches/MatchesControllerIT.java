@@ -169,6 +169,70 @@ class MatchesControllerIT extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.today[0].id").value(1));
   }
 
+  @Test
+  void knockoutDrawWrongPredictedWinnerDoesNotGetOutcomeBonusInPointsEarned() throws Exception {
+    var u = saveUser("mt-kowrong", "KO Wrong Caller");
+    String token = jwt.issue(u);
+
+    Long koId =
+        jdbc.queryForObject(
+            "SELECT m.id FROM match m JOIN round r ON r.id = m.round_id"
+                + " WHERE r.code = 'R32' ORDER BY m.id LIMIT 1",
+            Long.class);
+    var teamIds = jdbc.queryForList("SELECT id FROM team ORDER BY id LIMIT 2", Long.class);
+    Long team1 = teamIds.get(0);
+    Long team2 = teamIds.get(1);
+    // Capture the seeded kickoff so we can restore it — otherwise this R32 match keeps
+    // a past kickoff + null teams and sorts to the top of other suites' match listings.
+    java.sql.Timestamp originalKickoff =
+        jdbc.queryForObject(
+            "SELECT kickoff_at FROM match WHERE id = ?", java.sql.Timestamp.class, koId);
+    jdbc.update(
+        "UPDATE match SET team_1_id = ?, team_2_id = ?, kickoff_at = NOW() - INTERVAL '2 days'"
+            + " WHERE id = ?",
+        team1,
+        team2,
+        koId);
+
+    // Bet 1-1 predicting team1 advances; auto-create the quiniela.
+    Long quinielaId =
+        jdbc.queryForObject(
+            "INSERT INTO quiniela (pool_id, user_id, points, created_at, updated_at)"
+                + " VALUES (1, ?, 0, NOW(), NOW()) RETURNING id",
+            Long.class,
+            u.getId());
+    jdbc.update(
+        "INSERT INTO bet (quiniela_id, match_id, score_t1, score_t2, predicted_winner_id,"
+            + " created_at, updated_at) VALUES (?, ?, 1, 1, ?, NOW(), NOW())",
+        quinielaId,
+        koId,
+        team1);
+
+    // Actual 1-1, team2 advanced (penalties) -> the pick (team1) is WRONG.
+    jdbc.update(
+        "UPDATE match SET score_t1 = 1, score_t2 = 1, played = TRUE, advanced_team_id = ?"
+            + " WHERE id = ?",
+        team2,
+        koId);
+
+    try {
+      mockMvc
+          .perform(get("/api/matches").header("Authorization", "Bearer " + token))
+          .andExpect(status().isOk())
+          // exact 1-1 on a knockout = (2 + 2) * 2 = 8; NO +3 outcome bonus (wrong advancing pick).
+          .andExpect(
+              jsonPath("$.past[?(@.id == " + koId + ")].pointsEarned")
+                  .value(org.hamcrest.Matchers.contains(8)));
+    } finally {
+      jdbc.update(
+          "UPDATE match SET team_1_id = NULL, team_2_id = NULL, score_t1 = NULL, score_t2 = NULL,"
+              + " played = FALSE, winner_id = NULL, advanced_team_id = NULL, kickoff_at = ?"
+              + " WHERE id = ?",
+          originalKickoff,
+          koId);
+    }
+  }
+
   private User saveUser(String slug, String displayName) {
     var u = new User("g-" + slug, slug + "@example.com", displayName, null, UserRole.CAPTAIN);
     u.setInvitePath(slug);

@@ -42,7 +42,7 @@ public class MatchesService {
       Instant serverTime, List<MatchRow> past, List<MatchRow> today, List<MatchRow> upcoming) {}
 
   /**
-   * One round trip: join match → round → teams → caller's bet, compute pointsEarned via V010's
+   * One round trip: join match → round → teams → caller's bet, compute pointsEarned via V016/V017's
    * score_match_for_bet so the page never drifts from the trigger. Partition Java-side by UTC
    * kickoff bucket (past: kickoff < start_of_today; today: [start_of_today, start_of_tomorrow);
    * upcoming: kickoff >= start_of_tomorrow). pointsEarned is null when the match is unplayed or the
@@ -60,9 +60,9 @@ public class MatchesService {
     List<MatchRow> rows =
         jdbc.query(
             // Single query: every match in the tournament + my bet (if any) + computed points.
-            // score_match_for_bet returns 0 for unplayed matches because actual scores are null;
-            // we surface null in that case instead of 0 so the UI can distinguish "no points yet"
-            // from "you got zero".
+            // V016/V017's score_match_for_bet returns 0 for unplayed matches because actual scores
+            // are null; we surface null in that case instead of 0 so the UI can distinguish
+            // "no points yet" from "you got zero".
             """
             SELECT
               m.id              AS match_id,
@@ -91,7 +91,8 @@ public class MatchesService {
                   score_match_for_bet(
                     r.code <> 'GROUP',
                     b.score_t1, b.score_t2,
-                    m.score_t1, m.score_t2)
+                    m.score_t1, m.score_t2,
+                    b.predicted_winner_id, m.advanced_team_id)
                 ELSE NULL
               END               AS points_earned
             FROM match m
