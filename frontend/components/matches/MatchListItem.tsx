@@ -33,6 +33,12 @@ export function MatchListItem({
   const isLive =
     !match.played && new Date(match.kickoffAt).getTime() <= now && showResult;
 
+  // A draw pick on a knockout names who you think advances on penalties. The
+  // score pair alone hides that, so surface the predicted team beside the pick —
+  // mirrors group/MatchRow's advancing-team affordance on the betting side.
+  const pickIsDraw = match.yourPick != null && match.yourPick.t1 === match.yourPick.t2;
+  const pickAdvancingTeam = pickIsDraw ? match.pickWinner : null;
+
   return (
     <div className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)]">
       <div className="flex items-stretch">
@@ -82,13 +88,19 @@ export function MatchListItem({
 
       {/* Pick row — always present so layout doesn't reflow as picks land */}
       <div className="flex items-center justify-between border-t-[1.5px] border-dashed border-[var(--color-line-ink)] px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">
-        <span>
+        <span className="inline-flex items-center gap-1.5">
           {labels.yourPick}:{" "}
           <span className="text-[var(--color-text-primary)]">
             {match.yourPick
               ? `${match.yourPick.t1}–${match.yourPick.t2}`
               : labels.noPick}
           </span>
+          {pickAdvancingTeam && (
+            <span className="inline-flex items-center gap-0.5 text-[var(--color-text-primary)]">
+              <span className="text-[12px] leading-none">{pickAdvancingTeam.flag}</span>
+              <span className="max-w-[64px] truncate">{pickAdvancingTeam.name}</span>
+            </span>
+          )}
         </span>
         {match.pointsEarned != null && (
           <span className="bg-[var(--color-accent-gold)] px-1.5 py-0.5 text-[var(--color-text-primary)]">

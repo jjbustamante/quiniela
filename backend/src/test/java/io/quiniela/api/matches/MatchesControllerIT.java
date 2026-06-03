@@ -93,6 +93,44 @@ class MatchesControllerIT extends AbstractIntegrationTest {
   }
 
   @Test
+  void drawPickSurfacesPredictedAdvancingTeam() throws Exception {
+    var u = saveUser("mt-draw", "Draw Caller");
+    String token = jwt.issue(u);
+
+    Long team2Id = jdbc.queryForObject("SELECT team_2_id FROM match WHERE id = 1", Long.class);
+
+    // Bet a draw 1-1 and predict team2 advances on penalties. predicted_winner_id
+    // lives on the bet, so (unlike match.winner_id) it survives a level pick.
+    Long quinielaId =
+        jdbc.queryForObject(
+            "INSERT INTO quiniela (pool_id, user_id, points, created_at, updated_at)"
+                + " VALUES (1, ?, 0, NOW(), NOW()) RETURNING id",
+            Long.class,
+            u.getId());
+    jdbc.update(
+        "INSERT INTO bet (quiniela_id, match_id, score_t1, score_t2, predicted_winner_id,"
+            + " created_at, updated_at) VALUES (?, 1, 1, 1, ?, NOW(), NOW())",
+        quinielaId,
+        team2Id);
+
+    // Actual result is decisive (knockouts never store a draw); push to the past.
+    jdbc.update(
+        "UPDATE match SET kickoff_at = NOW() - INTERVAL '2 days', score_t1 = 2, score_t2 = 1,"
+            + " played = TRUE WHERE id = 1");
+
+    String pickCode =
+        jdbc.queryForObject("SELECT code FROM team WHERE id = ?", String.class, team2Id);
+
+    mockMvc
+        .perform(get("/api/matches").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.past[0].yourPick.t1").value(1))
+        .andExpect(jsonPath("$.past[0].yourPick.t2").value(1))
+        .andExpect(jsonPath("$.past[0].pickWinner.code").value(pickCode))
+        .andExpect(jsonPath("$.past[0].pickWinner.flag").exists());
+  }
+
+  @Test
   void matchInTodayWindowLandsInTodayBucket() throws Exception {
     var u = saveUser("mt-today", "Today Caller");
     String token = jwt.issue(u);

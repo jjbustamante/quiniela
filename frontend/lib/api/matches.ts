@@ -25,6 +25,13 @@ export type MatchView = {
   yourPick: ScorePair | null;
   /** Points awarded by V010's score_match_for_bet. Null when match unplayed or no bet. */
   pointsEarned: number | null;
+  /**
+   * Team the caller predicted to advance when their knockout pick was a draw.
+   * Null for group bets, non-draw picks, or no bet. (Actual knockout results are
+   * never stored as draws — penalties are folded into the score — so there is no
+   * symmetric "actual draw winner" field.)
+   */
+  pickWinner: TeamRef | null;
 };
 
 export type MatchesView = {
