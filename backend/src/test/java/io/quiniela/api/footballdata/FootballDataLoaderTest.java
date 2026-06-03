@@ -27,4 +27,42 @@ class FootballDataLoaderTest {
     assertThat(FootballDataLoader.mapStageToRoundCode("UNKNOWN_STAGE")).isNull();
     assertThat(FootballDataLoader.mapStageToRoundCode(null)).isNull();
   }
+
+  @org.junit.jupiter.api.Test
+  void advancingTeamIdReadsPenaltyWinnerFromWinnerField() {
+    var home = new FootballDataClient.MatchTeam(1001L, "Home");
+    var away = new FootballDataClient.MatchTeam(1002L, "Away");
+    var drawScore =
+        new FootballDataClient.MatchScore(
+            "AWAY_TEAM",
+            "PENALTY_SHOOTOUT",
+            new FootballDataClient.MatchScoreFull(1, 1),
+            new FootballDataClient.MatchScoreFull(3, 5));
+    var m =
+        new FootballDataClient.MatchApi(
+            7001L, "2026-07-01T18:00:00Z", "FINISHED", "LAST_32", null, home, away, drawScore);
+
+    org.junit.jupiter.api.Assertions.assertEquals(1002L, FootballDataLoader.advancingTeamId(m));
+  }
+
+  @org.junit.jupiter.api.Test
+  void advancingTeamIdIsNullForGroupDraw() {
+    var home = new FootballDataClient.MatchTeam(1001L, "Home");
+    var away = new FootballDataClient.MatchTeam(1002L, "Away");
+    var drawScore =
+        new FootballDataClient.MatchScore(
+            "DRAW", "REGULAR", new FootballDataClient.MatchScoreFull(1, 1), null);
+    var m =
+        new FootballDataClient.MatchApi(
+            8001L,
+            "2026-06-15T18:00:00Z",
+            "FINISHED",
+            "GROUP_STAGE",
+            "Group A",
+            home,
+            away,
+            drawScore);
+
+    org.junit.jupiter.api.Assertions.assertNull(FootballDataLoader.advancingTeamId(m));
+  }
 }

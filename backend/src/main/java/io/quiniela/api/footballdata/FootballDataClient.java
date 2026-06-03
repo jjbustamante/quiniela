@@ -22,7 +22,11 @@ public class FootballDataClient {
 
   public record MatchScoreFull(Integer home, Integer away) {}
 
-  public record MatchScore(MatchScoreFull fullTime) {}
+  // winner ∈ {HOME_TEAM, AWAY_TEAM, DRAW}; duration ∈ {REGULAR, EXTRA_TIME, PENALTY_SHOOTOUT}.
+  // fullTime excludes shootout goals; penalties holds the shootout score (null when not
+  // applicable).
+  public record MatchScore(
+      String winner, String duration, MatchScoreFull fullTime, MatchScoreFull penalties) {}
 
   public record MatchTeam(Long id, String name) {}
 

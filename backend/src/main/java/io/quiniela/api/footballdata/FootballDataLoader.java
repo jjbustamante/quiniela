@@ -211,6 +211,20 @@ public class FootballDataLoader implements ApplicationRunner {
     return null;
   }
 
+  /**
+   * The team that progresses from a finished knockout, per football-data.org's score.winner. Works
+   * for both regulation/ET wins and penalty shootouts (winner names the progressing side). Returns
+   * null for a true draw (group stage) or missing data.
+   */
+  static Long advancingTeamId(FootballDataClient.MatchApi m) {
+    if (m.score() == null || m.score().winner() == null) return null;
+    return switch (m.score().winner()) {
+      case "HOME_TEAM" -> m.homeTeam() != null ? m.homeTeam().id() : null;
+      case "AWAY_TEAM" -> m.awayTeam() != null ? m.awayTeam().id() : null;
+      default -> null; // DRAW or unrecognized
+    };
+  }
+
   /** Map football-data.org match.stage codes to our round.code values. */
   static String mapStageToRoundCode(String apiStage) {
     if (apiStage == null) return null;
