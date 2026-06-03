@@ -16,6 +16,7 @@ function match(overrides: Partial<MatchView> = {}): MatchView {
     yourPick: { t1: 1, t2: 1 },
     pointsEarned: 4,
     pickWinner: null,
+    winner: null,
     ...overrides,
   };
 }
@@ -61,5 +62,35 @@ describe("MatchListItem — knockout draw pick winner", () => {
     );
     // Curaçao only appears in its own team cell — no extra picked-winner chip.
     expect(screen.getAllByText(/Curaçao/i).length).toBe(1);
+  });
+
+  it("shows the actual advancing team when a knockout result is a draw", () => {
+    render(
+      <MatchListItem
+        match={match({
+          score: { t1: 1, t2: 1 },
+          winner: { code: "PAR", name: "Paraguay", flag: "🇵🇾" },
+        })}
+        labels={labels}
+        showResult
+        now={Date.parse("2026-06-30T00:00:00Z")}
+      />,
+    );
+    expect(screen.getAllByText(/Paraguay/i).length).toBeGreaterThan(1);
+  });
+
+  it("does not show an advancing chip for a decisive result", () => {
+    render(
+      <MatchListItem
+        match={match({
+          score: { t1: 2, t2: 1 },
+          winner: { code: "PAR", name: "Paraguay", flag: "🇵🇾" },
+        })}
+        labels={labels}
+        showResult
+        now={Date.parse("2026-06-30T00:00:00Z")}
+      />,
+    );
+    expect(screen.getAllByText(/Paraguay/i).length).toBe(1);
   });
 });

@@ -39,6 +39,12 @@ export function MatchListItem({
   const pickIsDraw = match.yourPick != null && match.yourPick.t1 === match.yourPick.t2;
   const pickAdvancingTeam = pickIsDraw ? match.pickWinner : null;
 
+  // Knockout draws are decided on penalties — the score hides who advanced, so
+  // surface it. Only for draws; a decisive score already names its winner.
+  const resultIsDraw =
+    match.played && match.score != null && match.score.t1 === match.score.t2;
+  const advancingTeam = resultIsDraw ? match.winner : null;
+
   return (
     <div className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)]">
       <div className="flex items-stretch">
@@ -56,9 +62,17 @@ export function MatchListItem({
         {/* Score / kickoff stub */}
         <div className="flex w-[110px] shrink-0 flex-col items-center justify-center gap-0.5 bg-[var(--color-bg-paper)] px-2 py-2">
           {match.played && match.score ? (
-            <span className="font-display text-[26px] font-black leading-none tracking-[-0.04em] text-[var(--color-text-primary)]">
-              {match.score.t1}–{match.score.t2}
-            </span>
+            <>
+              <span className="font-display text-[26px] font-black leading-none tracking-[-0.04em] text-[var(--color-text-primary)]">
+                {match.score.t1}–{match.score.t2}
+              </span>
+              {advancingTeam && (
+                <span className="flex items-center gap-0.5 font-mono text-[9px] font-bold tracking-[0.06em] text-[var(--color-text-muted)]">
+                  <span className="text-[11px] leading-none">{advancingTeam.flag}</span>
+                  <span className="max-w-[64px] truncate">{advancingTeam.name}</span>
+                </span>
+              )}
+            </>
           ) : isLive ? (
             <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-accent-red)]">
               <span className="inline-block h-2 w-2 rounded-full bg-[var(--color-accent-red)]" />

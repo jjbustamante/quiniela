@@ -35,7 +35,8 @@ public class MatchesService {
       boolean played,
       ScorePair yourPick,
       Integer pointsEarned,
-      TeamRef pickWinner) {}
+      TeamRef pickWinner,
+      TeamRef winner) {}
 
   public record MatchesView(
       Instant serverTime, List<MatchRow> past, List<MatchRow> today, List<MatchRow> upcoming) {}
@@ -77,6 +78,9 @@ public class MatchesService {
               bw.code           AS pw_code,
               bw.name           AS pw_name,
               bw.flag_emoji     AS pw_flag,
+              aw.code           AS aw_code,
+              aw.name           AS aw_name,
+              aw.flag_emoji     AS aw_flag,
               m.score_t1        AS m_score_t1,
               m.score_t2        AS m_score_t2,
               m.played          AS played,
@@ -96,6 +100,7 @@ public class MatchesService {
             LEFT JOIN team t2 ON t2.id = m.team_2_id
             LEFT JOIN bet  b  ON b.match_id = m.id AND b.quiniela_id = ?
             LEFT JOIN team bw ON bw.id = b.predicted_winner_id
+            LEFT JOIN team aw ON aw.id = m.advanced_team_id
             WHERE m.tournament_id = ?
             ORDER BY m.kickoff_at ASC
             """,
@@ -117,6 +122,13 @@ public class MatchesService {
                           rs.getString("pw_code"),
                           rs.getString("pw_name"),
                           rs.getString("pw_flag"));
+              TeamRef winner =
+                  rs.getString("aw_code") == null
+                      ? null
+                      : new TeamRef(
+                          rs.getString("aw_code"),
+                          rs.getString("aw_name"),
+                          rs.getString("aw_flag"));
               return new MatchRow(
                   rs.getLong("match_id"),
                   rs.getString("round_code"),
@@ -130,7 +142,8 @@ public class MatchesService {
                   rs.getBoolean("played"),
                   yourPick,
                   (Integer) rs.getObject("points_earned"),
-                  pickWinner);
+                  pickWinner,
+                  winner);
             },
             quinielaId == null ? -1L : quinielaId,
             DEFAULT_TOURNAMENT_ID);

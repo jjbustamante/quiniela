@@ -32,6 +32,11 @@ export type MatchView = {
    * symmetric "actual draw winner" field.)
    */
   pickWinner: TeamRef | null;
+  /**
+   * Team that actually advanced when a knockout result is a draw (penalties).
+   * Null for group matches and decisive results (the score already names the winner).
+   */
+  winner: TeamRef | null;
 };
 
 export type MatchesView = {

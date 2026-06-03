@@ -40,6 +40,7 @@ class MatchesControllerIT extends AbstractIntegrationTest {
     // Restore V006 seed values that some tests mutate so other suites see clean state.
     jdbc.update(
         "UPDATE match SET score_t1 = NULL, score_t2 = NULL, played = FALSE, winner_id = NULL,"
+            + " advanced_team_id = NULL,"
             + " kickoff_at = TIMESTAMPTZ '2026-06-11 17:00 UTC' WHERE id = 1");
   }
 
@@ -128,6 +129,29 @@ class MatchesControllerIT extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.past[0].yourPick.t2").value(1))
         .andExpect(jsonPath("$.past[0].pickWinner.code").value(pickCode))
         .andExpect(jsonPath("$.past[0].pickWinner.flag").exists());
+  }
+
+  @Test
+  void drawResultSurfacesActualAdvancingTeam() throws Exception {
+    var u = saveUser("mt-adv", "Advancing Caller");
+    String token = jwt.issue(u);
+
+    Long team2Id = jdbc.queryForObject("SELECT team_2_id FROM match WHERE id = 1", Long.class);
+
+    // 1-1 result, team2 advanced (penalties). Push to the past.
+    jdbc.update(
+        "UPDATE match SET kickoff_at = NOW() - INTERVAL '2 days', score_t1 = 1, score_t2 = 1,"
+            + " played = TRUE, advanced_team_id = ? WHERE id = 1",
+        team2Id);
+
+    String advCode =
+        jdbc.queryForObject("SELECT code FROM team WHERE id = ?", String.class, team2Id);
+
+    mockMvc
+        .perform(get("/api/matches").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.past[0].winner.code").value(advCode))
+        .andExpect(jsonPath("$.past[0].winner.flag").exists());
   }
 
   @Test
