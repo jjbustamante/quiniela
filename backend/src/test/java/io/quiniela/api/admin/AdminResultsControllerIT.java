@@ -189,4 +189,24 @@ class AdminResultsControllerIT extends AbstractIntegrationTest {
                 .content("{\"scoreT1\":-1,\"scoreT2\":0}"))
         .andExpect(status().isBadRequest());
   }
+
+  @Test
+  void recordingDrawWithAdvancingTeamStoresAdvancedTeamId() throws Exception {
+    String token = adminToken();
+    Match before = matches.findById(2L).orElseThrow();
+    Long team2 = before.getTeam2Id();
+
+    mockMvc
+        .perform(
+            put("/api/admin/matches/2/result")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"scoreT1\":1,\"scoreT2\":1,\"advancingTeamId\":" + team2 + "}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.winnerId").doesNotExist());
+
+    Match after = matches.findById(2L).orElseThrow();
+    org.assertj.core.api.Assertions.assertThat(after.getAdvancedTeamId()).isEqualTo(team2);
+    org.assertj.core.api.Assertions.assertThat(after.getWinnerId()).isNull();
+  }
 }

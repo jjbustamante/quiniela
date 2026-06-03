@@ -24,7 +24,7 @@ public class AdminResultsController {
     this.service = service;
   }
 
-  public record RecordResultRequest(int scoreT1, int scoreT2) {}
+  public record RecordResultRequest(int scoreT1, int scoreT2, Long advancingTeamId) {}
 
   @GetMapping("/matches")
   public ResponseEntity<List<AdminMatchRow>> listAllMatches(@AuthenticationPrincipal Jwt jwt) {
@@ -42,7 +42,8 @@ public class AdminResultsController {
     Long callerUserId = Long.parseLong(jwt.getSubject());
     MatchResultView view =
         service.record(
-            new RecordResultCommand(callerUserId, matchId, req.scoreT1(), req.scoreT2()));
+            new RecordResultCommand(
+                callerUserId, matchId, req.scoreT1(), req.scoreT2(), req.advancingTeamId()));
     return ResponseEntity.ok(view);
   }
 }

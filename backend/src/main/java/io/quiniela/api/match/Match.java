@@ -42,6 +42,9 @@ public class Match {
   @Column(name = "winner_id")
   private Long winnerId;
 
+  @Column(name = "advanced_team_id")
+  private Long advancedTeamId;
+
   @Column(nullable = false)
   private Boolean played;
 
@@ -129,6 +132,14 @@ public class Match {
 
   public void setWinnerId(Long winnerId) {
     this.winnerId = winnerId;
+  }
+
+  public Long getAdvancedTeamId() {
+    return advancedTeamId;
+  }
+
+  public void setAdvancedTeamId(Long advancedTeamId) {
+    this.advancedTeamId = advancedTeamId;
   }
 
   public Boolean getPlayed() {

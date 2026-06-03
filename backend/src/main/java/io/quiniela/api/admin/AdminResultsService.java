@@ -48,7 +48,8 @@ public class AdminResultsService {
     this.teams = teams;
   }
 
-  public record RecordResultCommand(Long callerUserId, Long matchId, int scoreT1, int scoreT2) {}
+  public record RecordResultCommand(
+      Long callerUserId, Long matchId, int scoreT1, int scoreT2, Long advancingTeamId) {}
 
   public record MatchResultView(
       Long matchId, int scoreT1, int scoreT2, Long winnerId, boolean played) {}
@@ -141,6 +142,10 @@ public class AdminResultsService {
     m.setScoreT2(cmd.scoreT2);
     m.setPlayed(true);
     m.setWinnerId(winnerOf(m, cmd.scoreT1, cmd.scoreT2));
+    // On a draw the progressing team can't be derived from the score; trust the
+    // admin's pick. On a decisive score the trigger overwrites this anyway.
+    m.setAdvancedTeamId(
+        cmd.scoreT1 == cmd.scoreT2 ? cmd.advancingTeamId : winnerOf(m, cmd.scoreT1, cmd.scoreT2));
     Match saved = matches.save(m);
 
     return new MatchResultView(
