@@ -175,13 +175,25 @@ public class FootballDataLoader implements ApplicationRunner {
         Integer scoreT2 =
             m.score() != null && m.score().fullTime() != null ? m.score().fullTime().away() : null;
         boolean played = "FINISHED".equals(m.status());
+        Long advancedTeamId = advancingTeamId(m);
 
+        // UPSERT so a re-sync lands real results onto the row inserted at first load.
+        // Updating score_t1/score_t2/advanced_team_id fires the BEFORE UPDATE trigger,
+        // which recomputes points. team ids use COALESCE so a knockout slot already
+        // filled isn't blanked by a later TBD payload. group_code/round_id never change.
         jdbc.update(
             "INSERT INTO match "
                 + "(id, tournament_id, round_id, group_code, team_1_id, team_2_id, "
-                + " score_t1, score_t2, played, kickoff_at) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
-                + "ON CONFLICT (id) DO NOTHING",
+                + " score_t1, score_t2, advanced_team_id, played, kickoff_at) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                + "ON CONFLICT (id) DO UPDATE SET "
+                + "  team_1_id = COALESCE(EXCLUDED.team_1_id, match.team_1_id), "
+                + "  team_2_id = COALESCE(EXCLUDED.team_2_id, match.team_2_id), "
+                + "  score_t1 = EXCLUDED.score_t1, "
+                + "  score_t2 = EXCLUDED.score_t2, "
+                + "  advanced_team_id = EXCLUDED.advanced_team_id, "
+                + "  played = EXCLUDED.played, "
+                + "  kickoff_at = EXCLUDED.kickoff_at",
             m.id(),
             TOURNAMENT_ID,
             roundId,
@@ -190,6 +202,7 @@ public class FootballDataLoader implements ApplicationRunner {
             team2Id,
             scoreT1,
             scoreT2,
+            advancedTeamId,
             played,
             java.sql.Timestamp.from(kickoff));
         matchesInserted++;

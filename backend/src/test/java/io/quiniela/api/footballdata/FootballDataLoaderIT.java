@@ -138,4 +138,89 @@ class FootballDataLoaderIT {
         jdbc.queryForObject("SELECT group_code FROM match WHERE id = 5001", String.class);
     assertThat(matchGroupCode).isEqualTo("A");
   }
+
+  @Test
+  void resyncUpdatesResultAndStoresPenaltyAdvancingTeam() {
+    stubFor(
+        get(urlEqualTo("/v4/competitions/WC/standings"))
+            .willReturn(
+                aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        "{\"standings\":[{\"group\":\"Group A\",\"type\":\"TOTAL\","
+                            + "\"table\":[{\"team\":{\"id\":1001,\"name\":\"Uno\"}},"
+                            + "{\"team\":{\"id\":1002,\"name\":\"Dos\"}}]}]}")));
+    stubFor(
+        get(urlEqualTo("/v4/competitions/WC/teams"))
+            .willReturn(
+                aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        "{\"teams\":[{\"id\":1001,\"name\":\"Uno\",\"tla\":\"UNO\"},"
+                            + "{\"id\":1002,\"name\":\"Dos\",\"tla\":\"DOS\"}]}")));
+
+    // First sync: a scheduled R32 match, no result yet.
+    stubFor(
+        get(urlEqualTo("/v4/competitions/WC/matches"))
+            .willReturn(
+                aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        "{\"matches\":[{\"id\":9001,\"utcDate\":\"2026-07-01T18:00:00Z\","
+                            + "\"status\":\"SCHEDULED\",\"stage\":\"LAST_32\","
+                            + "\"homeTeam\":{\"id\":1001,\"name\":\"Uno\"},"
+                            + "\"awayTeam\":{\"id\":1002,\"name\":\"Dos\"},"
+                            + "\"score\":{\"winner\":null,\"duration\":\"REGULAR\","
+                            + "\"fullTime\":{\"home\":null,\"away\":null}}}]}")));
+    loader.run(null);
+
+    var jdbc = new JdbcTemplate(dataSource);
+    assertThat(jdbc.queryForObject("SELECT played FROM match WHERE id = 9001", Boolean.class))
+        .isFalse();
+
+    // Second sync: same match, now a 1-1 penalty win for the away team (1002).
+    wm.resetAll();
+    WireMock.configureFor("localhost", wm.port());
+    stubFor(
+        get(urlEqualTo("/v4/competitions/WC/standings"))
+            .willReturn(
+                aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withBody("{\"standings\":[]}")));
+    stubFor(
+        get(urlEqualTo("/v4/competitions/WC/teams"))
+            .willReturn(
+                aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withBody("{\"teams\":[]}")));
+    stubFor(
+        get(urlEqualTo("/v4/competitions/WC/matches"))
+            .willReturn(
+                aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        "{\"matches\":[{\"id\":9001,\"utcDate\":\"2026-07-01T18:00:00Z\","
+                            + "\"status\":\"FINISHED\",\"stage\":\"LAST_32\","
+                            + "\"homeTeam\":{\"id\":1001,\"name\":\"Uno\"},"
+                            + "\"awayTeam\":{\"id\":1002,\"name\":\"Dos\"},"
+                            + "\"score\":{\"winner\":\"AWAY_TEAM\",\"duration\":\"PENALTY_SHOOTOUT\","
+                            + "\"fullTime\":{\"home\":1,\"away\":1},"
+                            + "\"penalties\":{\"home\":3,\"away\":5}}}]}")));
+
+    // teams table is non-empty now, so call load() directly to force the matches re-sync.
+    loader.load();
+
+    assertThat(jdbc.queryForObject("SELECT played FROM match WHERE id = 9001", Boolean.class))
+        .isTrue();
+    assertThat(jdbc.queryForObject("SELECT score_t1 FROM match WHERE id = 9001", Integer.class))
+        .isEqualTo(1);
+    assertThat(jdbc.queryForObject("SELECT score_t2 FROM match WHERE id = 9001", Integer.class))
+        .isEqualTo(1);
+    assertThat(
+            jdbc.queryForObject("SELECT advanced_team_id FROM match WHERE id = 9001", Long.class))
+        .isEqualTo(1002L);
+    // winner_id stays null on a draw (score-derived).
+    assertThat(jdbc.queryForObject("SELECT winner_id FROM match WHERE id = 9001", Long.class))
+        .isNull();
+  }
 }
