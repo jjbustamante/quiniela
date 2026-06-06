@@ -104,6 +104,8 @@ BEGIN
       INTO is_knockout, multiplier_val
       FROM round r WHERE r.id = NEW.round_id;
     IF is_knockout IS NULL THEN is_knockout := FALSE; END IF;
+    -- Defensive only: points_multiplier is NOT NULL DEFAULT 1, so this fires
+    -- solely if NEW.round_id points at no round row (which FKs already prevent).
     IF multiplier_val IS NULL THEN
         multiplier_val := CASE WHEN is_knockout THEN 2 ELSE 1 END;
     END IF;

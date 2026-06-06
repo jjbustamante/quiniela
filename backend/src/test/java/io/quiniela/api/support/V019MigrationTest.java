@@ -1,6 +1,7 @@
 package io.quiniela.api.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
@@ -34,5 +35,24 @@ class V019MigrationTest extends AbstractIntegrationTest {
         jdbc.queryForList(
             "SELECT points_multiplier FROM round WHERE code <> 'GROUP'", Integer.class);
     assertThat(knockoutMultipliers).isNotEmpty().allMatch(m -> m == 2);
+  }
+
+  @Test
+  void rejectsAZeroMultiplier() {
+    var jdbc = new JdbcTemplate(dataSource);
+    assertThatThrownBy(
+            () -> jdbc.update("UPDATE round SET points_multiplier = 0 WHERE code = 'GROUP'"))
+        .hasMessageContaining("points_multiplier");
+  }
+
+  @Test
+  void sevenArgCallStillScoresKnockoutTimesTwo() {
+    // Backward-compat: callers that omit the multiplier arg get the historical
+    // knockout ×2 via the COALESCE fallback. bet 2-1, actual 2-1 knockout = (3+2+2)*2 = 14.
+    var jdbc = new JdbcTemplate(dataSource);
+    Integer pts =
+        jdbc.queryForObject(
+            "SELECT score_match_for_bet(true, 2, 1, 2, 1, NULL, NULL)", Integer.class);
+    assertThat(pts).isEqualTo(14);
   }
 }
