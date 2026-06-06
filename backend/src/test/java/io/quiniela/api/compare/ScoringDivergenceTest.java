@@ -55,7 +55,8 @@ class ScoringDivergenceTest extends AbstractIntegrationTest {
           int a1 = rs.getInt("a1");
           int a2 = rs.getInt("a2");
           int db = rs.getInt("pts");
-          int java = CompareService.scoreMatchForBet(ko, b1, b2, a1, a2);
+          // DB 5-arg call defaults multiplier to COALESCE(NULL, ko?2:1); mirror that here.
+          int java = CompareService.scoreMatchForBet(ko ? 2 : 1, b1, b2, a1, a2);
           if (db != java) {
             mismatches.add(
                 String.format(
@@ -71,13 +72,55 @@ class ScoringDivergenceTest extends AbstractIntegrationTest {
         .isEmpty();
   }
 
+  /**
+   * Pins Java and DB across explicit multipliers (1..4) for every scoreline, passing the multiplier
+   * to the DB function directly so the two scale identically.
+   */
+  @Test
+  void javaMirrorMatchesDbScoringAcrossMultipliers() {
+    JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+
+    List<String> mismatches = new ArrayList<>();
+    jdbc.query(
+        """
+        SELECT mult, b1, b2, a1, a2,
+               score_match_for_bet(true, b1, b2, a1, a2, NULL, NULL, mult) AS pts
+        FROM generate_series(0, 5) AS b1,
+             generate_series(0, 5) AS b2,
+             generate_series(0, 5) AS a1,
+             generate_series(0, 5) AS a2,
+             generate_series(1, 4) AS mult
+        """,
+        rs -> {
+          int mult = rs.getInt("mult");
+          int b1 = rs.getInt("b1");
+          int b2 = rs.getInt("b2");
+          int a1 = rs.getInt("a1");
+          int a2 = rs.getInt("a2");
+          int db = rs.getInt("pts");
+          int java = CompareService.scoreMatchForBet(mult, b1, b2, a1, a2);
+          if (db != java) {
+            mismatches.add(
+                String.format(
+                    "mult=%d bet=%d-%d actual=%d-%d -> java=%d db=%d",
+                    mult, b1, b2, a1, a2, java, db));
+          }
+        });
+
+    assertThat(mismatches)
+        .as(
+            "Java and DB scoring must agree across multipliers; divergences:\n%s",
+            String.join("\n", mismatches))
+        .isEmpty();
+  }
+
   /** A match with no result yet scores zero in both implementations. */
   @Test
   void unplayedMatchScoresZeroInBothImpls() {
     JdbcTemplate jdbc = new JdbcTemplate(dataSource);
 
-    assertThat(CompareService.scoreMatchForBet(false, 1, 0, null, null)).isZero();
-    assertThat(CompareService.scoreMatchForBet(true, 1, 0, null, null)).isZero();
+    assertThat(CompareService.scoreMatchForBet(1, 1, 0, null, null)).isZero();
+    assertThat(CompareService.scoreMatchForBet(2, 1, 0, null, null)).isZero();
 
     Integer dbGroup =
         jdbc.queryForObject(
