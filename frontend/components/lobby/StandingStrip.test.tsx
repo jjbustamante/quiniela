@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
-import { describe, it, expect } from "vitest";
+import { it, expect } from "vitest";
 import { StandingStrip } from "./StandingStrip";
 
 const messages = { home: { tuPuesto: "Tu puesto", verTabla: "Ver tabla →", standingNoScore: "Aún sin puntos" } };
