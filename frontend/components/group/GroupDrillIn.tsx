@@ -108,11 +108,14 @@ export function GroupDrillIn({
               const prior = { t1: m.betScoreT1, t2: m.betScoreT2 };
               setPendingId(m.id);
               startTransition(async () => {
-                const outcome = await acceptPaulAction(m.id, groupId);
-                const fb = singleMatchFeedback(prior, outcome);
-                const keptKey = pickKey(KEPT_HEADER_KEYS, Math.random());
-                setFeedback((prev) => new Map(prev).set(m.id, { fb, keptKey }));
-                setPendingId(null);
+                try {
+                  const outcome = await acceptPaulAction(m.id, groupId);
+                  const fb = singleMatchFeedback(prior, outcome);
+                  const keptKey = pickKey(KEPT_HEADER_KEYS, Math.random());
+                  setFeedback((prev) => new Map(prev).set(m.id, { fb, keptKey }));
+                } finally {
+                  setPendingId(null);
+                }
               });
             }}
           />
