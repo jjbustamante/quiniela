@@ -17,6 +17,7 @@ export type TopBarProps = {
  */
 export async function TopBar({ title, meta }: TopBarProps) {
   const t = await getTranslations("common");
+  const tRoles = await getTranslations("roles");
   const session = await auth();
   const displayName = session?.user?.name ?? session?.user?.email ?? null;
   const role = session?.role;
@@ -44,6 +45,11 @@ export async function TopBar({ title, meta }: TopBarProps) {
             26
           </span>
           <LocaleSwitcher />
+          {role && (
+            <span className="chrome-label rounded-sm border border-[var(--color-accent-gold)] px-1.5 py-0.5 text-[0.625rem] leading-none text-[var(--color-accent-gold)]">
+              {tRoles(role)}
+            </span>
+          )}
           {displayName && (
             <span
               aria-hidden="true"

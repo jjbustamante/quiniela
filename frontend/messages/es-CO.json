@@ -5,6 +5,36 @@
     "signOut": "Cerrar sesión",
     "loading": "Cargando…"
   },
+  "roles": {
+    "ADMIN": "Admin",
+    "CAPTAIN": "Capitán",
+    "PLAYER": "Jugador"
+  },
+  "scoring": {
+    "title": "Cómo se calculan los puntos",
+    "intro": "Cada acierto suma y los puntos se acumulan. Mientras más cerca estés del marcador real, más puntos ganas.",
+    "perMatch": "Por cada partido",
+    "ptsOutcome": "Acertar el resultado (ganador o empate)",
+    "ptsTeam": "Acertar los goles de un equipo",
+    "ptsOtherTeam": "Acertar los goles del otro equipo",
+    "ptsDiff": "Acertar la diferencia de goles",
+    "ptsDiffNote": "Solo si no acertaste el marcador exacto.",
+    "pts": "{n} pts",
+    "exactTitle": "Marcador exacto",
+    "exactBody": "Si aciertas el marcador completo sumas 3 + 2 + 2 = 7 puntos, el máximo en la fase de grupos.",
+    "knockoutTitle": "Eliminatorias",
+    "knockoutBody": "Desde los dieciseisavos, cada punto vale el doble. El máximo por partido es 14.",
+    "drawTitle": "Empates en eliminatoria",
+    "drawBody": "Si predices un empate, también eliges qué equipo avanza. Si aciertas quién pasa, ganas los puntos del resultado; si no, no sumas ese acierto.",
+    "examplesTitle": "Ejemplos",
+    "examplesActual": "Resultado real: 2–1",
+    "colPrediction": "Tu predicción",
+    "colPoints": "Puntos",
+    "exExact": "Marcador exacto",
+    "exTeam": "Acertaste un equipo",
+    "exDiff": "Acertaste ganador y diferencia",
+    "exMiss": "Resultado equivocado"
+  },
   "landing": {
     "title": "Quiniela 2026",
     "subtitle": "La quiniela de los panas para el Mundial. ⚽ Pitazo inicial: 11 de junio.",
@@ -67,7 +97,24 @@
     "payments": "Pagos",
     "results": "Resultados",
     "settings": "Ajustes",
-    "testMode": "Modo prueba"
+    "testMode": "Modo prueba",
+    "scoring": "Puntajes",
+    "moneyConfig": "Dinero"
+  },
+  "moneyConfig": {
+    "title": "Configuración de dinero",
+    "entryFee": "Valor de entrada ({currency})",
+    "houseCut": "Comisión del organizador (%)",
+    "houseCutHelp": "Se descuenta del pozo antes de repartir los premios (por ejemplo, para cubrir el dominio).",
+    "prizeSplit": "Reparto de premios",
+    "place": "Puesto {n}",
+    "addRank": "Agregar puesto",
+    "removeRank": "Quitar puesto",
+    "total": "Total",
+    "mustSum100": "Los porcentajes deben sumar 100%.",
+    "save": "Guardar",
+    "saved": "Guardado",
+    "errorPrefix": "Error"
   },
   "auth_error": {
     "title": "No pudimos iniciar tu sesión",

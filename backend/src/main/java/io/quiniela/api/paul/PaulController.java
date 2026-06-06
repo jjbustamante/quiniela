@@ -1,8 +1,11 @@
 package io.quiniela.api.paul;
 
+import io.quiniela.api.bracket.BracketService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,5 +33,10 @@ public class PaulController {
     if (jwt == null) return ResponseEntity.status(401).build();
     Long userId = Long.parseLong(jwt.getSubject());
     return ResponseEntity.ok(service.fillAllForUser(userId));
+  }
+
+  @ExceptionHandler(BracketService.BracketLockedException.class)
+  public ResponseEntity<String> handleLocked(BracketService.BracketLockedException e) {
+    return ResponseEntity.status(HttpStatus.LOCKED).body(e.getMessage());
   }
 }

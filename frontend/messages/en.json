@@ -5,6 +5,36 @@
     "signOut": "Sign out",
     "loading": "Loading…"
   },
+  "roles": {
+    "ADMIN": "Admin",
+    "CAPTAIN": "Captain",
+    "PLAYER": "Player"
+  },
+  "scoring": {
+    "title": "How points are scored",
+    "intro": "Every correct guess adds up, and points stack. The closer you are to the real score, the more you earn.",
+    "perMatch": "Per match",
+    "ptsOutcome": "Correct result (winner or draw)",
+    "ptsTeam": "Correct goals for one team",
+    "ptsOtherTeam": "Correct goals for the other team",
+    "ptsDiff": "Correct goal difference",
+    "ptsDiffNote": "Only if you didn't nail the exact score.",
+    "pts": "{n} pts",
+    "exactTitle": "Exact score",
+    "exactBody": "Nail the full score and you stack 3 + 2 + 2 = 7 points, the most you can get in the group stage.",
+    "knockoutTitle": "Knockouts",
+    "knockoutBody": "From the round of 32 on, every point counts double. The most per match is 14.",
+    "drawTitle": "Knockout draws",
+    "drawBody": "If you predict a draw, you also pick which team advances. Get the team that goes through right and you earn the result points; otherwise you don't score that part.",
+    "examplesTitle": "Examples",
+    "examplesActual": "Actual result: 2–1",
+    "colPrediction": "Your prediction",
+    "colPoints": "Points",
+    "exExact": "Exact score",
+    "exTeam": "Got one team right",
+    "exDiff": "Got winner and difference",
+    "exMiss": "Wrong result"
+  },
   "landing": {
     "title": "Quiniela 2026",
     "subtitle": "The friends-and-family bracket for the World Cup. ⚽ Kickoff: June 11.",
@@ -67,7 +97,24 @@
     "payments": "Payments",
     "results": "Results",
     "settings": "Settings",
-    "testMode": "Test mode"
+    "testMode": "Test mode",
+    "scoring": "Scoring",
+    "moneyConfig": "Money"
+  },
+  "moneyConfig": {
+    "title": "Money settings",
+    "entryFee": "Entry fee ({currency})",
+    "houseCut": "Organizer cut (%)",
+    "houseCutHelp": "Taken off the pot before prizes are split (e.g. to cover the domain).",
+    "prizeSplit": "Prize split",
+    "place": "Place {n}",
+    "addRank": "Add place",
+    "removeRank": "Remove place",
+    "total": "Total",
+    "mustSum100": "Percentages must add up to 100%.",
+    "save": "Save",
+    "saved": "Saved",
+    "errorPrefix": "Error"
   },
   "auth_error": {
     "title": "We couldn't sign you in",

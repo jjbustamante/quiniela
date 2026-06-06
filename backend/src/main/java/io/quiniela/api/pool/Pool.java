@@ -30,6 +30,9 @@ public class Pool {
   @Column(name = "entry_fee_cents", nullable = false)
   private Integer entryFeeCents;
 
+  @Column(name = "house_cut_percentage", nullable = false)
+  private Integer houseCutPercentage;
+
   @Column(name = "locked_at")
   private Instant lockedAt;
 
@@ -71,6 +74,18 @@ public class Pool {
 
   public Integer getEntryFeeCents() {
     return entryFeeCents;
+  }
+
+  public void setEntryFeeCents(Integer entryFeeCents) {
+    this.entryFeeCents = entryFeeCents;
+  }
+
+  public Integer getHouseCutPercentage() {
+    return houseCutPercentage;
+  }
+
+  public void setHouseCutPercentage(Integer houseCutPercentage) {
+    this.houseCutPercentage = houseCutPercentage;
   }
 
   public Instant getLockedAt() {
