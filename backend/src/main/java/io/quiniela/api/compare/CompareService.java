@@ -85,12 +85,14 @@ public class CompareService {
       String kickoffAt,
       Integer actualT1,
       Integer actualT2,
-      boolean played) {}
+      boolean played,
+      int pointsMultiplier) {}
 
   private List<MatchMeta> fetchMatchMeta() {
     return jdbc.query(
         """
         SELECT m.id, r.code AS round_code, m.kickoff_at, m.score_t1, m.score_t2, m.played,
+               r.points_multiplier AS points_multiplier,
                t1.code AS t1_code, t1.flag_emoji AS t1_flag,
                t2.code AS t2_code, t2.flag_emoji AS t2_flag
         FROM match m
@@ -111,7 +113,8 @@ public class CompareService {
                 rs.getTimestamp("kickoff_at").toInstant().toString(),
                 (Integer) rs.getObject("score_t1"),
                 (Integer) rs.getObject("score_t2"),
-                rs.getBoolean("played")),
+                rs.getBoolean("played"),
+                rs.getInt("points_multiplier")),
         TOURNAMENT_ID);
   }
 
@@ -211,28 +214,19 @@ public class CompareService {
 
   /**
    * Java mirror of the DB scoring function {@code score_match_for_bet} (current shape: the V010
-   * additive model — see {@code db/migration/V010__additive_scoring.sql}). Used for the
-   * head-to-head points tally previewed in the Duelos view.
+   * additive model with the V019 per-round {@code multiplier}). Used for the head-to-head points
+   * tally previewed in the Duelos view.
    *
-   * <p>Additive components — group / knockout (×2):
+   * <p>Additive components (before the round multiplier): outcome bucket 3, each-team exact 2,
+   * signed goal difference 1 (suppressed when exact). The result is multiplied by the round's
+   * {@code points_multiplier} (1 for the group stage, configurable for knockout rounds).
    *
-   * <ul>
-   *   <li>outcome (winner-or-draw bucket): 3 / 6
-   *   <li>team-1 exact score: 2 / 4
-   *   <li>team-2 exact score: 2 / 4
-   *   <li>goal difference (signed): 1 / 2 — suppressed when the score is exact
-   * </ul>
-   *
-   * <p>SCOPE: this 5-arg form intentionally omits V016's knockout-regulation-draw refinement
-   * (predicted_winner_id vs advanced_team_id), which the H2H preview does not model. The H2H call
-   * sites pass no winner ids, which is exactly the DB function invoked with NULL winner args — so
-   * the two agree on every input the preview actually produces. {@code ScoringDivergenceTest} pins
-   * this contract against the live DB function. Full single-source-of-truth consolidation is
-   * tracked in BACKLOG.md (the two copies drifted once already: this mirror was stale at the V005
-   * ladder while the DB had moved to V010+).
+   * <p>SCOPE: this form omits V016's knockout-regulation-draw refinement (predicted/advanced winner
+   * ids), which the H2H preview does not model — the H2H call sites pass no winner ids, exactly the
+   * DB function invoked with NULL winner args. {@code ScoringDivergenceTest} pins this contract.
    */
   static int scoreMatchForBet(
-      boolean knockout, int betT1, int betT2, Integer actualT1, Integer actualT2) {
+      int multiplier, int betT1, int betT2, Integer actualT1, Integer actualT2) {
     if (actualT1 == null || actualT2 == null) return 0;
 
     boolean exact = betT1 == actualT1 && betT2 == actualT2;
@@ -245,7 +239,7 @@ public class CompareService {
     if (betT2 == actualT2) total += 2; // team-2 exact
     if (!exact && (betT1 - betT2) == (actualT1 - actualT2)) total += 1; // signed goal difference
 
-    return knockout ? total * 2 : total;
+    return total * multiplier;
   }
 
   @Transactional(readOnly = true)
@@ -307,13 +301,14 @@ public class CompareService {
       }
 
       if (revealed && m.played() && m.actualT1() != null && m.actualT2() != null) {
-        boolean knockout = !"GROUP".equals(m.roundCode());
         if (mine != null) {
-          myPoints += scoreMatchForBet(knockout, mine[0], mine[1], m.actualT1(), m.actualT2());
+          myPoints +=
+              scoreMatchForBet(m.pointsMultiplier(), mine[0], mine[1], m.actualT1(), m.actualT2());
         }
         if (theirs != null) {
           rivalPoints +=
-              scoreMatchForBet(knockout, theirs[0], theirs[1], m.actualT1(), m.actualT2());
+              scoreMatchForBet(
+                  m.pointsMultiplier(), theirs[0], theirs[1], m.actualT1(), m.actualT2());
         }
       }
 
