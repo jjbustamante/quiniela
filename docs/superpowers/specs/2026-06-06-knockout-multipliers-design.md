@@ -63,6 +63,11 @@ Add `points_multiplier INT NOT NULL DEFAULT 1` to the **`round`** table.
 - The match projection CompareService already runs (JdbcTemplate) joins
   `round.points_multiplier` so the value is available per match without an extra
   round trip.
+- **Third call site (found in Plan 1 final review):** `MatchesService` computes
+  the per-match `points_earned` shown on the Matches page via the same SQL
+  `score_match_for_bet`. It must also thread `r.points_multiplier`, or the
+  Matches page would show ×2 per-match points while the leaderboard/Duelos use
+  the configured value once a multiplier is changed. Fixed in Plan 1.
 - `ScoringDivergenceTest` is extended to drive matching multipliers through both
   the Java function and the DB function so they can never drift.
 
