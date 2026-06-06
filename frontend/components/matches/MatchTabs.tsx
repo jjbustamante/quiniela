@@ -10,6 +10,9 @@ type Tab = "past" | "today" | "upcoming";
 
 export function MatchTabs({ view, timeZone }: { view: MatchesView; timeZone: string }) {
   const t = useTranslations("matches");
+  // Reuse the phase-rail round labels so the match list and the rail never drift
+  // (both show e.g. "16vos" for R32, never the raw code).
+  const tRound = useTranslations("home");
 
   // Default to whichever tab has the most relevant content for the moment:
   // today first (live action), then upcoming (next match), then past (history).
@@ -62,6 +65,7 @@ export function MatchTabs({ view, timeZone }: { view: MatchesView; timeZone: str
                 formatPoints: (n) => t("pointsEarned", { n }),
                 kickoff: formatMatchDateTime(m.kickoffAt, timeZone),
                 groupLabel: m.groupCode ? t("groupLabel", { code: m.groupCode }) : null,
+                roundLabel: tRound(`chip${m.roundCode}` as never),
               }}
             />
           ))}

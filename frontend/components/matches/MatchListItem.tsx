@@ -9,6 +9,8 @@ type Labels = {
   formatPoints: (n: number) => string;
   kickoff: string;
   groupLabel: string | null;
+  /** Localized round name (e.g. "16vos", "Octavos") — never the raw code like "R32". */
+  roundLabel: string;
 };
 
 /**
@@ -89,7 +91,7 @@ export function MatchListItem({
         {/* Team 2 */}
         <div className="flex min-w-0 flex-1 flex-col items-end justify-between border-l-[1.5px] border-[var(--color-line-ink)] p-2.5">
           <span className="chrome-label chrome-label-muted block w-full truncate text-right">
-            {match.roundCode}
+            {labels.roundLabel}
           </span>
           <div className="mt-1.5 flex min-w-0 items-center gap-1.5">
             <span className="min-w-0 truncate font-display text-[15px] font-extrabold uppercase tracking-tight">

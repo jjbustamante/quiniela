@@ -53,8 +53,15 @@ export function computeHomeState(args: {
   const groupFilled = bracket.groups.reduce((a, g) => a + g.filled, 0);
   const groupTotal = bracket.groups.reduce((a, g) => a + g.total, 0);
 
-  // First knockout round (by array order = sequence) that is open to bet.
-  const openKnockout = bracket.knockouts.find((k) => k.unlocked && !k.locked);
+  // A round whose fixtures have all been played is finished, even if the single
+  // shared knockout deadline hasn't passed yet (happens in test mode when an admin
+  // simulates a round early). Such a round must not be treated as the current one.
+  const isPlayedOut = (k: BracketView["knockouts"][number]) =>
+    k.matches.length > 0 && k.matches.every((m) => m.played);
+
+  // First knockout round (by array order = sequence) that is open to bet AND not
+  // already played out — i.e. the round the player should focus on now.
+  const openKnockout = bracket.knockouts.find((k) => k.unlocked && !k.locked && !isPlayedOut(k));
   // "Tournament over" = the bracket has run its course (last knockout round locked)
   // AND there is nothing left scheduled. The locked-final guard is what separates a
   // genuine champion screen from a between-rounds lull where the `past` bucket holds a
@@ -86,7 +93,7 @@ export function computeHomeState(args: {
   chips.push({ code: "GROUP", state: groupOpen ? "open" : "done", href: "/groups" });
   for (const k of bracket.knockouts) {
     let state: ChipState;
-    if (k.locked || (k.total > 0 && k.filled >= k.total && !openKnockout)) state = "done";
+    if (k.locked || isPlayedOut(k) || (k.total > 0 && k.filled >= k.total && !openKnockout)) state = "done";
     else if (openKnockout && k.code === openKnockout.code) state = "open";
     else if (k.unlocked) state = "done"; // unlocked, past — treat as reachable/done
     else state = "locked";

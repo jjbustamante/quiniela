@@ -45,6 +45,18 @@ function summary(over: Partial<PublicSummary> = {}): PublicSummary {
     ...over,
   };
 }
+// A bracket-level match (distinct from the matches-API MatchView). Only `played`
+// matters for these tests; the rest is filler to satisfy the type.
+function koMatch(played: boolean): BracketView["knockouts"][number]["matches"][number] {
+  return {
+    id: 1, team1Id: 1, team1Code: "A", team1Name: "A", team1Flag: "🏳",
+    team2Id: 2, team2Code: "B", team2Name: "B", team2Flag: "🏳",
+    kickoffAt: new Date(T0).toISOString(),
+    betScoreT1: null, betScoreT2: null, betPredictedWinnerId: null,
+    actualScoreT1: played ? 1 : null, actualScoreT2: played ? 0 : null, played,
+  };
+}
+
 const nowBefore = T0 - 5 * 86400000; // 5 days before group lock
 const nowGroupsLive = T0 + 86400000; // after group lock, before KO
 
@@ -79,6 +91,31 @@ it("FILL_KNOCKOUT picks the earliest open round once groups are locked", () => {
     expect(s.focus.roundCode).toBe("R32");
     expect(s.focus.href).toBe("/knockout/R32");
   }
+});
+
+it("FILL_KNOCKOUT skips a played-out round to the next open one (test-mode sim)", () => {
+  // Mirrors test mode: R32 is simulated (all matches played) while the single
+  // knockout deadline is still open, so R32 stays unlocked && !locked. The current
+  // round is R16. The earlier bug picked R32 (first unlocked && !locked) and so
+  // rendered "16VOS ●, 8VOS ✓" — a green chip AFTER the yellow one.
+  const b = bracket({
+    groups: [{ code: "A", filled: 6, total: 6, locked: true, matches: [] }],
+    knockouts: [
+      { code: "R32", name: "Dieciseisavos", filled: 16, total: 16, unlocked: true, locked: false, matches: [koMatch(true)] },
+      { code: "R16", name: "Octavos", filled: 0, total: 8, unlocked: true, locked: false, matches: [koMatch(false)] },
+      { code: "QF", name: "Cuartos", filled: 0, total: 4, unlocked: false, locked: false, matches: [] },
+    ],
+  });
+  const s = computeHomeState({ bracket: b, ranking: ranking(), matches: matches(), summary: summary(), nowMs: nowGroupsLive });
+  expect(s.focus.kind).toBe("fillKnockout");
+  if (s.focus.kind === "fillKnockout") {
+    expect(s.focus.roundCode).toBe("R16");
+    expect(s.focus.roundName).toBe("Octavos");
+  }
+  // Phase rail must read done → done → open → locked (no green after the yellow).
+  expect(s.chips.find((c) => c.code === "R32")!.state).toBe("done");
+  expect(s.chips.find((c) => c.code === "R16")!.state).toBe("open");
+  expect(s.chips.find((c) => c.code === "QF")!.state).toBe("locked");
 });
 
 it("LIVE when groups are locked and no round is open to fill", () => {

@@ -29,7 +29,23 @@ const labels = {
   formatPoints: (n: number) => `+${n} PTS`,
   kickoff: "29 JUN · 15:30",
   groupLabel: null,
+  roundLabel: "16vos",
 };
+
+describe("MatchListItem — round label", () => {
+  it("shows the localized round label, not the raw round code", () => {
+    render(
+      <MatchListItem
+        match={match({ roundCode: "R32" })}
+        labels={labels}
+        showResult
+        now={Date.parse("2026-06-30T00:00:00Z")}
+      />,
+    );
+    expect(screen.getByText("16vos")).toBeInTheDocument();
+    expect(screen.queryByText("R32")).not.toBeInTheDocument();
+  });
+});
 
 describe("MatchListItem — knockout draw pick winner", () => {
   it("shows the predicted advancing team when the pick is a draw", () => {
