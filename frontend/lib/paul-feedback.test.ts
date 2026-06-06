@@ -21,7 +21,7 @@ describe("singleMatchFeedback", () => {
       { t1: null, t2: null },
       { ok: true, scoreT1: 2, scoreT2: 1, reasoning: "x" },
     );
-    expect(fb.kind).toBe("changed");
+    expect(fb).toEqual({ kind: "changed", scoreT1: 2, scoreT2: 1, reasoning: "x" });
   });
 
   it("is 'kept' when Paul agrees with the existing pick", () => {
@@ -77,5 +77,9 @@ describe("pickKey", () => {
       expect(KEPT_HEADER_KEYS).toContain(pickKey(KEPT_HEADER_KEYS, r));
       expect(FILL_NOTHING_KEYS).toContain(pickKey(FILL_NOTHING_KEYS, r));
     }
+  });
+
+  it("returns the last key at rand exactly 1", () => {
+    expect(pickKey(["a", "b", "c"], 1)).toBe("c");
   });
 });

@@ -34,6 +34,7 @@ export function singleMatchFeedback(
   outcome: AcceptOutcome,
 ): SingleFeedback {
   if (!outcome.ok) return outcome.locked ? { kind: "locked" } : { kind: "error" };
+  // A null prior never equals a number, so an empty pick is always "changed".
   const kept = prior.t1 === outcome.scoreT1 && prior.t2 === outcome.scoreT2;
   return {
     kind: kept ? "kept" : "changed",
@@ -52,7 +53,7 @@ export function fillAllFeedback(outcome: FillOutcome): FillFeedback {
 export const KEPT_HEADER_KEYS = ["paulAgreed1", "paulAgreed2", "paulAgreed3"] as const;
 export const FILL_NOTHING_KEYS = ["fillNothing1", "fillNothing2"] as const;
 
-/** Deterministic given `rand` in [0,1). Callers pass Math.random(). */
+/** Deterministic given `rand` in [0,1] (closed). Callers pass Math.random(); the clamp handles rand === 1 by returning the last element. */
 export function pickKey(keys: readonly string[], rand: number): string {
   const i = Math.min(keys.length - 1, Math.max(0, Math.floor(rand * keys.length)));
   return keys[i];
