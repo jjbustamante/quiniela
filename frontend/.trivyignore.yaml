@@ -78,6 +78,9 @@ vulnerabilities:
   - id: CVE-2026-42499
     statement: "Go stdlib consumePhrase DoS — pebble lifecycle binary."
     expired_at: 2026-06-23
+  - id: CVE-2026-42504
+    statement: "Go stdlib MIME-header decode DoS — heroku/builder:26 launcher/lifecycle Go binaries, not app code; not exercised at runtime. Fixed in Go 1.26.4; waits on builder refresh."
+    expired_at: 2026-06-23
   - id: CVE-2026-39823
     statement: "Go stdlib URL parsing — pebble lifecycle binary. Waits on builder refresh."
     expired_at: 2026-06-23

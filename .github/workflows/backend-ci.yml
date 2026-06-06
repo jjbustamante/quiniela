@@ -182,6 +182,7 @@ jobs:
             --severity CRITICAL,HIGH \
             --ignore-unfixed \
             --scanners vuln \
+            --ignorefile backend/.trivyignore.yaml \
             "$IMAGE"
 
           echo "::group::Trivy findings (Critical/High, fixed)"

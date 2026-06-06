@@ -1,0 +1,19 @@
+# Trivy ignore file for the backend container image.
+#
+# All entries MUST include an `expired_at` date. When the date passes,
+# Trivy drops the suppression and CI re-fires — same discipline as the
+# OWASP DC .dependency-check-suppressions.xml.
+#
+# Re-evaluate on or before each expiration. If the Paketo builder
+# (paketobuildpacks/builder-jammy-base) has shipped a refresh by then,
+# the CVE may have disappeared upstream.
+
+vulnerabilities:
+
+  # ─── Paketo builder Go stdlib (CNB lifecycle / launcher binaries) ──────
+  # Built into paketobuildpacks/builder-jammy-base. Updates when Paketo
+  # rebuilds the lifecycle/launcher with a newer Go toolchain. Not app code.
+
+  - id: CVE-2026-42504
+    statement: "Go stdlib MIME-header decode DoS — in the Paketo builder's CNB lifecycle/launcher Go binaries, not app code; not exercised at runtime. Fixed in Go 1.26.4; waits on Paketo builder refresh."
+    expired_at: 2026-06-23
