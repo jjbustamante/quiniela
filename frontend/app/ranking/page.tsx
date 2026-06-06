@@ -7,9 +7,8 @@ import { getPublicSummary } from "@/lib/api/summary";
 import { TopBar } from "@/components/shell/TopBar";
 import { BottomNav } from "@/components/shell/BottomNav";
 import { RankingRow } from "@/components/ranking/RankingRow";
-import { deadlineShort, formatPot } from "@/lib/tournament-format";
-
-const MEDALS: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
+import { deadlineShort } from "@/lib/tournament-format";
+import { buildPayoutLabels } from "@/lib/ranking-payouts";
 
 export default async function RankingPage() {
   const session = await auth();
@@ -22,18 +21,14 @@ export default async function RankingPage() {
   const updatedLabel = deadlineShort(ranking.updatedAt, me.timezone);
   const count = ranking.entries.length;
 
-  // Build "🥇 $24" labels for the top-3 ranks (RANK semantics — ties share
-  // a medal; rank 4+ gets nothing). Empty pool still produces "🥇 $0" etc.
-  const payoutByRank = new Map<number, string>();
-  for (const entry of summary.prizeSplit) {
-    const medal = MEDALS[entry.rank];
-    if (medal) {
-      payoutByRank.set(
-        entry.rank,
-        `${medal} ${formatPot(entry.payoutCents, summary.pool.currency)}`,
-      );
-    }
-  }
+  // Medal + payout labels for the top-3 ranks. Suppressed entirely until
+  // someone has scored, and reduced to a bare medal on a tie (the split prize
+  // shouldn't render as the full amount next to each tied player).
+  const payoutByRank = buildPayoutLabels(
+    ranking.entries,
+    summary.prizeSplit,
+    summary.pool.currency,
+  );
 
   return (
     <main className="flex min-h-screen flex-col pb-24">
