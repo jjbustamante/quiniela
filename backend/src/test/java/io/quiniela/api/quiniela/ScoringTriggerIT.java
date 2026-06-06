@@ -25,9 +25,12 @@ class ScoringTriggerIT extends AbstractIntegrationTest {
 
   @BeforeEach
   void resetMatchScores() {
+    JdbcTemplate jdbc = new JdbcTemplate(dataSource);
     // Resets matches 1 (group-stage) and 73, 74 (knockout) before each test.
-    new JdbcTemplate(dataSource)
-        .update("UPDATE match SET score_t1 = NULL, score_t2 = NULL WHERE id IN (1, 73, 74)");
+    jdbc.update("UPDATE match SET score_t1 = NULL, score_t2 = NULL WHERE id IN (1, 73, 74)");
+    // Restore seeded multipliers — the test below changes one, and `round` is not
+    // in AbstractIntegrationTest's per-test cleanup (shared container).
+    jdbc.update("UPDATE round SET points_multiplier = CASE WHEN code = 'GROUP' THEN 1 ELSE 2 END");
   }
 
   /** Create a user + quiniela + bet on match 1 (the first seeded group-stage match). */
@@ -174,5 +177,16 @@ class ScoringTriggerIT extends AbstractIntegrationTest {
     var q = setupBetOnKnockoutMatch(74L, 2, 1);
     setMatchResult(74L, 0, 1);
     assertThat(pointsOf(q)).isEqualTo(4);
+  }
+
+  @Test
+  void knockoutMultiplierScalesStoredPoints() {
+    // Set R32 to ×3, then bet 2-1 on a R32 match and result 2-1:
+    // additive base (3 + 2 + 2) = 7; with ×3 -> 21.
+    new JdbcTemplate(dataSource)
+        .update("UPDATE round SET points_multiplier = 3 WHERE code = 'R32'");
+    var q = setupBetOnKnockoutMatch(73L, 2, 1);
+    setMatchResult(73L, 2, 1);
+    assertThat(pointsOf(q)).isEqualTo(21);
   }
 }
