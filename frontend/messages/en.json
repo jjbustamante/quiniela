@@ -98,7 +98,23 @@
     "results": "Results",
     "settings": "Settings",
     "testMode": "Test mode",
-    "scoring": "Scoring"
+    "scoring": "Scoring",
+    "moneyConfig": "Money"
+  },
+  "moneyConfig": {
+    "title": "Money settings",
+    "entryFee": "Entry fee ({currency})",
+    "houseCut": "Organizer cut (%)",
+    "houseCutHelp": "Taken off the pot before prizes are split (e.g. to cover the domain).",
+    "prizeSplit": "Prize split",
+    "place": "Place {n}",
+    "addRank": "Add place",
+    "removeRank": "Remove place",
+    "total": "Total",
+    "mustSum100": "Percentages must add up to 100%.",
+    "save": "Save",
+    "saved": "Saved",
+    "errorPrefix": "Error"
   },
   "auth_error": {
     "title": "We couldn't sign you in",

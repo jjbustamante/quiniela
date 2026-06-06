@@ -98,7 +98,23 @@
     "results": "Resultados",
     "settings": "Ajustes",
     "testMode": "Modo prueba",
-    "scoring": "Puntajes"
+    "scoring": "Puntajes",
+    "moneyConfig": "Dinero"
+  },
+  "moneyConfig": {
+    "title": "Configuración de dinero",
+    "entryFee": "Valor de entrada ({currency})",
+    "houseCut": "Comisión del organizador (%)",
+    "houseCutHelp": "Se descuenta del pozo antes de repartir los premios (por ejemplo, para cubrir el dominio).",
+    "prizeSplit": "Reparto de premios",
+    "place": "Puesto {n}",
+    "addRank": "Agregar puesto",
+    "removeRank": "Quitar puesto",
+    "total": "Total",
+    "mustSum100": "Los porcentajes deben sumar 100%.",
+    "save": "Guardar",
+    "saved": "Guardado",
+    "errorPrefix": "Error"
   },
   "auth_error": {
     "title": "No pudimos iniciar tu sesión",

@@ -67,7 +67,13 @@ public class PublicSummaryController {
       int totalGroupStageMatches,
       int totalGroups) {}
 
-  public record PoolSummary(String currency, int entryFeeCents, long potCents, long panaCount) {}
+  public record PoolSummary(
+      String currency,
+      int entryFeeCents,
+      int houseCutPercentage,
+      long potCents,
+      long payoutPotCents,
+      long panaCount) {}
 
   public record PrizeSplitEntry(int rank, int percentage, long payoutCents) {}
 
@@ -87,6 +93,10 @@ public class PublicSummaryController {
 
     long panaCount = memberships.countByPoolId(ACTIVE_POOL_ID);
     long potCents = panaCount * pool.getEntryFeeCents();
+    // The organizer (house) cut is taken off the top; the remainder is what
+    // gets split among the winners by prize_split.
+    int houseCut = pool.getHouseCutPercentage() == null ? 0 : pool.getHouseCutPercentage();
+    long payoutPotCents = potCents * (100 - houseCut) / 100;
 
     int groupStageMatches =
         rounds
@@ -103,9 +113,9 @@ public class PublicSummaryController {
                 .filter(s -> !s.isEmpty())
                 .toList();
 
-    // Prize split: percentages stay constant per pool; payout follows the live pot. Empty pool
-    // → all payoutCents = 0 but the percentage breakdown still renders (don't 500).
-    final long finalPotCents = potCents;
+    // Prize split: percentages stay constant per pool; payout follows the live pot AFTER the house
+    // cut. Empty pool → all payoutCents = 0 but the percentage breakdown still renders (don't 500).
+    final long finalPayoutPotCents = payoutPotCents;
     List<PrizeSplitEntry> prizeSplit =
         jdbc.query(
             "SELECT rank, percentage FROM prize_split WHERE pool_id = ? ORDER BY rank ASC",
@@ -113,7 +123,7 @@ public class PublicSummaryController {
                 new PrizeSplitEntry(
                     rs.getInt("rank"),
                     rs.getInt("percentage"),
-                    finalPotCents * rs.getInt("percentage") / 100),
+                    finalPayoutPotCents * rs.getInt("percentage") / 100),
             ACTIVE_POOL_ID);
 
     return ResponseEntity.ok(
@@ -127,7 +137,13 @@ public class PublicSummaryController {
                 tournament.getOpeningVenue(),
                 groupStageMatches,
                 totalGroups),
-            new PoolSummary(pool.getCurrency(), pool.getEntryFeeCents(), potCents, panaCount),
+            new PoolSummary(
+                pool.getCurrency(),
+                pool.getEntryFeeCents(),
+                houseCut,
+                potCents,
+                payoutPotCents,
+                panaCount),
             prizeSplit,
             tournament.isTestMode()));
   }
