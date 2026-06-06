@@ -2,6 +2,7 @@ package io.quiniela.api.paul;
 
 import io.quiniela.api.bet.Bet;
 import io.quiniela.api.bet.BetRepository;
+import io.quiniela.api.bracket.BracketService;
 import io.quiniela.api.match.Match;
 import io.quiniela.api.match.MatchRepository;
 import io.quiniela.api.match.RoundRepository;
@@ -27,6 +28,7 @@ public class PaulService {
   private final BetRepository bets;
   private final PaulPredictionRepository predictions;
   private final UserRepository users;
+  private final BracketService bracket;
 
   public PaulService(
       MatchRepository matches,
@@ -34,13 +36,15 @@ public class PaulService {
       QuinielaRepository quinielas,
       BetRepository bets,
       PaulPredictionRepository predictions,
-      UserRepository users) {
+      UserRepository users,
+      BracketService bracket) {
     this.matches = matches;
     this.rounds = rounds;
     this.quinielas = quinielas;
     this.bets = bets;
     this.predictions = predictions;
     this.users = users;
+    this.bracket = bracket;
   }
 
   public record Suggestion(Integer scoreT1, Integer scoreT2, String reasoning) {}
@@ -90,8 +94,12 @@ public class PaulService {
     int created = 0;
     for (Match m : ms) {
       if (alreadyBet.contains(m.getId())) continue;
+      // Paul's only job is to predict a score. Persisting it goes through the
+      // shared bracket save path so the betting-deadline lock (and every other
+      // validation) is enforced in exactly one place — no parallel logic here.
       Suggestion s = suggestForMatch(m.getId());
-      bets.save(new Bet(q.getId(), m.getId(), s.scoreT1(), s.scoreT2()));
+      bracket.saveBet(
+          userId, new BracketService.SaveBetRequest(m.getId(), s.scoreT1(), s.scoreT2(), null));
       created++;
     }
     return new FillResult(created);
