@@ -5,6 +5,11 @@
     "signOut": "Sign out",
     "loading": "Loading…"
   },
+  "roles": {
+    "ADMIN": "Admin",
+    "CAPTAIN": "Captain",
+    "PLAYER": "Player"
+  },
   "landing": {
     "title": "Quiniela 2026",
     "subtitle": "The friends-and-family bracket for the World Cup. ⚽ Kickoff: June 11.",

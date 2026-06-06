@@ -5,6 +5,11 @@
     "signOut": "Cerrar sesión",
     "loading": "Cargando…"
   },
+  "roles": {
+    "ADMIN": "Admin",
+    "CAPTAIN": "Capitán",
+    "PLAYER": "Jugador"
+  },
   "landing": {
     "title": "Quiniela 2026",
     "subtitle": "La quiniela de los panas para el Mundial. ⚽ Pitazo inicial: 11 de junio.",
