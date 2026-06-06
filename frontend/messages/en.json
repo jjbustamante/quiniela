@@ -75,6 +75,7 @@
     "statPaid": "PAID",
     "statProgress": "FILLED",
     "askPaulFillAll": "PAUL FILLS IT ALL",
+    "fillLocked": "Betting is closed for this round.",
     "downloadXlsx": "⬇ Download template",
     "uploadXlsx": "⬆ Upload template",
     "inviteFriends": "INVITE",

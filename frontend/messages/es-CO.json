@@ -75,6 +75,7 @@
     "statPaid": "PAGAS",
     "statProgress": "LISTOS",
     "askPaulFillAll": "PAUL LLENA TODO",
+    "fillLocked": "Las apuestas están cerradas para esta ronda.",
     "downloadXlsx": "⬇ Descargar plantilla",
     "uploadXlsx": "⬆ Subir plantilla",
     "inviteFriends": "INVITAR",

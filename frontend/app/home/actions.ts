@@ -4,19 +4,25 @@ import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api/client";
 import { fillAll } from "@/lib/api/paul";
 
+export type PaulFillResult =
+  | { ok: true; created: number }
+  | { ok: false; locked: boolean; error: string };
+
 /**
  * "Paul fills it all". The backend returns 423 when the round is locked (the
- * bracket save path enforces the betting deadline). Swallow that ApiError so
- * the server action returns instead of bubbling — an uncaught server-action
- * error becomes an HTTP 500. User-facing messaging for the locked case lives
- * with the Paul-feedback work; here we just keep the action from crashing.
+ * bracket save path enforces the betting deadline); catch the ApiError and
+ * return a result instead of letting it bubble — an uncaught server-action
+ * error renders as HTTP 500. The button surfaces the locked case to the user.
  */
-export async function paulFillAllAction(): Promise<void> {
+export async function paulFillAllAction(): Promise<PaulFillResult> {
   try {
-    await fillAll();
+    const result = await fillAll();
     revalidatePath("/home");
+    return { ok: true, created: result.created };
   } catch (e) {
-    if (e instanceof ApiError) return;
+    if (e instanceof ApiError) {
+      return { ok: false, locked: e.status === 423, error: e.message };
+    }
     throw e;
   }
 }
