@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { MatchView } from "@/lib/api/bracket";
 import { PaulBadge } from "@/components/PaulMascot";
 
@@ -22,6 +23,8 @@ export function MatchRow({
   paulLabelEmpty,
   paulLabelFilled,
   locked = false,
+  paulPending = false,
+  feedback,
 }: {
   match: MatchView;
   onTapScore: () => void;
@@ -33,6 +36,8 @@ export function MatchRow({
   paulLabelEmpty: string;
   paulLabelFilled: string;
   locked?: boolean;
+  paulPending?: boolean;
+  feedback?: ReactNode;
 }) {
   const filled = match.betScoreT1 != null && match.betScoreT2 != null;
   const t1Tint = filled && team1Hex ? `${team1Hex}14` : "transparent";
@@ -103,18 +108,26 @@ export function MatchRow({
       <button
         type="button"
         onClick={onAskPaul}
-        disabled={locked}
-        aria-disabled={locked || undefined}
+        disabled={locked || paulPending}
+        aria-disabled={locked || paulPending || undefined}
         className={`flex w-full items-center justify-between border-t-[1.5px] border-dashed border-[var(--color-line-ink)] px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-muted)] ${
-          locked ? "cursor-not-allowed" : "hover:bg-[var(--color-bg-primary)]"
+          locked || paulPending ? "cursor-not-allowed" : "hover:bg-[var(--color-bg-primary)]"
         }`}
       >
         <span className="inline-flex items-center gap-2">
           <PaulBadge size={18} />
           {filled ? paulLabelFilled : paulLabelEmpty}
         </span>
-        <span className="text-[var(--color-text-primary)]">→</span>
+        {paulPending ? (
+          <span
+            aria-label="cargando"
+            className="inline-block h-3 w-3 animate-spin rounded-full border-[1.5px] border-[var(--color-text-primary)] border-t-transparent"
+          />
+        ) : (
+          <span className="text-[var(--color-text-primary)]">→</span>
+        )}
       </button>
+      {feedback}
     </div>
   );
 }
