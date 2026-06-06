@@ -140,15 +140,17 @@ class CompareH2HIT extends AbstractIntegrationTest {
   void tallySumsPointsOnPlayedMatches() throws Exception {
     jdbc.update(
         "UPDATE tournament SET group_stage_deadline = NOW() - INTERVAL '1 hour' WHERE id = 1");
-    long me = createUserWithBetOnMatch1("h2h-tally-me", 2, 1); // exact -> 5 pts
-    long rival = createUserWithBetOnMatch1("h2h-tally-rival", 3, 1); // correct winner only -> 2 pts
+    // Additive (V010) scoring, group match — must match the DB-computed leaderboard points.
+    long me = createUserWithBetOnMatch1("h2h-tally-me", 2, 1); // exact: 3 + 2 + 2 = 7 pts
+    long rival =
+        createUserWithBetOnMatch1("h2h-tally-rival", 3, 1); // winner 3 + team2-exact 2 = 5 pts
     // Record the real result for match 1 as 2-1 and mark played (fires scoring trigger).
     jdbc.update("UPDATE match SET score_t1 = 2, score_t2 = 1, played = TRUE WHERE id = 1");
 
     mockMvc
         .perform(get("/api/compare/h2h?vs=" + rival).header("Authorization", "Bearer " + token(me)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.myPoints").value(5))
-        .andExpect(jsonPath("$.rivalPoints").value(2));
+        .andExpect(jsonPath("$.myPoints").value(7))
+        .andExpect(jsonPath("$.rivalPoints").value(5));
   }
 }

@@ -4,9 +4,7 @@ import io.quiniela.api.match.Match;
 import io.quiniela.api.match.MatchRepository;
 import io.quiniela.api.match.Round;
 import io.quiniela.api.match.RoundRepository;
-import io.quiniela.api.user.User;
-import io.quiniela.api.user.UserRepository;
-import io.quiniela.api.user.UserRole;
+import io.quiniela.api.user.AdminGuard;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.sql.DataSource;
@@ -22,14 +20,14 @@ public class AdminTestService {
   static final Long TOURNAMENT_ID = 1L;
   static final Long POOL_ID = 1L;
 
-  private final UserRepository users;
+  private final AdminGuard adminGuard;
   private final MatchRepository matches;
   private final RoundRepository rounds;
   private final JdbcTemplate jdbc;
 
   public AdminTestService(
-      UserRepository users, MatchRepository matches, RoundRepository rounds, DataSource ds) {
-    this.users = users;
+      AdminGuard adminGuard, MatchRepository matches, RoundRepository rounds, DataSource ds) {
+    this.adminGuard = adminGuard;
     this.matches = matches;
     this.rounds = rounds;
     this.jdbc = new JdbcTemplate(ds);
@@ -190,16 +188,6 @@ public class AdminTestService {
     }
   }
 
-  void requireAdmin(Long callerId) {
-    User caller =
-        users
-            .findById(callerId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-    if (caller.getRole() != UserRole.ADMIN) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin role required");
-    }
-  }
-
   void requireTestModeEnabled() {
     Boolean on =
         jdbc.queryForObject(
@@ -211,7 +199,7 @@ public class AdminTestService {
 
   @Transactional(readOnly = true)
   public TestState getState(Long callerId) {
-    requireAdmin(callerId);
+    adminGuard.requireAdmin(callerId);
     boolean testMode =
         Boolean.TRUE.equals(
             jdbc.queryForObject(
@@ -254,7 +242,7 @@ public class AdminTestService {
 
   @Transactional
   public ModeView setMode(Long callerId, boolean enabled) {
-    requireAdmin(callerId);
+    adminGuard.requireAdmin(callerId);
     jdbc.update(
         "UPDATE tournament SET test_mode = ?, updated_at = NOW() WHERE id = ?",
         enabled,
@@ -264,7 +252,7 @@ public class AdminTestService {
 
   @Transactional
   public CleanResult clean(Long callerId) {
-    requireAdmin(callerId);
+    adminGuard.requireAdmin(callerId);
     requireTestModeEnabled();
     int bets = jdbc.update("DELETE FROM bet");
     int matches =
@@ -303,7 +291,7 @@ public class AdminTestService {
 
   @Transactional
   public SimulateRoundResult simulateRound(Long callerId) {
-    requireAdmin(callerId);
+    adminGuard.requireAdmin(callerId);
     requireTestModeEnabled();
     return simulateCurrentRound();
   }
@@ -409,7 +397,7 @@ public class AdminTestService {
 
   @Transactional
   public SimulateAllResult simulateAll(Long callerId) {
-    requireAdmin(callerId);
+    adminGuard.requireAdmin(callerId);
     requireTestModeEnabled();
     int roundsSimulated = 0;
     int total = 0;
@@ -425,7 +413,7 @@ public class AdminTestService {
   @Transactional
   public DeadlinesView setDeadlines(
       Long callerId, String groupStageDeadline, String knockoutDeadline) {
-    requireAdmin(callerId);
+    adminGuard.requireAdmin(callerId);
     requireTestModeEnabled();
     jdbc.update(
         "UPDATE tournament SET group_stage_deadline = ?::timestamptz, "

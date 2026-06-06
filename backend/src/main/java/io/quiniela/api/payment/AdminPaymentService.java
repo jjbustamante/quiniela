@@ -1,8 +1,6 @@
 package io.quiniela.api.payment;
 
-import io.quiniela.api.user.User;
-import io.quiniela.api.user.UserRepository;
-import io.quiniela.api.user.UserRole;
+import io.quiniela.api.user.AdminGuard;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -75,12 +73,12 @@ public class AdminPaymentService {
 
   // ── dependencies ──────────────────────────────────────────────────────────
 
-  private final UserRepository users;
+  private final AdminGuard adminGuard;
   private final PaymentRepository payments;
   private final JdbcTemplate jdbc;
 
-  public AdminPaymentService(UserRepository users, PaymentRepository payments, JdbcTemplate jdbc) {
-    this.users = users;
+  public AdminPaymentService(AdminGuard adminGuard, PaymentRepository payments, JdbcTemplate jdbc) {
+    this.adminGuard = adminGuard;
     this.payments = payments;
     this.jdbc = jdbc;
   }
@@ -89,7 +87,7 @@ public class AdminPaymentService {
 
   @Transactional(readOnly = true)
   public LedgerView getLedger(Long callerId) {
-    requireAdmin(callerId);
+    adminGuard.requireAdmin(callerId);
 
     int entryFeeCents = entryFeeCents();
 
@@ -194,7 +192,7 @@ public class AdminPaymentService {
 
   @Transactional
   public SettledRowView markSettled(Long callerId, Long captainId, boolean settled) {
-    requireAdmin(callerId);
+    adminGuard.requireAdmin(callerId);
 
     // 404 if the target user is not a pool member.
     boolean isMember =
@@ -218,16 +216,6 @@ public class AdminPaymentService {
   }
 
   // ── helpers ───────────────────────────────────────────────────────────────
-
-  private void requireAdmin(Long callerUserId) {
-    User caller =
-        users
-            .findById(callerUserId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-    if (caller.getRole() != UserRole.ADMIN) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin role required");
-    }
-  }
 
   private int entryFeeCents() {
     Integer fee =

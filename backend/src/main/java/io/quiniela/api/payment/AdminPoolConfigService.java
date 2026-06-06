@@ -4,9 +4,7 @@ import io.quiniela.api.pool.Pool;
 import io.quiniela.api.pool.PoolRepository;
 import io.quiniela.api.pool.PrizeSplit;
 import io.quiniela.api.pool.PrizeSplitRepository;
-import io.quiniela.api.user.User;
-import io.quiniela.api.user.UserRepository;
-import io.quiniela.api.user.UserRole;
+import io.quiniela.api.user.AdminGuard;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -30,13 +28,13 @@ public class AdminPoolConfigService {
 
   private final PoolRepository pools;
   private final PrizeSplitRepository prizeSplits;
-  private final UserRepository users;
+  private final AdminGuard adminGuard;
 
   public AdminPoolConfigService(
-      PoolRepository pools, PrizeSplitRepository prizeSplits, UserRepository users) {
+      PoolRepository pools, PrizeSplitRepository prizeSplits, AdminGuard adminGuard) {
     this.pools = pools;
     this.prizeSplits = prizeSplits;
-    this.users = users;
+    this.adminGuard = adminGuard;
   }
 
   public record PrizeRow(int rank, int percentage) {}
@@ -49,13 +47,13 @@ public class AdminPoolConfigService {
 
   @Transactional(readOnly = true)
   public PoolConfigView getConfig(Long callerId) {
-    requireAdmin(callerId);
+    adminGuard.requireAdmin(callerId);
     return view(pool());
   }
 
   @Transactional
   public PoolConfigView updateConfig(Long callerId, UpdateRequest req) {
-    requireAdmin(callerId);
+    adminGuard.requireAdmin(callerId);
     validate(req);
 
     Pool pool = pool();
@@ -117,16 +115,6 @@ public class AdminPoolConfigService {
     }
     if (sum != 100) {
       throw new IllegalArgumentException("prize percentages must sum to 100 (got " + sum + ")");
-    }
-  }
-
-  private void requireAdmin(Long callerUserId) {
-    User caller =
-        users
-            .findById(callerUserId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-    if (caller.getRole() != UserRole.ADMIN) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin role required");
     }
   }
 }

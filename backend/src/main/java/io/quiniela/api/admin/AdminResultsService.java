@@ -6,9 +6,7 @@ import io.quiniela.api.match.Round;
 import io.quiniela.api.match.RoundRepository;
 import io.quiniela.api.team.Team;
 import io.quiniela.api.team.TeamRepository;
-import io.quiniela.api.user.User;
-import io.quiniela.api.user.UserRepository;
-import io.quiniela.api.user.UserRole;
+import io.quiniela.api.user.AdminGuard;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -35,14 +33,17 @@ public class AdminResultsService {
 
   private static final Long ACTIVE_TOURNAMENT_ID = 1L;
 
-  private final UserRepository users;
+  private final AdminGuard adminGuard;
   private final MatchRepository matches;
   private final RoundRepository rounds;
   private final TeamRepository teams;
 
   public AdminResultsService(
-      UserRepository users, MatchRepository matches, RoundRepository rounds, TeamRepository teams) {
-    this.users = users;
+      AdminGuard adminGuard,
+      MatchRepository matches,
+      RoundRepository rounds,
+      TeamRepository teams) {
+    this.adminGuard = adminGuard;
     this.matches = matches;
     this.rounds = rounds;
     this.teams = teams;
@@ -72,7 +73,7 @@ public class AdminResultsService {
 
   @Transactional(readOnly = true)
   public List<AdminMatchRow> listAllMatches(Long callerUserId) {
-    requireAdmin(callerUserId);
+    adminGuard.requireAdmin(callerUserId);
 
     Map<Long, Round> roundsById = new HashMap<>();
     for (Round r : rounds.findByTournamentIdOrderBySequenceAsc(ACTIVE_TOURNAMENT_ID)) {
@@ -115,23 +116,13 @@ public class AdminResultsService {
     return new TeamSummary(t.getId(), t.getCode(), t.getName(), t.getFlagEmoji());
   }
 
-  private void requireAdmin(Long callerUserId) {
-    User caller =
-        users
-            .findById(callerUserId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-    if (caller.getRole() != UserRole.ADMIN) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin role required");
-    }
-  }
-
   @Transactional
   public MatchResultView record(RecordResultCommand cmd) {
     if (cmd.scoreT1 < 0 || cmd.scoreT2 < 0) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Scores must be non-negative");
     }
 
-    requireAdmin(cmd.callerUserId);
+    adminGuard.requireAdmin(cmd.callerUserId);
 
     Match m =
         matches

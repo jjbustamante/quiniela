@@ -209,25 +209,43 @@ public class CompareService {
     return new GroupConsensusView(out);
   }
 
-  /** Mirror of V005 score_match_for_bet for the h2h tally. */
+  /**
+   * Java mirror of the DB scoring function {@code score_match_for_bet} (current shape: the V010
+   * additive model — see {@code db/migration/V010__additive_scoring.sql}). Used for the
+   * head-to-head points tally previewed in the Duelos view.
+   *
+   * <p>Additive components — group / knockout (×2):
+   *
+   * <ul>
+   *   <li>outcome (winner-or-draw bucket): 3 / 6
+   *   <li>team-1 exact score: 2 / 4
+   *   <li>team-2 exact score: 2 / 4
+   *   <li>goal difference (signed): 1 / 2 — suppressed when the score is exact
+   * </ul>
+   *
+   * <p>SCOPE: this 5-arg form intentionally omits V016's knockout-regulation-draw refinement
+   * (predicted_winner_id vs advanced_team_id), which the H2H preview does not model. The H2H call
+   * sites pass no winner ids, which is exactly the DB function invoked with NULL winner args — so
+   * the two agree on every input the preview actually produces. {@code ScoringDivergenceTest} pins
+   * this contract against the live DB function. Full single-source-of-truth consolidation is
+   * tracked in BACKLOG.md (the two copies drifted once already: this mirror was stale at the V005
+   * ladder while the DB had moved to V010+).
+   */
   static int scoreMatchForBet(
       boolean knockout, int betT1, int betT2, Integer actualT1, Integer actualT2) {
     if (actualT1 == null || actualT2 == null) return 0;
-    int base;
-    if (betT1 == actualT1 && betT2 == actualT2) {
-      base = 5;
-    } else {
-      int betWinner = Integer.compare(betT1, betT2);
-      int actWinner = Integer.compare(actualT1, actualT2);
-      if (betWinner == actWinner) {
-        if (betWinner == 0) base = 2; // correct draw
-        else if ((betT1 - betT2) == (actualT1 - actualT2)) base = 3; // winner + goal diff
-        else base = 2; // winner only
-      } else {
-        base = 0;
-      }
-    }
-    return knockout ? base * 2 : base;
+
+    boolean exact = betT1 == actualT1 && betT2 == actualT2;
+    int betWinner = Integer.compare(betT1, betT2);
+    int actualWinner = Integer.compare(actualT1, actualT2);
+
+    int total = 0;
+    if (betWinner == actualWinner) total += 3; // outcome bucket (includes correct draw)
+    if (betT1 == actualT1) total += 2; // team-1 exact
+    if (betT2 == actualT2) total += 2; // team-2 exact
+    if (!exact && (betT1 - betT2) == (actualT1 - actualT2)) total += 1; // signed goal difference
+
+    return knockout ? total * 2 : total;
   }
 
   @Transactional(readOnly = true)
