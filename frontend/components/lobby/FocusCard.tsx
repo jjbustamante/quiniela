@@ -47,7 +47,7 @@ export function FocusCard({ focus, timeZone }: { focus: FocusState; timeZone: st
       return <Shell kicker={phase} headline={t("liveHeadline")} sub={sub} />;
     }
     case "champion": {
-      const headline = focus.rank != null ? t("championHeadline", { rank: focus.rank }) : t("liveHeadline");
+      const headline = focus.rank != null ? t("championHeadline", { rank: focus.rank }) : t("championKicker");
       const sub = focus.payoutCents != null
         ? t("championSubPayout", { points: focus.points ?? 0, amount: `$${(focus.payoutCents / 100).toFixed(0)}` })
         : t("championSub", { points: focus.points ?? 0 });

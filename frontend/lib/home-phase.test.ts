@@ -104,6 +104,16 @@ it("CHAMPION when every match is played, with payout for a prize rank", () => {
   if (s.focus.kind === "champion") expect(s.focus.payoutCents).toBe(3900);
 });
 
+it("CHAMPION on finale day: the played FINAL still sits in today's bucket", () => {
+  // Bucket membership is by kickoff date — on July 19 the played FINAL is in `today`,
+  // not `past`. CHAMPION must still fire (it must not fall through to LIVE).
+  const b = bracket({ groups: [{ code: "A", filled: 6, total: 6, locked: true, matches: [] }], knockouts: [{ code: "FINAL", name: "Final", filled: 1, total: 1, unlocked: true, locked: true, matches: [] }] });
+  const r = ranking({ entries: [{ rank: 2, userId: 1, displayName: "Tú", points: 96, delta: null, isYou: true, isBot: false }] });
+  const m = matches({ today: [{ id: 1, roundCode: "FINAL", groupCode: null, kickoffAt: "2026-07-19T17:00:00Z", team1: { code: "ARG", name: "Argentina", flag: "🇦🇷" }, team2: { code: "FRA", name: "Francia", flag: "🇫🇷" }, score: { t1: 1, t2: 0 }, played: true, yourPick: null, pointsEarned: null, pickWinner: null, winner: null }] });
+  const s = computeHomeState({ bracket: b, ranking: r, matches: m, summary: summary(), nowMs: Date.parse("2026-07-19T21:00:00Z") });
+  expect(s.focus.kind).toBe("champion");
+});
+
 it("standing reports your rank and whether anyone has scored", () => {
   const s = computeHomeState({ bracket: bracket(), ranking: ranking(), matches: matches(), summary: summary(), nowMs: nowBefore });
   expect(s.standing).not.toBeNull();

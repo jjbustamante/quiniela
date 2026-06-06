@@ -61,7 +61,11 @@ export function computeHomeState(args: {
   // few finished group matches but no knockout fixtures have been scheduled yet.
   const lastKnockout = bracket.knockouts.at(-1);
   const bracketComplete = lastKnockout != null && lastKnockout.locked;
-  const allPlayed = bracketComplete && matches.past.length > 0 && matches.today.length === 0 && matches.upcoming.length === 0;
+  // Bucket membership is by kickoff DATE, not played status — on the finale day the
+  // FINAL sits in `today` even after it's played. Decide "tournament over" by whether
+  // every scheduled match is played, not by which buckets are empty.
+  const allMatches = [...matches.past, ...matches.today, ...matches.upcoming];
+  const allPlayed = bracketComplete && allMatches.length > 0 && allMatches.every((m) => m.played);
 
   // ── Focus (priority order) ────────────────────────────────────────────────
   let focus: FocusState;

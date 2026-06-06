@@ -17,6 +17,9 @@ export type PaulFillResult =
 export async function paulFillAllAction(): Promise<PaulFillResult> {
   try {
     const result = await fillAll();
+    // The button lives on /groups now (and the home dashboard reflects fill counts);
+    // revalidate both so the group cards' filled/total update after Paul fills.
+    revalidatePath("/groups");
     revalidatePath("/home");
     return { ok: true, created: result.created };
   } catch (e) {
