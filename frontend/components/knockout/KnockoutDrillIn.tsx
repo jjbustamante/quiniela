@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import type { MatchView } from "@/lib/api/bracket";
+import type { AcceptOutcome } from "@/lib/paul-feedback";
 import { formatMatchDateTime } from "@/lib/format-datetime";
 import { MatchRow } from "@/components/group/MatchRow";
 import { NumpadScoreInput } from "@/components/group/NumpadScoreInput";
@@ -18,7 +19,7 @@ export function KnockoutDrillIn({
   matches: MatchView[];
   roundCode: string;
   saveBetAction: (matchId: number, t1: number, t2: number, roundCode: string, predictedWinnerId?: number | null) => Promise<void>;
-  acceptPaulAction: (matchId: number, roundCode: string) => Promise<void>;
+  acceptPaulAction: (matchId: number, roundCode: string) => Promise<AcceptOutcome | void>;
   locked?: boolean;
   timeZone: string;
 }) {

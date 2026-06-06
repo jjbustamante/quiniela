@@ -4,7 +4,7 @@ import type { MatchView } from "@/lib/api/bracket";
 import { MatchRow } from "./MatchRow";
 
 function match(overrides: Partial<MatchView> = {}): MatchView {
-  return {
+  const base: MatchView = {
     id: 1,
     team1Id: 10,
     team1Name: "Brasil",
@@ -14,8 +14,8 @@ function match(overrides: Partial<MatchView> = {}): MatchView {
     team2Flag: "🇭🇷",
     betScoreT1: null,
     betScoreT2: null,
-    ...(overrides as MatchView),
   } as MatchView;
+  return { ...base, ...overrides };
 }
 
 const baseProps = {

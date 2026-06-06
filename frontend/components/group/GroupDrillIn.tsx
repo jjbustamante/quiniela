@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import type { MatchView } from "@/lib/api/bracket";
+import type { AcceptOutcome } from "@/lib/paul-feedback";
 import { formatMatchDateTime } from "@/lib/format-datetime";
 import { MatchRow } from "./MatchRow";
 import { NumpadScoreInput } from "./NumpadScoreInput";
@@ -23,7 +24,7 @@ export function GroupDrillIn({
   matches: MatchView[];
   groupId: string;
   saveBetAction: (matchId: number, t1: number, t2: number, gid: string) => Promise<void>;
-  acceptPaulAction: (matchId: number, gid: string) => Promise<void>;
+  acceptPaulAction: (matchId: number, gid: string) => Promise<AcceptOutcome | void>;
   locked?: boolean;
   timeZone: string;
 }) {
