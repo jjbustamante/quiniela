@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { it, expect } from "vitest";
 import { computeHomeState } from "./home-phase";
 import type { BracketView } from "./api/bracket";
 import type { RankingView } from "./api/ranking";
@@ -42,6 +42,7 @@ function summary(over: Partial<PublicSummary> = {}): PublicSummary {
     pool: { currency: "USD", entryFeeCents: 2000, potCents: 26000, panaCount: 13 },
     prizeSplit: [{ rank: 1, percentage: 80, payoutCents: 20800 }, { rank: 2, percentage: 15, payoutCents: 3900 }, { rank: 3, percentage: 5, payoutCents: 1300 }],
     testMode: false,
+    ...over,
   };
 }
 const nowBefore = T0 - 5 * 86400000; // 5 days before group lock
