@@ -92,7 +92,8 @@ public class MatchesService {
                     r.code <> 'GROUP',
                     b.score_t1, b.score_t2,
                     m.score_t1, m.score_t2,
-                    b.predicted_winner_id, m.advanced_team_id)
+                    b.predicted_winner_id, m.advanced_team_id,
+                    r.points_multiplier)
                 ELSE NULL
               END               AS points_earned
             FROM match m
