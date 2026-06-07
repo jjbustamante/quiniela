@@ -26,7 +26,9 @@ export function MatchScoreRow({ match, labels }: { match: MatchScore; labels: La
   if (b.team1Exact) parts.push(`${labels.bdTeam1} ${labels.pts(b.team1Exact)}`);
   if (b.team2Exact) parts.push(`${labels.bdTeam2} ${labels.pts(b.team2Exact)}`);
   if (b.goalDiff) parts.push(`${labels.bdDiff} ${labels.pts(b.goalDiff)}`);
-  if (b.multiplier > 1) parts.push(labels.multiplier(b.multiplier));
+  // Only show the multiplier when something actually scored — a 0-point knockout
+  // would otherwise render a lone, meaningless "×3".
+  if (parts.length > 0 && b.multiplier > 1) parts.push(labels.multiplier(b.multiplier));
 
   return (
     <div className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] px-3 py-2">
