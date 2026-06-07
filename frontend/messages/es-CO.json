@@ -156,7 +156,15 @@
     "settings": "Ajustes",
     "testMode": "Modo prueba",
     "scoring": "Puntajes",
-    "config": "Configuración"
+    "config": "Configuración",
+    "whatsappGroup": "Grupo WhatsApp"
+  },
+  "captainWhatsapp": {
+    "title": "GRUPO DE WHATSAPP",
+    "intro": "Elige qué jugadores pueden ver el enlace del grupo. Por defecto está oculto.",
+    "visibleOn": "Visible",
+    "visibleOff": "Oculto",
+    "empty": "No tienes jugadores invitados todavía."
   },
   "adminConfig": {
     "title": "Configuración",
