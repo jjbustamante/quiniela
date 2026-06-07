@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
@@ -66,15 +67,16 @@ export default async function RankingPage() {
               </span>
             </div>
             {ranking.entries.map((e) => (
-              <RankingRow
-                key={e.userId}
-                entry={e}
-                youLabel={t("you")}
-                trendUp={t("trendUp")}
-                trendDown={t("trendDown")}
-                trendFlat={t("trendFlat")}
-                payoutLabel={payoutByRank.get(e.rank)}
-              />
+              <Link key={e.userId} href={`/ranking/${e.userId}`} className="block">
+                <RankingRow
+                  entry={e}
+                  youLabel={t("you")}
+                  trendUp={t("trendUp")}
+                  trendDown={t("trendDown")}
+                  trendFlat={t("trendFlat")}
+                  payoutLabel={payoutByRank.get(e.rank)}
+                />
+              </Link>
             ))}
           </section>
         )}
