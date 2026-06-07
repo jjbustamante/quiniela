@@ -105,7 +105,8 @@ class AdminRoundMultiplierControllerIT extends AbstractIntegrationTest {
         .perform(get("/api/admin/round-multipliers").header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.rounds[?(@.code == 'R16')].multiplier").value(3))
-        .andExpect(jsonPath("$.rounds[?(@.code == 'FINAL')].multiplier").value(5));
+        .andExpect(jsonPath("$.rounds[?(@.code == 'FINAL')].multiplier").value(5))
+        .andExpect(jsonPath("$.rounds[?(@.code == 'R32')].multiplier").value(2));
   }
 
   @Test
@@ -129,6 +130,18 @@ class AdminRoundMultiplierControllerIT extends AbstractIntegrationTest {
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"rounds\":[{\"code\":\"GROUP\",\"multiplier\":2}]}"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void rejectsUnknownRoundCode() throws Exception {
+    String token = jwt.issue(admin);
+    mockMvc
+        .perform(
+            put("/api/admin/round-multipliers")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"rounds\":[{\"code\":\"BOGUS\",\"multiplier\":2}]}"))
         .andExpect(status().isBadRequest());
   }
 }

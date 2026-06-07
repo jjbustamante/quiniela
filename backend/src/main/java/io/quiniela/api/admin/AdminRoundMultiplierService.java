@@ -20,7 +20,7 @@ public class AdminRoundMultiplierService {
 
   private static final Long ACTIVE_TOURNAMENT_ID = 1L;
   private static final String GROUP_CODE = "GROUP";
-  static final int MAX_MULTIPLIER = 10;
+  private static final int MAX_MULTIPLIER = 10;
 
   private final RoundRepository rounds;
   private final AdminGuard adminGuard;
@@ -50,6 +50,9 @@ public class AdminRoundMultiplierService {
     if (req == null || req.rounds() == null || req.rounds().isEmpty()) {
       throw new IllegalArgumentException("rounds must not be empty");
     }
+
+    // Validate every row first (range + known round + not GROUP) so a bad row never
+    // leaves a partial write — guard-first, write-second.
     for (UpdateRow row : req.rounds()) {
       if (row.multiplier() < 1 || row.multiplier() > MAX_MULTIPLIER) {
         throw new IllegalArgumentException(
@@ -62,6 +65,11 @@ public class AdminRoundMultiplierService {
       if (GROUP_CODE.equals(round.getCode())) {
         throw new IllegalArgumentException("the group stage multiplier is fixed at 1");
       }
+    }
+
+    for (UpdateRow row : req.rounds()) {
+      Round round =
+          rounds.findByTournamentIdAndCode(ACTIVE_TOURNAMENT_ID, row.code()).orElseThrow();
       round.setPointsMultiplier(row.multiplier());
       rounds.save(round);
     }
