@@ -1,7 +1,10 @@
 package io.quiniela.api.me;
 
+import io.quiniela.api.pool.Pool;
+import io.quiniela.api.pool.PoolRepository;
 import io.quiniela.api.user.User;
 import io.quiniela.api.user.UserRepository;
+import io.quiniela.api.user.UserRole;
 import java.time.ZoneId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +21,14 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/me")
 public class MeController {
 
-  private final UserRepository users;
+  private static final Long ACTIVE_POOL_ID = 1L;
 
-  public MeController(UserRepository users) {
+  private final UserRepository users;
+  private final PoolRepository pools;
+
+  public MeController(UserRepository users, PoolRepository pools) {
     this.users = users;
+    this.pools = pools;
   }
 
   public record MeResponse(
@@ -33,7 +40,8 @@ public class MeController {
       String invitePath,
       boolean canInvite,
       Long invitedByUserId,
-      String timezone) {}
+      String timezone,
+      String whatsappGroupUrl) {}
 
   public record TimezoneRequest(String timezone) {}
 
@@ -72,7 +80,20 @@ public class MeController {
     }
   }
 
-  private static MeResponse toResponse(User u) {
+  private static String resolveWhatsappUrl(User u, Pool pool) {
+    String url = pool.getWhatsappGroupUrl();
+    if (url == null || url.isBlank() || !Boolean.TRUE.equals(pool.getWhatsappGroupEnabled())) {
+      return null;
+    }
+    if (u.getRole() == UserRole.ADMIN || u.getRole() == UserRole.CAPTAIN) {
+      return url;
+    }
+    return Boolean.TRUE.equals(u.getWhatsappGroupVisible()) ? url : null;
+  }
+
+  private MeResponse toResponse(User u) {
+    Pool pool = pools.findById(ACTIVE_POOL_ID).orElse(null);
+    String waUrl = pool == null ? null : resolveWhatsappUrl(u, pool);
     return new MeResponse(
         u.getId(),
         u.getEmail(),
@@ -82,6 +103,7 @@ public class MeController {
         u.getInvitePath(),
         u.getRole().canInvite(),
         u.getInvitedByUserId(),
-        u.getTimezone());
+        u.getTimezone(),
+        waUrl);
   }
 }
