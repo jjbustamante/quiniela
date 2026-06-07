@@ -23,7 +23,10 @@ export async function GroupConsensus({ data }: { data: GroupConsensusView }) {
     );
   }
 
-  const groups = groupMatchesByStage(revealed, Date.now());
+  // Compare only shows revealed (already-played / past-deadline) matches, so every
+  // match counts as "started" and the ordering collapses to most-recent-stage-first
+  // by kickoff. A fixed far-future bound keeps render pure (no impure Date.now()).
+  const groups = groupMatchesByStage(revealed, Number.MAX_SAFE_INTEGER);
 
   return (
     <section className="mx-3 mt-3 flex flex-col gap-2">
