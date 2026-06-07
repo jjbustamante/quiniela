@@ -40,9 +40,18 @@ class CompareGroupConsensusIT extends AbstractIntegrationTest {
     jdbc.update(
         "UPDATE tournament SET group_stage_deadline = TIMESTAMPTZ '2026-06-11 17:00 UTC',"
             + " knockout_deadline = TIMESTAMPTZ '2026-06-28 17:00 UTC' WHERE id = 1");
+    // Match 73 (R32 knockout) is reference data not reset by cleanWritableTables; the
+    // played-knockout test below mutates it, so restore it to unplayed.
+    jdbc.update(
+        "UPDATE match SET score_t1 = NULL, score_t2 = NULL, played = FALSE,"
+            + " advanced_team_id = NULL WHERE id = 73");
   }
 
   private String userWithBetOnMatch1(String slug, int t1, int t2) {
+    return userWithBetOnMatch(slug, 1L, t1, t2);
+  }
+
+  private String userWithBetOnMatch(String slug, Long matchId, int t1, int t2) {
     var u =
         new User("g-" + slug, slug + "@example.com", slug.toUpperCase(), null, UserRole.CAPTAIN);
     u.setInvitePath(slug);
@@ -51,11 +60,31 @@ class CompareGroupConsensusIT extends AbstractIntegrationTest {
     Long qid =
         jdbc.queryForObject("SELECT id FROM quiniela WHERE user_id = ?", Long.class, u.getId());
     jdbc.update(
-        "INSERT INTO bet (quiniela_id, match_id, score_t1, score_t2) VALUES (?,1,?,?)",
+        "INSERT INTO bet (quiniela_id, match_id, score_t1, score_t2) VALUES (?,?,?,?)",
         qid,
+        matchId,
         t1,
         t2);
     return jwt.issue(u);
+  }
+
+  @Test
+  void revealsAPlayedKnockoutMatchEvenBeforeTheKnockoutDeadline() throws Exception {
+    // Knockout deadline still in the future, but the match has been played (test-mode
+    // simulation). A played match can't be bet on anymore, so its picks are safe to
+    // reveal — Compare must show it instead of staying group-only.
+    jdbc.update(
+        "UPDATE tournament SET group_stage_deadline = NOW() - INTERVAL '1 hour',"
+            + " knockout_deadline = NOW() + INTERVAL '7 days' WHERE id = 1");
+    jdbc.update("UPDATE match SET score_t1 = 1, score_t2 = 0, played = TRUE WHERE id = 73");
+    String me = userWithBetOnMatch("ko-played-me", 73L, 2, 1);
+    userWithBetOnMatch("ko-played-r1", 73L, 2, 1);
+
+    mockMvc
+        .perform(get("/api/compare/group").header("Authorization", "Bearer " + me))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.matches[?(@.matchId == 73)].revealed").value(true))
+        .andExpect(jsonPath("$.matches[?(@.matchId == 73)].totalPicks").value(2));
   }
 
   @Test

@@ -158,7 +158,10 @@ public class CompareService {
 
     List<MatchConsensus> out = new ArrayList<>();
     for (MatchMeta m : fetchMatchMeta()) {
-      boolean revealed = LockClock.isMatchRevealable(now, deadlines, m.roundCode());
+      // A played match can no longer be bet on, so its picks are safe to reveal even
+      // before the (single, shared) knockout deadline — this is what lets simulated/
+      // played knockout rounds show up in Compare instead of staying group-only.
+      boolean revealed = m.played() || LockClock.isMatchRevealable(now, deadlines, m.roundCode());
       int[] mine = myBets.get(m.id());
       Integer myT1 = mine == null ? null : mine[0];
       Integer myT2 = mine == null ? null : mine[1];
@@ -273,7 +276,10 @@ public class CompareService {
     int rivalPoints = 0;
     List<H2HMatch> matches = new ArrayList<>();
     for (MatchMeta m : fetchMatchMeta()) {
-      boolean revealed = LockClock.isMatchRevealable(now, deadlines, m.roundCode());
+      // A played match can no longer be bet on, so its picks are safe to reveal even
+      // before the (single, shared) knockout deadline — this is what lets simulated/
+      // played knockout rounds show up in Compare instead of staying group-only.
+      boolean revealed = m.played() || LockClock.isMatchRevealable(now, deadlines, m.roundCode());
       int[] mine = myBets.get(m.id());
       int[] theirs = rivalBets.get(m.id());
       Integer myT1 = mine == null ? null : mine[0];
