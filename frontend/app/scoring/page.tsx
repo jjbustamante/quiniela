@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
+import { getPublicSummaryOrFallback } from "@/lib/api/summary";
 import { TopBar } from "@/components/shell/TopBar";
 import { BottomNav } from "@/components/shell/BottomNav";
 
@@ -14,6 +15,7 @@ export default async function ScoringPage() {
   if (!session?.userId) redirect("/");
 
   const t = await getTranslations("scoring");
+  const summary = await getPublicSummaryOrFallback();
 
   const components: { label: string; note?: string; n: number }[] = [
     { label: t("ptsOutcome"), n: 3 },
@@ -65,8 +67,20 @@ export default async function ScoringPage() {
         </section>
 
         <section className={sectionClass}>
-          <div className={headClass}>{t("knockoutTitle")}</div>
-          <p className="font-sans text-sm text-[var(--color-text-primary)]">{t("knockoutBody")}</p>
+          <div className={headClass}>{t("multipliersTitle")}</div>
+          <p className="mb-2 font-sans text-sm text-[var(--color-text-primary)]">
+            {t("multipliersIntro")}
+          </p>
+          <ul className="flex flex-col gap-2">
+            {summary.roundMultipliers.map((r) => (
+              <li key={r.code} className="flex items-baseline justify-between gap-3">
+                <span className="font-sans text-sm text-[var(--color-text-primary)]">{r.name}</span>
+                <span className="shrink-0 font-display text-base font-extrabold text-[var(--color-accent-red)]">
+                  ×{r.multiplier}
+                </span>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className={sectionClass}>
