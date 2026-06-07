@@ -271,6 +271,19 @@
     "trendFlat": "—",
     "prizeFor": "Premio"
   },
+  "scorecard": {
+    "backToTable": "Tabla",
+    "totalPoints": "{n} pts",
+    "pick": "Pick",
+    "result": "Real",
+    "bdOutcome": "resultado",
+    "bdTeam1": "local",
+    "bdTeam2": "visitante",
+    "bdDiff": "diferencia",
+    "multiplier": "×{n}",
+    "pts": "+{n}",
+    "noPoints": "Aún sin puntos"
+  },
   "payments": {
     "title": "PAGOS",
     "navLabel": "PAGOS",

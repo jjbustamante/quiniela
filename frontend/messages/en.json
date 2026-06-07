@@ -271,6 +271,19 @@
     "trendFlat": "—",
     "prizeFor": "Prize"
   },
+  "scorecard": {
+    "backToTable": "Table",
+    "totalPoints": "{n} pts",
+    "pick": "Pick",
+    "result": "Real",
+    "bdOutcome": "result",
+    "bdTeam1": "home",
+    "bdTeam2": "away",
+    "bdDiff": "goal diff",
+    "multiplier": "×{n}",
+    "pts": "+{n}",
+    "noPoints": "No points yet"
+  },
   "payments": {
     "title": "PAYMENTS",
     "navLabel": "PAYMENTS",
