@@ -14,6 +14,7 @@ function match(over: Partial<MatchView> & { id: number; roundCode: string; kicko
     played: true,
     yourPick: null,
     pointsEarned: null,
+    breakdown: null,
     pickWinner: null,
     winner: null,
     ...over,
@@ -39,6 +40,11 @@ const messages = {
     viewByDate: "Por fecha", viewByStage: "Por fase",
   },
   home: { chipGROUP: "Grupos", chipR32: "16vos" },
+  scorecard: {
+    toggleBreakdown: "Ver desglose",
+    bdOutcome: "resultado", bdTeam1: "local", bdTeam2: "visitante", bdDiff: "diferencia",
+    multiplier: "×{n}", pts: "+{n}",
+  },
 };
 
 function renderTabs() {

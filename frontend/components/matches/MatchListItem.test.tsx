@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { MatchListItem } from "./MatchListItem";
 import type { MatchView } from "@/lib/api/matches";
@@ -15,6 +16,7 @@ function match(overrides: Partial<MatchView> = {}): MatchView {
     played: true,
     yourPick: { t1: 1, t2: 1 },
     pointsEarned: 4,
+    breakdown: { outcome: 3, team1Exact: 0, team2Exact: 0, goalDiff: 1, multiplier: 1, total: 4 },
     pickWinner: null,
     winner: null,
     ...overrides,
@@ -30,6 +32,15 @@ const labels = {
   kickoff: "29 JUN · 15:30",
   groupLabel: null,
   roundLabel: "16vos",
+  toggleBreakdown: "Ver desglose",
+  breakdown: {
+    bdOutcome: "resultado",
+    bdTeam1: "local",
+    bdTeam2: "visitante",
+    bdDiff: "diferencia",
+    multiplier: (n: number) => `×${n}`,
+    pts: (n: number) => `+${n}`,
+  },
 };
 
 describe("MatchListItem — round label", () => {
@@ -108,5 +119,25 @@ describe("MatchListItem — knockout draw pick winner", () => {
       />,
     );
     expect(screen.getAllByText(/Paraguay/i).length).toBe(1);
+  });
+});
+
+describe("MatchListItem — breakdown toggle", () => {
+  it("reveals the breakdown line on tapping the points badge", async () => {
+    render(
+      <MatchListItem match={match()} labels={labels} showResult now={Date.parse("2026-06-30T00:00:00Z")} />,
+    );
+    expect(screen.queryByText(/resultado \+3/)).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /ver desglose/i }));
+    expect(screen.getByText(/resultado \+3/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /ver desglose/i }));
+    expect(screen.queryByText(/resultado \+3/)).not.toBeInTheDocument();
+  });
+
+  it("renders no badge when there are no points", () => {
+    render(
+      <MatchListItem match={match({ pointsEarned: null, breakdown: null })} labels={labels} showResult now={Date.parse("2026-06-30T00:00:00Z")} />,
+    );
+    expect(screen.queryByRole("button", { name: /ver desglose/i })).not.toBeInTheDocument();
   });
 });

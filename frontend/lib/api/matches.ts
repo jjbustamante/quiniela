@@ -1,4 +1,5 @@
 import { api } from "./client";
+import type { ScoreBreakdown } from "./scorecard";
 
 export type TeamRef = {
   code: string | null;
@@ -25,6 +26,8 @@ export type MatchView = {
   yourPick: ScorePair | null;
   /** Points awarded by V010's score_match_for_bet. Null when match unplayed or no bet. */
   pointsEarned: number | null;
+  /** Per-match point components (caller's own pick). Null when unplayed or no bet. */
+  breakdown: ScoreBreakdown | null;
   /**
    * Team the caller predicted to advance when their knockout pick was a draw.
    * Null for group bets, non-draw picks, or no bet. (Actual knockout results are

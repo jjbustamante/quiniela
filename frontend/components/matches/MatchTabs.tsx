@@ -16,6 +16,7 @@ export function MatchTabs({ view, timeZone }: { view: MatchesView; timeZone: str
   // Reuse the phase-rail round labels so the match list and the rail never drift
   // (both show e.g. "16vos" for R32, never the raw code).
   const tRound = useTranslations("home");
+  const tScore = useTranslations("scorecard");
 
   const [mode, setMode] = useState<Mode>("date");
 
@@ -36,6 +37,15 @@ export function MatchTabs({ view, timeZone }: { view: MatchesView; timeZone: str
     kickoff: formatMatchDateTime(m.kickoffAt, timeZone),
     groupLabel: m.groupCode ? t("groupLabel", { code: m.groupCode }) : null,
     roundLabel: tRound(`chip${m.roundCode}` as never),
+    toggleBreakdown: tScore("toggleBreakdown"),
+    breakdown: {
+      bdOutcome: tScore("bdOutcome"),
+      bdTeam1: tScore("bdTeam1"),
+      bdTeam2: tScore("bdTeam2"),
+      bdDiff: tScore("bdDiff"),
+      multiplier: (n: number) => tScore("multiplier", { n }),
+      pts: (n: number) => tScore("pts", { n }),
+    },
   });
 
   const list = tab === "past" ? view.past : tab === "today" ? view.today : view.upcoming;
