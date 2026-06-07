@@ -55,4 +55,14 @@ class PublicSummaryControllerIT extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.prizeSplit[2].percentage").value(5))
         .andExpect(jsonPath("$.testMode").isBoolean());
   }
+
+  @Test
+  void summaryIncludesKnockoutMultipliers() throws Exception {
+    mockMvc
+        .perform(get("/api/public/summary"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.roundMultipliers.length()").value(6))
+        .andExpect(jsonPath("$.roundMultipliers[0].code").value("R32"))
+        .andExpect(jsonPath("$.roundMultipliers[0].multiplier").value(2));
+  }
 }
