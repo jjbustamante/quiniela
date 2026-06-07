@@ -9,13 +9,20 @@ vi.mock("@/app/auth-actions", () => ({
 
 const messages = {
   common: { signOut: "Cerrar sesión" },
-  nav: { menu: "Menú", home: "Inicio", payments: "Pagos", results: "Resultados", config: "Configuración" },
+  nav: {
+    menu: "Menú",
+    home: "Inicio",
+    payments: "Pagos",
+    results: "Resultados",
+    config: "Configuración",
+    whatsappGroup: "Grupo WhatsApp",
+  },
 };
 
-function renderDrawer(role: "ADMIN" | "CAPTAIN" | "PLAYER") {
+function renderDrawer(role: "ADMIN" | "CAPTAIN" | "PLAYER", showWhatsappGroup = false) {
   return render(
     <NextIntlClientProvider locale="es-CO" messages={messages}>
-      <NavDrawer role={role} />
+      <NavDrawer role={role} showWhatsappGroup={showWhatsappGroup} />
     </NextIntlClientProvider>,
   );
 }
@@ -34,13 +41,26 @@ describe("NavDrawer", () => {
     expect(screen.getByRole("link", { name: /resultados/i })).toHaveAttribute("href", "/admin/results");
     expect(screen.getByRole("link", { name: /configuración/i })).toHaveAttribute("href", "/admin/config");
     expect(screen.getByRole("button", { name: /cerrar sesión/i })).toBeInTheDocument();
+    // The admin doesn't invite players, so the per-player WhatsApp roster is
+    // not theirs to manage — they set the link in /admin/config instead.
+    expect(screen.queryByRole("link", { name: /grupo whatsapp/i })).not.toBeInTheDocument();
   });
 
-  it("routes captain Pagos to the captain page and hides Resultados", () => {
-    renderDrawer("CAPTAIN");
+  it("routes captain Pagos to the captain page, hides Resultados, shows WhatsApp roster when enabled", () => {
+    renderDrawer("CAPTAIN", true);
     fireEvent.click(screen.getByRole("button", { name: /menú/i }));
     expect(screen.getByRole("link", { name: /pagos/i })).toHaveAttribute("href", "/captain/payments");
     expect(screen.queryByRole("link", { name: /resultados/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /grupo whatsapp/i })).toHaveAttribute(
+      "href",
+      "/captain/whatsapp",
+    );
+  });
+
+  it("hides the WhatsApp roster link for a captain when the admin has it disabled", () => {
+    renderDrawer("CAPTAIN", false);
+    fireEvent.click(screen.getByRole("button", { name: /menú/i }));
+    expect(screen.queryByRole("link", { name: /grupo whatsapp/i })).not.toBeInTheDocument();
   });
 
   it("shows only Inicio + sign-out for a player (no Pagos/Resultados)", () => {

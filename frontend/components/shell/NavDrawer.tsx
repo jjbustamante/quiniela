@@ -14,7 +14,13 @@ type Role = "ADMIN" | "CAPTAIN" | "PLAYER";
  * role-gated: everyone gets Inicio + sign-out; admin/captain get Pagos
  * (routed by role); admin also gets Resultados.
  */
-export function NavDrawer({ role }: { role: Role }) {
+export function NavDrawer({
+  role,
+  showWhatsappGroup = false,
+}: {
+  role: Role;
+  showWhatsappGroup?: boolean;
+}) {
   const t = useTranslations("nav");
   const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);
@@ -73,7 +79,7 @@ export function NavDrawer({ role }: { role: Role }) {
                 {t("payments")}
               </Link>
             )}
-            {(role === "ADMIN" || role === "CAPTAIN") && (
+            {showWhatsappGroup && (
               <Link href="/captain/whatsapp" className={linkClass} onClick={close}>
                 {t("whatsappGroup")}
               </Link>
