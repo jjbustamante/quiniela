@@ -79,7 +79,7 @@ export function NavDrawer({ role }: { role: Role }) {
                   {t("results")}
                 </Link>
                 <Link href="/admin/config" className={linkClass} onClick={close}>
-                  {t("moneyConfig")}
+                  {t("config")}
                 </Link>
                 <Link href="/admin/test" className={linkClass} onClick={close}>
                   {t("testMode")}

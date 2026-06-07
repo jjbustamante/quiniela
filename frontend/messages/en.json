@@ -153,7 +153,12 @@
     "settings": "Settings",
     "testMode": "Test mode",
     "scoring": "Scoring",
-    "moneyConfig": "Money"
+    "config": "Configuration"
+  },
+  "adminConfig": {
+    "title": "Configuration",
+    "money": "Money",
+    "points": "Points"
   },
   "moneyConfig": {
     "title": "Money settings",
