@@ -95,7 +95,8 @@ export function computeHomeState(args: {
     let state: ChipState;
     if (k.locked || isPlayedOut(k) || (k.total > 0 && k.filled >= k.total && !openKnockout)) state = "done";
     else if (openKnockout && k.code === openKnockout.code) state = "open";
-    else if (k.unlocked) state = "done"; // unlocked, past — treat as reachable/done
+    else if (k.unlocked) state = "open"; // unlocked, not locked, not played → still bettable
+    // (e.g. THIRD_PLACE + FINAL unlock together; both are fillable, not just the focus round)
     else state = "locked";
     chips.push({ code: k.code, state, href: `/knockout/${k.code}` });
   }
