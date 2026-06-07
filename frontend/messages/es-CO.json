@@ -161,7 +161,13 @@
   "adminConfig": {
     "title": "Configuración",
     "money": "Dinero",
-    "points": "Puntos"
+    "points": "Puntos",
+    "community": "Comunidad",
+    "whatsappUrl": "Enlace del grupo de WhatsApp",
+    "whatsappUrlHelp": "Debe empezar con https://chat.whatsapp.com/",
+    "whatsappEnabled": "Disponible para los capitanes",
+    "save": "Guardar",
+    "saved": "Guardado"
   },
   "moneyConfig": {
     "title": "Configuración de dinero",

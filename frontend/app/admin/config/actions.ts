@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api/client";
 import { updatePoolConfig, type PrizeRow } from "@/lib/api/pool-config";
 import { updateRoundMultipliers } from "@/lib/api/round-multipliers";
+import { updateCommunityConfig } from "@/lib/api/community-config";
 
 export type SaveResult = { ok: true } | { ok: false; error: string };
 
@@ -27,6 +28,20 @@ export async function saveRoundMultipliersAction(input: {
 }): Promise<SaveResult> {
   try {
     await updateRoundMultipliers(input);
+    revalidatePath("/admin/config");
+    return { ok: true };
+  } catch (e) {
+    if (e instanceof ApiError) return { ok: false, error: e.message };
+    throw e;
+  }
+}
+
+export async function saveCommunityConfigAction(input: {
+  url: string | null;
+  enabled: boolean;
+}): Promise<SaveResult> {
+  try {
+    await updateCommunityConfig(input);
     revalidatePath("/admin/config");
     return { ok: true };
   } catch (e) {
