@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import type { MatchView } from "@/lib/api/matches";
+import { breakdownParts, type BreakdownLabels } from "@/lib/breakdown-format";
 
 type Labels = {
   yourPick: string;
@@ -11,6 +15,8 @@ type Labels = {
   groupLabel: string | null;
   /** Localized round name (e.g. "16vos", "Octavos") — never the raw code like "R32". */
   roundLabel: string;
+  toggleBreakdown: string;
+  breakdown: BreakdownLabels;
 };
 
 /**
@@ -32,6 +38,8 @@ export function MatchListItem({
   /** Server-rendered "now" so the live dot is deterministic per request. */
   now: number;
 }) {
+  const [showBreakdown, setShowBreakdown] = useState(false);
+
   const isLive =
     !match.played && new Date(match.kickoffAt).getTime() <= now && showResult;
 
@@ -119,11 +127,22 @@ export function MatchListItem({
           )}
         </span>
         {match.pointsEarned != null && (
-          <span className="bg-[var(--color-accent-gold)] px-1.5 py-0.5 text-[var(--color-text-primary)]">
+          <button
+            type="button"
+            onClick={() => setShowBreakdown((v) => !v)}
+            aria-expanded={showBreakdown}
+            aria-label={labels.toggleBreakdown}
+            className="bg-[var(--color-accent-gold)] px-1.5 py-0.5 text-[var(--color-text-primary)]"
+          >
             {labels.formatPoints(match.pointsEarned)}
-          </span>
+          </button>
         )}
       </div>
+      {showBreakdown && match.breakdown && breakdownParts(match.breakdown, labels.breakdown).length > 0 && (
+        <div className="border-t-[1.5px] border-dashed border-[var(--color-line-ink)] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.04em] text-[var(--color-text-muted)]">
+          {breakdownParts(match.breakdown, labels.breakdown).join(" · ")}
+        </div>
+      )}
     </div>
   );
 }

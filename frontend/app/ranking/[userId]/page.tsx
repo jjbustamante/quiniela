@@ -49,6 +49,15 @@ export default async function ScorecardPage({
           </Link>
         </div>
 
+        <div className="mx-3 mt-2 flex items-baseline justify-between gap-3 border-b-[1.5px] border-[var(--color-line-ink)] pb-2">
+          <h1 className="truncate font-display text-2xl font-black uppercase tracking-[-0.03em]">
+            {card.displayName ?? "—"}
+          </h1>
+          <span className="shrink-0 font-display text-lg font-extrabold text-[var(--color-accent-red)]">
+            {t("totalPoints", { n: card.totalPoints })}
+          </span>
+        </div>
+
         {stages.length === 0 ? (
           <section className="mx-3 mt-6 border-[1.5px] border-dashed border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] p-6 text-center">
             <p className="font-display text-base font-extrabold uppercase tracking-tight text-[var(--color-text-muted)]">

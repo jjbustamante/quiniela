@@ -282,7 +282,8 @@
     "bdDiff": "diferencia",
     "multiplier": "×{n}",
     "pts": "+{n}",
-    "noPoints": "Aún sin puntos"
+    "noPoints": "Aún sin puntos",
+    "toggleBreakdown": "Ver desglose"
   },
   "payments": {
     "title": "PAGOS",

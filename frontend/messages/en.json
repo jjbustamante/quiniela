@@ -282,7 +282,8 @@
     "bdDiff": "goal diff",
     "multiplier": "×{n}",
     "pts": "+{n}",
-    "noPoints": "No points yet"
+    "noPoints": "No points yet",
+    "toggleBreakdown": "Show breakdown"
   },
   "payments": {
     "title": "PAYMENTS",

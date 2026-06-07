@@ -11,6 +11,7 @@ function m(over: Partial<MatchView> & { id: number; roundCode: string; kickoffAt
     played: false,
     yourPick: null,
     pointsEarned: null,
+    breakdown: null,
     pickWinner: null,
     winner: null,
     ...over,

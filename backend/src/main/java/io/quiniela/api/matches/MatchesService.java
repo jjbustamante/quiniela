@@ -1,5 +1,6 @@
 package io.quiniela.api.matches;
 
+import io.quiniela.api.scoring.ScoreBreakdown;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,8 @@ public class MatchesService {
       ScorePair yourPick,
       Integer pointsEarned,
       TeamRef pickWinner,
-      TeamRef winner) {}
+      TeamRef winner,
+      ScoreBreakdown breakdown) {}
 
   public record MatchesView(
       Instant serverTime, List<MatchRow> past, List<MatchRow> today, List<MatchRow> upcoming) {}
@@ -86,16 +88,9 @@ public class MatchesService {
               m.played          AS played,
               b.score_t1        AS bet_t1,
               b.score_t2        AS bet_t2,
-              CASE
-                WHEN m.played AND b.score_t1 IS NOT NULL THEN
-                  score_match_for_bet(
-                    r.code <> 'GROUP',
-                    b.score_t1, b.score_t2,
-                    m.score_t1, m.score_t2,
-                    b.predicted_winner_id, m.advanced_team_id,
-                    r.points_multiplier)
-                ELSE NULL
-              END               AS points_earned
+              b.predicted_winner_id AS pred_winner,
+              m.advanced_team_id    AS adv_team,
+              r.points_multiplier   AS mult
             FROM match m
             JOIN round r ON r.id = m.round_id
             LEFT JOIN team t1 ON t1.id = m.team_1_id
@@ -131,6 +126,21 @@ public class MatchesService {
                           rs.getString("aw_code"),
                           rs.getString("aw_name"),
                           rs.getString("aw_flag"));
+              Long predWinner = (Long) rs.getObject("pred_winner");
+              Long advTeam = (Long) rs.getObject("adv_team");
+              ScoreBreakdown breakdown =
+                  (rs.getBoolean("played") && rs.getObject("bet_t1") != null)
+                      ? ScoreBreakdown.of(
+                          !"GROUP".equals(rs.getString("round_code")),
+                          rs.getInt("bet_t1"),
+                          rs.getInt("bet_t2"),
+                          (Integer) rs.getObject("m_score_t1"),
+                          (Integer) rs.getObject("m_score_t2"),
+                          predWinner,
+                          advTeam,
+                          rs.getInt("mult"))
+                      : null;
+              Integer pointsEarned = breakdown == null ? null : breakdown.total();
               return new MatchRow(
                   rs.getLong("match_id"),
                   rs.getString("round_code"),
@@ -143,9 +153,10 @@ public class MatchesService {
                   score,
                   rs.getBoolean("played"),
                   yourPick,
-                  (Integer) rs.getObject("points_earned"),
+                  pointsEarned,
                   pickWinner,
-                  winner);
+                  winner,
+                  breakdown);
             },
             quinielaId == null ? -1L : quinielaId,
             DEFAULT_TOURNAMENT_ID);

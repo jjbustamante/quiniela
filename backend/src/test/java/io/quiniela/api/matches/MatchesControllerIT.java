@@ -233,6 +233,29 @@ class MatchesControllerIT extends AbstractIntegrationTest {
     }
   }
 
+  @Test
+  void playedBetMatchExposesAPointsBreakdown() throws Exception {
+    var u = saveUser("mb", "MB Caller");
+    insertBet(u.getId(), 1L, 2, 1);
+    jdbc.update(
+        "UPDATE match SET kickoff_at = NOW() - INTERVAL '2 days', score_t1 = 2,"
+            + " score_t2 = 1, played = TRUE WHERE id = 1");
+
+    String token = jwt.issue(u);
+    mockMvc
+        .perform(get("/api/matches").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        // match 1 (bet 2-1, actual 2-1, group) → outcome 3 + each-team 2 = total 7.
+        .andExpect(
+            jsonPath("$.past[?(@.id == 1)].breakdown.outcome")
+                .value(org.hamcrest.Matchers.hasItem(3)))
+        .andExpect(
+            jsonPath("$.past[?(@.id == 1)].breakdown.total")
+                .value(org.hamcrest.Matchers.hasItem(7)))
+        .andExpect(
+            jsonPath("$.past[?(@.id == 1)].pointsEarned").value(org.hamcrest.Matchers.hasItem(7)));
+  }
+
   private User saveUser(String slug, String displayName) {
     var u = new User("g-" + slug, slug + "@example.com", displayName, null, UserRole.CAPTAIN);
     u.setInvitePath(slug);
