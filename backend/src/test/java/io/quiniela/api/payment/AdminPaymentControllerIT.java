@@ -106,10 +106,10 @@ class AdminPaymentControllerIT extends AbstractIntegrationTest {
     mockMvc
         .perform(get("/api/admin/payments").header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
-        // top-level counts include all 4 members (admin + captain + p1 + p2)
-        .andExpect(jsonPath("$.memberCount").value(4))
+        // top-level counts include only paying humans: captain + p1 + p2 (admin excluded)
+        .andExpect(jsonPath("$.memberCount").value(3))
         .andExpect(jsonPath("$.paidCount").value(1))
-        .andExpect(jsonPath("$.potCents").value(4 * 2000))
+        .andExpect(jsonPath("$.potCents").value(3 * 2000))
         // captain group
         .andExpect(
             jsonPath("$.captains[?(@.captainId == " + captain.getId() + ")].members.length()")
@@ -172,5 +172,25 @@ class AdminPaymentControllerIT extends AbstractIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"settled\":true}"))
         .andExpect(status().isNotFound());
+  }
+
+  /**
+   * The ledger's memberCount, potCents, and orphan list must exclude the admin pool-member.
+   *
+   * <p>setUp seeds: admin + captain + player1 + player2 (all in pool_membership). Paying humans =
+   * captain + player1 + player2 = 3. Admin must be invisible in counts and must NOT appear as an
+   * orphan member.
+   */
+  @Test
+  void ledgerExcludesAdminFromCountAndOrphans() throws Exception {
+    String token = jwt.issue(admin);
+    mockMvc
+        .perform(get("/api/admin/payments").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        // Only the 3 paying humans (captain + 2 players) count — not the admin.
+        .andExpect(jsonPath("$.memberCount").value(3))
+        .andExpect(jsonPath("$.potCents").value(3 * 2000))
+        // Admin must not appear in orphans.
+        .andExpect(jsonPath("$.orphans[?(@.role == 'ADMIN')]").isEmpty());
   }
 }

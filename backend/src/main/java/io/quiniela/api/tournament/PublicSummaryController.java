@@ -94,7 +94,7 @@ public class PublicSummaryController {
     Tournament tournament = tournaments.findById(pool.getTournamentId()).orElse(null);
     if (tournament == null) return ResponseEntity.notFound().build();
 
-    long panaCount = memberships.countByPoolId(ACTIVE_POOL_ID);
+    long panaCount = memberships.countPayingPanas(ACTIVE_POOL_ID);
     long potCents = panaCount * pool.getEntryFeeCents();
     // The organizer (house) cut is taken off the top; the remainder is what
     // gets split among the winners by prize_split.

@@ -6,10 +6,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.quiniela.api.support.AbstractIntegrationTest;
+import io.quiniela.api.user.User;
+import io.quiniela.api.user.UserRepository;
+import io.quiniela.api.user.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -18,12 +22,31 @@ import org.springframework.web.context.WebApplicationContext;
 class PublicSummaryControllerIT extends AbstractIntegrationTest {
 
   @Autowired WebApplicationContext wac;
+  @Autowired UserRepository users;
+  @Autowired javax.sql.DataSource dataSource;
 
   MockMvc mockMvc;
+  JdbcTemplate jdbc;
 
   @BeforeEach
   void setUp() {
     mockMvc = MockMvcBuilders.webAppContextSetup(wac).apply(springSecurity()).build();
+    jdbc = new JdbcTemplate(dataSource);
+  }
+
+  // ── helpers ────────────────────────────────────────────────────────────────
+
+  private User saveUser(String slug, String displayName, UserRole role) {
+    var u = new User("g-ps-" + slug, slug + "@example.com", displayName, null, role);
+    u.setInvitePath("ps-" + slug);
+    return users.save(u);
+  }
+
+  private void addMember(Long userId) {
+    jdbc.update(
+        "INSERT INTO pool_membership (pool_id, user_id, joined_at)"
+            + " VALUES (1, ?, NOW()) ON CONFLICT DO NOTHING",
+        userId);
   }
 
   @Test
@@ -64,5 +87,36 @@ class PublicSummaryControllerIT extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.roundMultipliers.length()").value(6))
         .andExpect(jsonPath("$.roundMultipliers[0].code").value("R32"))
         .andExpect(jsonPath("$.roundMultipliers[0].multiplier").value(2));
+  }
+
+  /**
+   * panaCount and potCents must reflect ONLY paying humans (non-admin, non-bot), even when an admin
+   * account is also in pool_membership. Entry fee is 2000 cents (seeded by Flyway V003/V006).
+   */
+  @Test
+  void panaCountExcludesAdminAndBot() throws Exception {
+    // Seed 3 players (the paying humans).
+    User p1 = saveUser("ps-p1", "PS Player 1", UserRole.PLAYER);
+    User p2 = saveUser("ps-p2", "PS Player 2", UserRole.PLAYER);
+    User p3 = saveUser("ps-p3", "PS Player 3", UserRole.PLAYER);
+    addMember(p1.getId());
+    addMember(p2.getId());
+    addMember(p3.getId());
+
+    // Also add an admin to pool_membership — must NOT be counted.
+    User adminUser = saveUser("ps-adm", "PS Admin", UserRole.ADMIN);
+    addMember(adminUser.getId());
+
+    // Also add a bot user to pool_membership — must NOT be counted.
+    User botUser = saveUser("ps-bot", "PS Bot", UserRole.PLAYER);
+    jdbc.update("UPDATE users SET is_bot = true WHERE id = ?", botUser.getId());
+    addMember(botUser.getId());
+
+    // Pool entry_fee_cents is 2000 (seeded). Expect panaCount=3, potCents=6000.
+    mockMvc
+        .perform(get("/api/public/summary"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.pool.panaCount").value(3))
+        .andExpect(jsonPath("$.pool.potCents").value(3 * 2000));
   }
 }
