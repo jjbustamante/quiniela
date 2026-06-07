@@ -165,3 +165,22 @@ it("phase chips mark groups open / done and knockouts locked", () => {
   expect(group.href).toBe("/groups");
   expect(s.chips.find((c) => c.code === "R32")!.state).toBe("locked");
 });
+
+it("THIRD_PLACE and FINAL are both open when they unlock together", () => {
+  // After the semifinals, the 3rd-place game and the final both receive their
+  // teams, so they unlock and become fillable at the same time. The phase rail
+  // must show BOTH as open — the bug rendered the FINAL as ✓ done because only a
+  // single round was treated as "current".
+  const b = bracket({
+    groups: [{ code: "A", filled: 6, total: 6, locked: true, matches: [] }],
+    knockouts: [
+      { code: "SF", name: "Semifinales", filled: 2, total: 2, unlocked: true, locked: false, matches: [koMatch(true)] },
+      { code: "THIRD_PLACE", name: "Tercer puesto", filled: 0, total: 1, unlocked: true, locked: false, matches: [koMatch(false)] },
+      { code: "FINAL", name: "Final", filled: 0, total: 1, unlocked: true, locked: false, matches: [koMatch(false)] },
+    ],
+  });
+  const s = computeHomeState({ bracket: b, ranking: ranking(), matches: matches(), summary: summary(), nowMs: nowGroupsLive });
+  expect(s.chips.find((c) => c.code === "SF")!.state).toBe("done");
+  expect(s.chips.find((c) => c.code === "THIRD_PLACE")!.state).toBe("open");
+  expect(s.chips.find((c) => c.code === "FINAL")!.state).toBe("open");
+});
