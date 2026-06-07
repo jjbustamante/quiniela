@@ -33,7 +33,10 @@
     "exExact": "Exact score",
     "exTeam": "Got one team right",
     "exDiff": "Got winner and difference",
-    "exMiss": "Wrong result"
+    "exMiss": "Wrong result",
+    "multipliersTitle": "Knockout multipliers",
+    "multipliersIntro": "Each match's points are multiplied by the round:",
+    "multiplierRow": "{name}: ×{n}"
   },
   "landing": {
     "title": "Quiniela 2026",
@@ -166,6 +169,15 @@
     "save": "Save",
     "saved": "Saved",
     "errorPrefix": "Error"
+  },
+  "roundMultipliers": {
+    "title": "Per-round multipliers",
+    "intro": "Each knockout round multiplies the match points. Set them before the first knockout match — already-played matches are not recalculated.",
+    "lockWarning": "⚠️ Lock the multipliers BEFORE the first knockout match. Changing them later does not re-score already-played matches.",
+    "multiplierLabel": "Multiplier (×)",
+    "save": "Save multipliers",
+    "saved": "Saved",
+    "rangeError": "Each multiplier must be between 1 and 10."
   },
   "auth_error": {
     "title": "We couldn't sign you in",

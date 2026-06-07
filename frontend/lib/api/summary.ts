@@ -24,6 +24,7 @@ export type PublicSummary = {
     panaCount: number;
   };
   prizeSplit: PrizeSplitEntry[];
+  roundMultipliers: { code: string; name: string; multiplier: number }[];
   testMode: boolean;
 };
 
@@ -53,6 +54,14 @@ const FALLBACK: PublicSummary = {
     { rank: 1, percentage: 80, payoutCents: 0 },
     { rank: 2, percentage: 15, payoutCents: 0 },
     { rank: 3, percentage: 5, payoutCents: 0 },
+  ],
+  roundMultipliers: [
+    { code: "R32", name: "Dieciseisavos", multiplier: 2 },
+    { code: "R16", name: "Octavos", multiplier: 2 },
+    { code: "QF", name: "Cuartos", multiplier: 2 },
+    { code: "SF", name: "Semifinales", multiplier: 2 },
+    { code: "THIRD_PLACE", name: "Tercer puesto", multiplier: 2 },
+    { code: "FINAL", name: "Final", multiplier: 2 },
   ],
   testMode: false,
 };

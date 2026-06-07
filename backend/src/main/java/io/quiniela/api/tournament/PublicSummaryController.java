@@ -77,10 +77,13 @@ public class PublicSummaryController {
 
   public record PrizeSplitEntry(int rank, int percentage, long payoutCents) {}
 
+  public record RoundMultiplier(String code, String name, int multiplier) {}
+
   public record SummaryResponse(
       TournamentSummary tournament,
       PoolSummary pool,
       List<PrizeSplitEntry> prizeSplit,
+      List<RoundMultiplier> roundMultipliers,
       boolean testMode) {}
 
   @GetMapping("/summary")
@@ -126,6 +129,12 @@ public class PublicSummaryController {
                     finalPayoutPotCents * rs.getInt("percentage") / 100),
             ACTIVE_POOL_ID);
 
+    List<RoundMultiplier> roundMultipliers =
+        rounds.findByTournamentIdOrderBySequenceAsc(tournament.getId()).stream()
+            .filter(r -> !GROUP_STAGE_CODE.equals(r.getCode()))
+            .map(r -> new RoundMultiplier(r.getCode(), r.getName(), r.getPointsMultiplier()))
+            .toList();
+
     return ResponseEntity.ok(
         new SummaryResponse(
             new TournamentSummary(
@@ -145,6 +154,7 @@ public class PublicSummaryController {
                 payoutPotCents,
                 panaCount),
             prizeSplit,
+            roundMultipliers,
             tournament.isTestMode()));
   }
 }
