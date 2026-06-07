@@ -254,7 +254,9 @@
     "liveDot": "LIVE",
     "pointsEarned": "+{n} PTS",
     "groupLabel": "GROUP {code}",
-    "kickoffShort": "{date} · {time}"
+    "kickoffShort": "{date} · {time}",
+    "viewByDate": "By date",
+    "viewByStage": "By stage"
   },
   "ranking": {
     "title": "RANKING",
