@@ -254,7 +254,9 @@
     "liveDot": "EN VIVO",
     "pointsEarned": "+{n} PTS",
     "groupLabel": "GRUPO {code}",
-    "kickoffShort": "{date} · {time}"
+    "kickoffShort": "{date} · {time}",
+    "viewByDate": "Por fecha",
+    "viewByStage": "Por fase"
   },
   "ranking": {
     "title": "TABLA",
