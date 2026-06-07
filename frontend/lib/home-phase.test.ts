@@ -41,6 +41,7 @@ function summary(over: Partial<PublicSummary> = {}): PublicSummary {
     tournament: { slug: "x", name: "WC", startDate: "2026-06-11", endDate: "2026-07-19", hostCountryCodes: [], openingVenue: null, totalGroupStageMatches: 72, totalGroups: 12 },
     pool: { currency: "USD", entryFeeCents: 2000, potCents: 26000, panaCount: 13 },
     prizeSplit: [{ rank: 1, percentage: 80, payoutCents: 20800 }, { rank: 2, percentage: 15, payoutCents: 3900 }, { rank: 3, percentage: 5, payoutCents: 1300 }],
+    roundMultipliers: [],
     testMode: false,
     ...over,
   };
