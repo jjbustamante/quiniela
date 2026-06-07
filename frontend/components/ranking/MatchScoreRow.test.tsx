@@ -52,4 +52,17 @@ describe("MatchScoreRow", () => {
     expect(screen.getByText("+0")).toBeInTheDocument();
     expect(screen.queryByText(/resultado/)).not.toBeInTheDocument();
   });
+
+  it("hides the multiplier on a zero-point knockout (no lone ×3)", () => {
+    render(
+      <MatchScoreRow
+        match={match({
+          breakdown: { outcome: 0, team1Exact: 0, team2Exact: 0, goalDiff: 0, multiplier: 3, total: 0 },
+        })}
+        labels={labels}
+      />,
+    );
+    expect(screen.getByText("+0")).toBeInTheDocument();
+    expect(screen.queryByText(/×3/)).not.toBeInTheDocument();
+  });
 });
