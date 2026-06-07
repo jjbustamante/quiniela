@@ -86,7 +86,10 @@
     "downloadXlsx": "⬇ Descargar plantilla",
     "uploadXlsx": "⬆ Subir plantilla",
     "inviteFriends": "INVITAR",
-    "unpaidPill": "Sin pagar"
+    "unpaidPill": "Sin pagar",
+    "whatsappGroupTitle": "ÚNETE AL GRUPO",
+    "whatsappGroupSubtitle": "Coordina con las panas por WhatsApp",
+    "whatsappGroupManage": "Gestionar quién lo ve"
   },
   "home": {
     "fillGroupKicker": "Cierra en {when}",
@@ -153,12 +156,26 @@
     "settings": "Ajustes",
     "testMode": "Modo prueba",
     "scoring": "Puntajes",
-    "config": "Configuración"
+    "config": "Configuración",
+    "whatsappGroup": "Grupo WhatsApp"
+  },
+  "captainWhatsapp": {
+    "title": "GRUPO DE WHATSAPP",
+    "intro": "Elige qué jugadores pueden ver el enlace del grupo. Por defecto está oculto.",
+    "visibleOn": "Visible",
+    "visibleOff": "Oculto",
+    "empty": "No tienes jugadores invitados todavía."
   },
   "adminConfig": {
     "title": "Configuración",
     "money": "Dinero",
-    "points": "Puntos"
+    "points": "Puntos",
+    "community": "Comunidad",
+    "whatsappUrl": "Enlace del grupo de WhatsApp",
+    "whatsappUrlHelp": "Debe empezar con https://chat.whatsapp.com/",
+    "whatsappEnabled": "Disponible para los capitanes",
+    "save": "Guardar",
+    "saved": "Guardado"
   },
   "moneyConfig": {
     "title": "Configuración de dinero",

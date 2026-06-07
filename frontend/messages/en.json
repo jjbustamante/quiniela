@@ -86,7 +86,10 @@
     "downloadXlsx": "⬇ Download template",
     "uploadXlsx": "⬆ Upload template",
     "inviteFriends": "INVITE",
-    "unpaidPill": "Unpaid"
+    "unpaidPill": "Unpaid",
+    "whatsappGroupTitle": "JOIN THE GROUP",
+    "whatsappGroupSubtitle": "Chat with everyone on WhatsApp",
+    "whatsappGroupManage": "Manage who sees it"
   },
   "home": {
     "fillGroupKicker": "Closes in {when}",
@@ -153,12 +156,26 @@
     "settings": "Settings",
     "testMode": "Test mode",
     "scoring": "Scoring",
-    "config": "Configuration"
+    "config": "Configuration",
+    "whatsappGroup": "WhatsApp Group"
+  },
+  "captainWhatsapp": {
+    "title": "WHATSAPP GROUP",
+    "intro": "Choose which players can see the group link. Hidden by default.",
+    "visibleOn": "Visible",
+    "visibleOff": "Hidden",
+    "empty": "You have no invited players yet."
   },
   "adminConfig": {
     "title": "Configuration",
     "money": "Money",
-    "points": "Points"
+    "points": "Points",
+    "community": "Community",
+    "whatsappUrl": "WhatsApp group link",
+    "whatsappUrlHelp": "Must start with https://chat.whatsapp.com/",
+    "whatsappEnabled": "Available to captains",
+    "save": "Save",
+    "saved": "Saved"
   },
   "moneyConfig": {
     "title": "Money settings",

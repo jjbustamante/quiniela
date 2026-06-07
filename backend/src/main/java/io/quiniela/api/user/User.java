@@ -46,6 +46,9 @@ public class User {
   @Column(name = "is_bot", nullable = false)
   private Boolean isBot = false;
 
+  @Column(name = "whatsapp_group_visible", nullable = false)
+  private Boolean whatsappGroupVisible = false;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -140,6 +143,14 @@ public class User {
 
   public Boolean getIsBot() {
     return isBot;
+  }
+
+  public Boolean getWhatsappGroupVisible() {
+    return whatsappGroupVisible;
+  }
+
+  public void setWhatsappGroupVisible(Boolean whatsappGroupVisible) {
+    this.whatsappGroupVisible = whatsappGroupVisible;
   }
 
   public Instant getCreatedAt() {

@@ -4,11 +4,13 @@ import { auth } from "@/lib/auth";
 import { getMe } from "@/lib/api/me";
 import { getPoolConfig } from "@/lib/api/pool-config";
 import { getRoundMultipliers } from "@/lib/api/round-multipliers";
+import { getCommunityConfig } from "@/lib/api/community-config";
 import { TopBar } from "@/components/shell/TopBar";
 import { BottomNav } from "@/components/shell/BottomNav";
 import { PoolConfigPanel } from "@/components/admin/PoolConfigPanel";
 import { RoundMultiplierPanel } from "@/components/admin/RoundMultiplierPanel";
-import { savePoolConfigAction, saveRoundMultipliersAction } from "./actions";
+import { CommunityConfigPanel } from "@/components/admin/CommunityConfigPanel";
+import { savePoolConfigAction, saveRoundMultipliersAction, saveCommunityConfigAction } from "./actions";
 
 export default async function AdminConfigPage() {
   const session = await auth();
@@ -18,6 +20,7 @@ export default async function AdminConfigPage() {
 
   const config = await getPoolConfig();
   const multipliers = await getRoundMultipliers();
+  const community = await getCommunityConfig();
   const t = await getTranslations("adminConfig");
 
   const sectionHeadClass =
@@ -37,6 +40,10 @@ export default async function AdminConfigPage() {
             rounds={multipliers.rounds}
             saveAction={saveRoundMultipliersAction}
           />
+        </section>
+        <section>
+          <h2 className={sectionHeadClass}>{t("community")}</h2>
+          <CommunityConfigPanel config={community} saveAction={saveCommunityConfigAction} />
         </section>
       </div>
       <BottomNav />

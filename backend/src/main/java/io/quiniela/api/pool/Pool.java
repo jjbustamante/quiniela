@@ -33,6 +33,12 @@ public class Pool {
   @Column(name = "house_cut_percentage", nullable = false)
   private Integer houseCutPercentage;
 
+  @Column(name = "whatsapp_group_url")
+  private String whatsappGroupUrl;
+
+  @Column(name = "whatsapp_group_enabled", nullable = false)
+  private Boolean whatsappGroupEnabled = false;
+
   @Column(name = "locked_at")
   private Instant lockedAt;
 
@@ -94,5 +100,21 @@ public class Pool {
 
   public void setLockedAt(Instant lockedAt) {
     this.lockedAt = lockedAt;
+  }
+
+  public String getWhatsappGroupUrl() {
+    return whatsappGroupUrl;
+  }
+
+  public void setWhatsappGroupUrl(String whatsappGroupUrl) {
+    this.whatsappGroupUrl = whatsappGroupUrl;
+  }
+
+  public Boolean getWhatsappGroupEnabled() {
+    return whatsappGroupEnabled;
+  }
+
+  public void setWhatsappGroupEnabled(Boolean whatsappGroupEnabled) {
+    this.whatsappGroupEnabled = whatsappGroupEnabled;
   }
 }

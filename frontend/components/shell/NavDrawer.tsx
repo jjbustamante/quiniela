@@ -73,6 +73,11 @@ export function NavDrawer({ role }: { role: Role }) {
                 {t("payments")}
               </Link>
             )}
+            {(role === "ADMIN" || role === "CAPTAIN") && (
+              <Link href="/captain/whatsapp" className={linkClass} onClick={close}>
+                {t("whatsappGroup")}
+              </Link>
+            )}
             {role === "ADMIN" && (
               <>
                 <Link href="/admin/results" className={linkClass} onClick={close}>
