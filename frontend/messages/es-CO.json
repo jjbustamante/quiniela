@@ -33,7 +33,10 @@
     "exExact": "Marcador exacto",
     "exTeam": "Acertaste un equipo",
     "exDiff": "Acertaste ganador y diferencia",
-    "exMiss": "Resultado equivocado"
+    "exMiss": "Resultado equivocado",
+    "multipliersTitle": "Multiplicadores de eliminatorias",
+    "multipliersIntro": "Los puntos de cada partido se multiplican según la ronda:",
+    "multiplierRow": "{name}: ×{n}"
   },
   "landing": {
     "title": "Quiniela 2026",
@@ -166,6 +169,15 @@
     "save": "Guardar",
     "saved": "Guardado",
     "errorPrefix": "Error"
+  },
+  "roundMultipliers": {
+    "title": "Multiplicadores por ronda",
+    "intro": "Cada ronda de eliminatorias multiplica los puntos del partido. Déjalos listos antes del primer partido de eliminatorias — no se recalculan partidos ya jugados.",
+    "lockWarning": "⚠️ Fija los multiplicadores ANTES del primer partido de eliminatorias. Cambiarlos después no recalcula partidos ya puntuados.",
+    "multiplierLabel": "Multiplicador (×)",
+    "save": "Guardar multiplicadores",
+    "saved": "Guardado",
+    "rangeError": "Cada multiplicador debe estar entre 1 y 10."
   },
   "auth_error": {
     "title": "No pudimos iniciar tu sesión",
