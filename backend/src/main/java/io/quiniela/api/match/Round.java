@@ -27,6 +27,9 @@ public class Round {
   @Column(nullable = false)
   private Integer sequence;
 
+  @Column(name = "points_multiplier", nullable = false)
+  private Integer pointsMultiplier;
+
   protected Round() {}
 
   public Long getId() {
@@ -47,5 +50,13 @@ public class Round {
 
   public Integer getSequence() {
     return sequence;
+  }
+
+  public Integer getPointsMultiplier() {
+    return pointsMultiplier;
+  }
+
+  public void setPointsMultiplier(Integer pointsMultiplier) {
+    this.pointsMultiplier = pointsMultiplier;
   }
 }
