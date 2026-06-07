@@ -18,19 +18,26 @@ export default async function AdminConfigPage() {
 
   const config = await getPoolConfig();
   const multipliers = await getRoundMultipliers();
-  const t = await getTranslations("moneyConfig");
+  const t = await getTranslations("adminConfig");
+
+  const sectionHeadClass =
+    "chrome-label chrome-label-muted mb-2 font-display text-base font-extrabold uppercase tracking-[0.04em] text-[var(--color-text-primary)]";
 
   return (
     <main className="flex min-h-screen flex-col pb-24">
       <TopBar title={t("title")} />
-      <div className="mx-auto w-full max-w-md px-3 pt-4 sm:max-w-2xl">
-        <PoolConfigPanel config={config} saveAction={savePoolConfigAction} />
-        <div className="mt-4">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-3 pt-4 sm:max-w-2xl">
+        <section>
+          <h2 className={sectionHeadClass}>{t("money")}</h2>
+          <PoolConfigPanel config={config} saveAction={savePoolConfigAction} />
+        </section>
+        <section>
+          <h2 className={sectionHeadClass}>{t("points")}</h2>
           <RoundMultiplierPanel
             rounds={multipliers.rounds}
             saveAction={saveRoundMultipliersAction}
           />
-        </div>
+        </section>
       </div>
       <BottomNav />
     </main>

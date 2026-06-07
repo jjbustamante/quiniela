@@ -9,7 +9,7 @@ vi.mock("@/app/auth-actions", () => ({
 
 const messages = {
   common: { signOut: "Cerrar sesión" },
-  nav: { menu: "Menú", home: "Inicio", payments: "Pagos", results: "Resultados" },
+  nav: { menu: "Menú", home: "Inicio", payments: "Pagos", results: "Resultados", config: "Configuración" },
 };
 
 function renderDrawer(role: "ADMIN" | "CAPTAIN" | "PLAYER") {
@@ -32,6 +32,7 @@ describe("NavDrawer", () => {
     expect(screen.getByRole("link", { name: /inicio/i })).toHaveAttribute("href", "/home");
     expect(screen.getByRole("link", { name: /pagos/i })).toHaveAttribute("href", "/admin/payments");
     expect(screen.getByRole("link", { name: /resultados/i })).toHaveAttribute("href", "/admin/results");
+    expect(screen.getByRole("link", { name: /configuración/i })).toHaveAttribute("href", "/admin/config");
     expect(screen.getByRole("button", { name: /cerrar sesión/i })).toBeInTheDocument();
   });
 
