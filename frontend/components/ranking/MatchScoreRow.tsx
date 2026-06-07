@@ -1,4 +1,5 @@
 import type { MatchScore, TeamRef } from "@/lib/api/scorecard";
+import { breakdownParts } from "@/lib/breakdown-format";
 
 type Labels = {
   pick: string;
@@ -21,14 +22,7 @@ function score(t1: number | null, t2: number | null): string {
 
 export function MatchScoreRow({ match, labels }: { match: MatchScore; labels: Labels }) {
   const b = match.breakdown;
-  const parts: string[] = [];
-  if (b.outcome) parts.push(`${labels.bdOutcome} ${labels.pts(b.outcome)}`);
-  if (b.team1Exact) parts.push(`${labels.bdTeam1} ${labels.pts(b.team1Exact)}`);
-  if (b.team2Exact) parts.push(`${labels.bdTeam2} ${labels.pts(b.team2Exact)}`);
-  if (b.goalDiff) parts.push(`${labels.bdDiff} ${labels.pts(b.goalDiff)}`);
-  // Only show the multiplier when something actually scored — a 0-point knockout
-  // would otherwise render a lone, meaningless "×3".
-  if (parts.length > 0 && b.multiplier > 1) parts.push(labels.multiplier(b.multiplier));
+  const parts = breakdownParts(b, labels);
 
   return (
     <div className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] px-3 py-2">
