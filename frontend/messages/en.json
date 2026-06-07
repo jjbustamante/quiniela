@@ -86,7 +86,10 @@
     "downloadXlsx": "⬇ Download template",
     "uploadXlsx": "⬆ Upload template",
     "inviteFriends": "INVITE",
-    "unpaidPill": "Unpaid"
+    "unpaidPill": "Unpaid",
+    "whatsappGroupTitle": "JOIN THE GROUP",
+    "whatsappGroupSubtitle": "Chat with everyone on WhatsApp",
+    "whatsappGroupManage": "Manage who sees it"
   },
   "home": {
     "fillGroupKicker": "Closes in {when}",

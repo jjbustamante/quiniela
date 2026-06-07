@@ -86,7 +86,10 @@
     "downloadXlsx": "⬇ Descargar plantilla",
     "uploadXlsx": "⬆ Subir plantilla",
     "inviteFriends": "INVITAR",
-    "unpaidPill": "Sin pagar"
+    "unpaidPill": "Sin pagar",
+    "whatsappGroupTitle": "ÚNETE AL GRUPO",
+    "whatsappGroupSubtitle": "Coordina con las panas por WhatsApp",
+    "whatsappGroupManage": "Gestionar quién lo ve"
   },
   "home": {
     "fillGroupKicker": "Cierra en {when}",

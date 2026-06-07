@@ -10,6 +10,7 @@ export type MeResponse = {
   canInvite: boolean;
   invitedByUserId: number | null;
   timezone: string;
+  whatsappGroupUrl: string | null;
 };
 
 export async function getMe(): Promise<MeResponse> {

@@ -13,6 +13,7 @@ import { PhaseRail } from "@/components/lobby/PhaseRail";
 import { StandingStrip } from "@/components/lobby/StandingStrip";
 import { ResultsRecap } from "@/components/lobby/ResultsRecap";
 import { InviteFriendsButton } from "@/components/invite/InviteFriendsButton";
+import { WhatsappGroupCard } from "@/components/lobby/WhatsappGroupCard";
 
 export default async function HomePage() {
   const session = await auth();
@@ -45,6 +46,11 @@ export default async function HomePage() {
         <section className="mx-3 mt-4">
           <InviteFriendsButton role={me.role} invitePath={me.invitePath} />
         </section>
+        {me.whatsappGroupUrl && (
+          <section className="mx-3 mt-3">
+            <WhatsappGroupCard url={me.whatsappGroupUrl} canManage={me.role !== "PLAYER"} />
+          </section>
+        )}
       </div>
       <BottomNav activeKey="myQuiniela" />
     </main>
