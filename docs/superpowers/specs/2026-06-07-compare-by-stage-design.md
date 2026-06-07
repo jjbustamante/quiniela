@@ -1,8 +1,9 @@
-# Design — Group Compare results by stage (H2H + Group Consensus)
+# Design — Collapsible stage groups (Matches + Compare)
 
-> The Compare page (Duelos) lists revealed matches in one flat list (Group
-> Consensus) or one differ/agree-split table (H2H). Like the Matches page now
-> does, group these by stage with the most-recent stage on top, in both modes.
+> The Matches page now groups by stage; Compare (H2H + Group Consensus) should
+> too. And the groups should be **collapsible** — with the most-recent stage open
+> and older stages collapsed — so navigating long lists is easy. Apply one
+> collapsible-section pattern across Matches and both Compare views.
 
 **Date:** 2026-06-07
 **Branch:** `feat/compare-by-stage`
@@ -10,20 +11,16 @@
 
 ## Background / grounding
 
-- `frontend/lib/matches-by-stage.ts` already has `groupMatchesByStage(matches:
+- `frontend/lib/matches-by-stage.ts` has `groupMatchesByStage(matches:
   MatchView[], nowMs): { roundCode, matches }[]` — groups by `roundCode`, orders
-  sections most-recent-*started* first, future stages last (5 unit tests).
-- Both Compare types carry the fields the helper needs: `MatchConsensus` and
-  `H2HMatch` (in `frontend/lib/api/compare.ts`) both have `roundCode: string`,
-  `kickoffAt: string`, `revealed: boolean`.
-- `GroupConsensus.tsx` and `H2HCompare.tsx` are **server** components
-  (`async`, `getTranslations`). So a server-side `Date.now()` is safe for the
-  ordering — no client hydration mismatch (unlike the Matches page, which is a
-  client component and threads `serverTime`).
-- Both components already filter to `m.revealed`. Revealed matches are played or
-  past-deadline, so "most-recent stage first" reads naturally.
-- Stage labels: the `home.chip{ROUNDCODE}` keys (same source the phase rail +
-  Matches page use), so labels never drift.
+  sections most-recent-*started* first (5 unit tests). Used by the Matches page
+  (`MatchTabs.tsx`, a client component, "Por fase" view).
+- Both Compare types carry the needed fields: `MatchConsensus` and `H2HMatch`
+  (`frontend/lib/api/compare.ts`) have `roundCode`, `kickoffAt`, `revealed`.
+- `GroupConsensus.tsx` and `H2HCompare.tsx` are **server** components (`async`,
+  `getTranslations`) → a server-side `Date.now()` is safe for ordering (no
+  hydration concern). Both already filter to `m.revealed`.
+- Stage labels: `home.chip{ROUNDCODE}` (same source as the phase rail / Matches).
 
 ## Shared helper (generalize)
 
@@ -32,51 +29,78 @@ string }`:
 - `StageGroup<T> = { roundCode: string; matches: T[] }`
 - `groupMatchesByStage<T extends { roundCode: string; kickoffAt: string }>(items:
   T[], nowMs: number): StageGroup<T>[]`
-- Ordering/grouping logic is unchanged. The Matches page keeps calling it with
-  `MatchView` (now `StageGroup<MatchView>`); Compare calls it with
-  `MatchConsensus` / `H2HMatch`. The existing 5 tests still hold (genericity is
-  compile-checked).
+- Logic unchanged; the existing 5 tests still hold. Matches uses
+  `StageGroup<MatchView>`; Compare uses `StageGroup<MatchConsensus>` /
+  `StageGroup<H2HMatch>`.
+
+## Shared collapsible section component
+
+New `frontend/components/shared/StageSection.tsx` — a plain presentational
+component using **native `<details>`/`<summary>`** (zero JS; works in both server
+and client trees, no `"use client"`):
+
+```
+StageSection({ header, count, defaultOpen, children })
+  <details open={defaultOpen}>
+    <summary> {header}  <span>{count}</span> </summary>
+    <div> {children} </div>
+  </details>
+```
+
+- The `<summary>` shows the stage label + the match count, styled as the section
+  header (custom chevron via CSS; `list-none` to drop the default marker).
+- `defaultOpen` is set to `true` for the **first** group only (the helper returns
+  most-recent-first, so index 0 = most recent). All other groups start collapsed.
+- Reused by all three stage views below so collapse/spacing/markers stay uniform.
+
+## Matches "Por fase" view (update the shipped view)
+
+In `MatchTabs.tsx`, wrap each stage group's `MatchListItem`s in a `StageSection`
+(`header = home.chip{roundCode}`, `count = g.matches.length`,
+`defaultOpen = index === 0`). The date view ("Por fecha") is unchanged.
 
 ## Group Consensus view
 
-Group the revealed matches into stage sections (most-recent first). Each section:
-a header (`home.chip{roundCode}`) + the existing `ConsensusCard`s within
-(chronological per the helper). No card change.
+Wrap each revealed-stage's `ConsensusCard`s in a `StageSection` (most-recent
+first, first open). No card change.
 
 ## H2H view (table)
 
-Group the revealed matches into stage sections (most-recent first). Each stage
-renders a stage-header row (a `<tr><td colSpan=4>` header, mirroring the current
-"agree section" header style). **Within each stage, keep the current ordering:
-differ rows first (highlighted), then agree rows (dimmed)** — disagreements still
-surface at the top of each stage. The single global "agree section" header is
-removed (per-stage grouping replaces it); the summary line at the top and the
-table head are unchanged.
+Render a single column-header row at the top (You · Rival · Real), then one
+`StageSection` per stage (most-recent first, first open). Each section's body is
+a small `<table className="table-fixed w-full">` of that stage's rows with the
+**same fixed column widths** as the header so columns align across sections.
+**Within each stage keep differ rows first (highlighted), then agree rows
+(dimmed).** The summary line at the top is unchanged; the single global "agree
+section" header is removed (per-stage grouping replaces it).
 
 ## i18n
 
 Stage headers reuse `home.chip{ROUNDCODE}` — each Compare component adds a
-`getTranslations("home")` (`tRound`) alongside its existing
-`getTranslations("compare")`. No new message keys.
+`getTranslations("home")` (`tRound`). No new message keys (the count is a number).
 
 ## Out of scope
 
-- No backend change (no `serverTime` added to the Compare views — server-side
-  `Date.now()` suffices for these server components).
-- No change to `ConsensusCard`, the H2H `Row`, the reveal logic, the differ/agree
-  classification, or the summary line.
-- No change to the Matches page (it keeps using the now-generic helper).
+- No backend change (server-side `Date.now()` suffices for the Compare server
+  components; no `serverTime` added to Compare views).
+- No change to `ConsensusCard`, the H2H `Row` cell rendering, reveal logic, the
+  differ/agree classification, or the summary line.
+- No persistence of which sections the user expands (native `<details>` state is
+  per-render; YAGNI).
 
 ## Testing
 
-- **Unit (vitest):** the generic `groupMatchesByStage` is already pinned by its 5
-  tests; add one test calling it with a minimal `{ roundCode, kickoffAt }` object
-  literal (not `MatchView`) to lock the generic contract.
+- **Unit (vitest):** `groupMatchesByStage` keeps its 5 tests; add one calling it
+  with a minimal `{ roundCode, kickoffAt }` literal (not `MatchView`) to pin the
+  generic contract.
 - **Component (RTL):**
-  - `GroupConsensus`: renders a stage header per revealed stage, ordered
-    most-recent-first; cards appear under the right header.
-  - `H2HCompare`: renders a stage-header row per stage in most-recent-first
-    order; within a stage, a differ row precedes an agree row.
-  - Both reuse the `NextIntlClientProvider` test pattern (these are async server
-    components — render via `await Component({...})` or the project's existing
-    approach in `GroupConsensus.test.tsx`).
+  - `StageSection`: renders the header + count; `defaultOpen` controls the
+    `<details open>` attribute; collapsed body still in the DOM (native details).
+  - `MatchTabs` (stage mode): first stage section `open`, others not; headers in
+    most-recent-first order.
+  - `GroupConsensus`: a `StageSection` per revealed stage, first open, ordered
+    most-recent-first.
+  - `H2HCompare`: a `StageSection` per stage, first open, ordered most-recent
+    first; within a stage a differ row precedes an agree row.
+  - Async server components rendered via the existing approach in
+    `GroupConsensus.test.tsx`; `NextIntlClientProvider` for messages.
