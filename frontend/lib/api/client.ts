@@ -26,7 +26,11 @@ export async function api<T>(path: string, opts: FetchOptions = {}): Promise<T> 
     const txt = await res.text();
     throw new ApiError(res.status, txt || res.statusText);
   }
-  return (await res.json()) as T;
+  // Some endpoints (e.g. a void PUT returning 200 + no body) send an empty
+  // body. `res.json()` would throw on that, so read text and only parse when
+  // there's something — an empty body resolves to undefined.
+  const text = await res.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 export class ApiError extends Error {
