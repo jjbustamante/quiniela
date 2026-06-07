@@ -102,6 +102,7 @@ public class AdminPaymentService {
             FROM users u
             JOIN pool_membership pm ON pm.user_id = u.id AND pm.pool_id = ?
             LEFT JOIN payment p ON p.user_id = u.id AND p.pool_id = ?
+            WHERE u.role <> 'admin' AND u.is_bot = false
             ORDER BY u.display_name ASC
             """,
             (rs, i) ->
