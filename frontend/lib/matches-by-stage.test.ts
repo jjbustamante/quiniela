@@ -71,4 +71,16 @@ describe("groupMatchesByStage", () => {
     );
     expect(groups[0].matches.map((x) => x.id)).toEqual([1, 2]);
   });
+
+  it("works on any object with roundCode + kickoffAt (generic)", () => {
+    const groups = groupMatchesByStage(
+      [
+        { roundCode: "GROUP", kickoffAt: "2026-06-11T15:00:00Z", label: "g" },
+        { roundCode: "R32", kickoffAt: "2026-06-28T15:00:00Z", label: "k" },
+      ],
+      Date.parse("2026-06-29T12:00:00Z"),
+    );
+    expect(groups.map((g) => g.roundCode)).toEqual(["R32", "GROUP"]);
+    expect(groups[0].matches[0].label).toBe("k");
+  });
 });

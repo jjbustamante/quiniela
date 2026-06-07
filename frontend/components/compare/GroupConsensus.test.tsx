@@ -12,6 +12,8 @@ vi.mock("next-intl/server", () => ({
       majority: "Con la mayoría",
       rebel: "Rebelde",
       youTag: "tú",
+      chipGROUP: "Grupos",
+      chipR32: "16vos",
     };
     return map[key] ?? key;
   },
@@ -85,5 +87,29 @@ describe("GroupConsensus", () => {
     });
     expect(screen.getByText("Rebelde")).toBeInTheDocument();
     expect(screen.getByText("1–0")).toBeInTheDocument();
+  });
+
+  function revealedMatch(over: Partial<import("@/lib/api/compare").MatchConsensus> & { matchId: number; roundCode: string; kickoffAt: string }) {
+    return {
+      team1Code: "A", team1Flag: "🏳", team2Code: "B", team2Flag: "🏳",
+      actualScoreT1: null, actualScoreT2: null, played: true, revealed: true,
+      myScoreT1: 1, myScoreT2: 0, distribution: [{ scoreT1: 1, scoreT2: 0, count: 2 }],
+      totalPicks: 2, majority: true, rebel: false,
+      ...over,
+    } as import("@/lib/api/compare").MatchConsensus;
+  }
+
+  it("groups revealed matches into stage sections, most-recent first, first open", async () => {
+    await renderGC({
+      matches: [
+        revealedMatch({ matchId: 1, roundCode: "GROUP", kickoffAt: "2026-06-01T15:00:00Z" }),
+        revealedMatch({ matchId: 2, roundCode: "R32", kickoffAt: "2026-06-05T15:00:00Z" }),
+      ],
+    });
+    const headers = screen.getAllByTestId("stage-header").map((el) => el.textContent);
+    expect(headers).toEqual(["16vos", "Grupos"]);
+    const sections = document.querySelectorAll("details");
+    expect(sections[0]).toHaveAttribute("open");
+    expect(sections[1]).not.toHaveAttribute("open");
   });
 });

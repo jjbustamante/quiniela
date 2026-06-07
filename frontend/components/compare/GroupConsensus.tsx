@@ -1,5 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { GroupConsensusView, MatchConsensus } from "@/lib/api/compare";
+import { groupMatchesByStage } from "@/lib/matches-by-stage";
+import { StageSection } from "@/components/shared/StageSection";
 
 function teamLabel(flag: string | null, code: string | null): string {
   return `${flag ?? ""} ${code ?? "—"}`.trim();
@@ -7,6 +9,7 @@ function teamLabel(flag: string | null, code: string | null): string {
 
 export async function GroupConsensus({ data }: { data: GroupConsensusView }) {
   const t = await getTranslations("compare");
+  const tRound = await getTranslations("home");
   const revealed = data.matches.filter((m) => m.revealed);
 
   if (revealed.length === 0) {
@@ -20,16 +23,30 @@ export async function GroupConsensus({ data }: { data: GroupConsensusView }) {
     );
   }
 
+  // Compare only shows revealed (already-played / past-deadline) matches, so every
+  // match counts as "started" and the ordering collapses to most-recent-stage-first
+  // by kickoff. A fixed far-future bound keeps render pure (no impure Date.now()).
+  const groups = groupMatchesByStage(revealed, Number.MAX_SAFE_INTEGER);
+
   return (
-    <section className="mx-3 mt-3 flex flex-col gap-3">
-      {revealed.map((m) => (
-        <ConsensusCard
-          key={m.matchId}
-          m={m}
-          majorityLabel={t("majority")}
-          rebelLabel={t("rebel")}
-          youLabel={t("youTag")}
-        />
+    <section className="mx-3 mt-3 flex flex-col gap-2">
+      {groups.map((g, i) => (
+        <StageSection
+          key={g.roundCode}
+          header={tRound(`chip${g.roundCode}` as never)}
+          count={g.matches.length}
+          defaultOpen={i === 0}
+        >
+          {g.matches.map((m) => (
+            <ConsensusCard
+              key={m.matchId}
+              m={m}
+              majorityLabel={t("majority")}
+              rebelLabel={t("rebel")}
+              youLabel={t("youTag")}
+            />
+          ))}
+        </StageSection>
       ))}
     </section>
   );

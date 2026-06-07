@@ -1,5 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { H2HView, H2HMatch } from "@/lib/api/compare";
+import { groupMatchesByStage } from "@/lib/matches-by-stage";
+import { StageSection } from "@/components/shared/StageSection";
 
 function teamLabel(flag: string | null, code: string | null): string {
   return `${flag ?? ""} ${code ?? "—"}`.trim();
@@ -11,6 +13,7 @@ function score(t1: number | null, t2: number | null): string {
 
 export async function H2HCompare({ data }: { data: H2HView | null }) {
   const t = await getTranslations("compare");
+  const tRound = await getTranslations("home");
 
   if (!data) {
     return (
@@ -23,8 +26,6 @@ export async function H2HCompare({ data }: { data: H2HView | null }) {
   }
 
   const visible = data.matches.filter((m) => m.revealed);
-  const differ = visible.filter((m) => m.state === "differ");
-  const agree = visible.filter((m) => m.state === "agree");
 
   if (visible.length === 0) {
     return (
@@ -41,42 +42,47 @@ export async function H2HCompare({ data }: { data: H2HView | null }) {
       : null;
 
   const rival = data.rivalDisplayName ?? `#${data.rivalUserId}`;
+  // Compare only shows revealed (already-played / past-deadline) matches, so every
+  // match counts as "started" and the ordering collapses to most-recent-stage-first
+  // by kickoff. A fixed far-future bound keeps render pure (no impure Date.now()).
+  const groups = groupMatchesByStage(visible, Number.MAX_SAFE_INTEGER);
 
   return (
-    <div className="mx-3 mt-2">
+    <div className="mx-3 mt-2 flex flex-col gap-2">
       <p className="px-1 py-2 text-xs font-semibold text-[var(--color-text-muted)]">
         {points
           ? t("summaryWinning", { agree: data.agreeCount, differ: data.differCount, points })
           : t("summary", { agree: data.agreeCount, differ: data.differCount })}
       </p>
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="border-b-[1.5px] border-[var(--color-line-ink)] text-[9px] uppercase text-[var(--color-text-muted)]">
-            <th scope="col" className="py-1.5 text-left">{t("colMatch")}</th>
-            <th scope="col" className="py-1.5">{t("colYou")}</th>
-            <th scope="col" className="py-1.5">{rival}</th>
-            <th scope="col" className="py-1.5">{t("colReal")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {differ.map((m) => (
-            <Row key={m.matchId} m={m} highlight />
-          ))}
-          {agree.length > 0 && (
-            <tr>
-              <td
-                colSpan={4}
-                className="pt-3 text-[9px] font-extrabold uppercase text-[var(--color-text-muted)]"
-              >
-                {t("agreeSection", { count: agree.length })}
-              </td>
-            </tr>
-          )}
-          {agree.map((m) => (
-            <Row key={m.matchId} m={m} highlight={false} />
-          ))}
-        </tbody>
-      </table>
+      {groups.map((g, i) => {
+        const differ = g.matches.filter((m) => m.state === "differ");
+        const agree = g.matches.filter((m) => m.state === "agree");
+        const rows = [...differ, ...agree];
+        return (
+          <StageSection
+            key={g.roundCode}
+            header={tRound(`chip${g.roundCode}` as never)}
+            count={g.matches.length}
+            defaultOpen={i === 0}
+          >
+            <table className="w-full table-fixed border-collapse">
+              <thead>
+                <tr className="border-b-[1.5px] border-[var(--color-line-ink)] text-[9px] uppercase text-[var(--color-text-muted)]">
+                  <th scope="col" className="w-[40%] py-1.5 text-left">{t("colMatch")}</th>
+                  <th scope="col" className="py-1.5">{t("colYou")}</th>
+                  <th scope="col" className="py-1.5">{rival}</th>
+                  <th scope="col" className="py-1.5">{t("colReal")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((m) => (
+                  <Row key={m.matchId} m={m} highlight={m.state === "differ"} />
+                ))}
+              </tbody>
+            </table>
+          </StageSection>
+        );
+      })}
     </div>
   );
 }

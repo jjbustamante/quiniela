@@ -1,6 +1,7 @@
-import type { MatchView } from "@/lib/api/matches";
+export type StageGroup<T> = { roundCode: string; matches: T[] };
 
-export type StageGroup = { roundCode: string; matches: MatchView[] };
+/** Items only need a stage code and a kickoff timestamp to be grouped/ordered. */
+type StageItem = { roundCode: string; kickoffAt: string };
 
 /**
  * Group matches by stage (roundCode) for the "Por fase" view. Sections are
@@ -9,8 +10,11 @@ export type StageGroup = { roundCode: string; matches: MatchView[] };
  * 16vos sits above Grupos). Stages with no started match sort after the started
  * ones, by their soonest kickoff. Matches within a stage are chronological.
  */
-export function groupMatchesByStage(matches: MatchView[], nowMs: number): StageGroup[] {
-  const byCode = new Map<string, MatchView[]>();
+export function groupMatchesByStage<T extends StageItem>(
+  matches: T[],
+  nowMs: number,
+): StageGroup<T>[] {
+  const byCode = new Map<string, T[]>();
   for (const m of matches) {
     const arr = byCode.get(m.roundCode);
     if (arr) arr.push(m);
@@ -19,7 +23,7 @@ export function groupMatchesByStage(matches: MatchView[], nowMs: number): StageG
 
   type Tagged = {
     roundCode: string;
-    matches: MatchView[];
+    matches: T[];
     latestStarted: number | null;
     earliest: number;
   };
