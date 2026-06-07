@@ -13,7 +13,11 @@ export default async function CaptainWhatsappPage() {
   if (!session?.userId) redirect("/");
 
   const me = await getMe();
-  if (me.role === "PLAYER") redirect("/home");
+  // Captains only — the admin doesn't invite players, so there's nothing for
+  // them to manage here. And bounce if the admin has the group link disabled
+  // (whatsappGroupUrl resolves to null), so a stale bookmark can't reach a
+  // dead feature.
+  if (me.role !== "CAPTAIN" || !me.whatsappGroupUrl) redirect("/home");
 
   const roster = await getWhatsappRoster();
   const t = await getTranslations("captainWhatsapp");

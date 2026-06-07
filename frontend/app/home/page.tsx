@@ -48,7 +48,7 @@ export default async function HomePage() {
         </section>
         {me.whatsappGroupUrl && (
           <section className="mx-3 mt-3">
-            <WhatsappGroupCard url={me.whatsappGroupUrl} canManage={me.role !== "PLAYER"} />
+            <WhatsappGroupCard url={me.whatsappGroupUrl} canManage={me.role === "CAPTAIN"} />
           </section>
         )}
       </div>

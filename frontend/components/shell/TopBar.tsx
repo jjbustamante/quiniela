@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
+import { getMe } from "@/lib/api/me";
 import { PaulBadge } from "@/components/PaulMascot";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { NavDrawer } from "./NavDrawer";
@@ -23,11 +24,21 @@ export async function TopBar({ title, meta }: TopBarProps) {
   const role = session?.role;
   const initial = (displayName ?? "?").charAt(0).toUpperCase();
 
+  // The captain WhatsApp-roster menu link appears only when the admin has the
+  // group link enabled. That's exactly when getMe resolves a non-null
+  // whatsappGroupUrl for a captain — so it tracks the master switch live and
+  // disappears when the admin turns it off. Only captains pay the extra call.
+  let showWhatsappGroup = false;
+  if (role === "CAPTAIN") {
+    const me = await getMe();
+    showWhatsappGroup = !!me.whatsappGroupUrl;
+  }
+
   return (
     <header>
       <div className="flex items-center justify-between gap-3 bg-[var(--color-bg-ink)] px-4 py-3 text-[var(--color-text-inverse)]">
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
-          {role && <NavDrawer role={role} />}
+          {role && <NavDrawer role={role} showWhatsappGroup={showWhatsappGroup} />}
           <PaulBadge size={32} />
           <div className="min-w-0 flex-1">
             <div className="font-display text-xl font-extrabold uppercase leading-none tracking-tight truncate">
