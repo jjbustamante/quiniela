@@ -1,0 +1,55 @@
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import type { MatchScore } from "@/lib/api/scorecard";
+import { MatchScoreRow } from "./MatchScoreRow";
+
+function match(over: Partial<MatchScore> = {}): MatchScore {
+  return {
+    matchId: 1,
+    team1: { code: "ARG", name: "Argentina", flag: "🇦🇷" },
+    team2: { code: "MEX", name: "México", flag: "🇲🇽" },
+    kickoffAt: "2026-06-28T15:00:00Z",
+    betScoreT1: 2,
+    betScoreT2: 1,
+    actualScoreT1: 2,
+    actualScoreT2: 1,
+    breakdown: { outcome: 3, team1Exact: 2, team2Exact: 2, goalDiff: 0, multiplier: 2, total: 14 },
+    ...over,
+  };
+}
+
+const labels = {
+  pick: "PICK",
+  result: "REAL",
+  bdOutcome: "resultado",
+  bdTeam1: "local",
+  bdTeam2: "visitante",
+  bdDiff: "diferencia",
+  multiplier: (n: number) => `×${n}`,
+  pts: (n: number) => `+${n}`,
+};
+
+describe("MatchScoreRow", () => {
+  it("shows the total, the contributing components, and the multiplier", () => {
+    render(<MatchScoreRow match={match()} labels={labels} />);
+    expect(screen.getByText("+14")).toBeInTheDocument();
+    expect(screen.getByText(/resultado \+3/)).toBeInTheDocument();
+    expect(screen.getByText(/local \+2/)).toBeInTheDocument();
+    expect(screen.getByText(/visitante \+2/)).toBeInTheDocument();
+    expect(screen.getByText(/×2/)).toBeInTheDocument();
+    expect(screen.queryByText(/diferencia/)).not.toBeInTheDocument();
+  });
+
+  it("omits the breakdown line for a zero-point match", () => {
+    render(
+      <MatchScoreRow
+        match={match({
+          breakdown: { outcome: 0, team1Exact: 0, team2Exact: 0, goalDiff: 0, multiplier: 1, total: 0 },
+        })}
+        labels={labels}
+      />,
+    );
+    expect(screen.getByText("+0")).toBeInTheDocument();
+    expect(screen.queryByText(/resultado/)).not.toBeInTheDocument();
+  });
+});
