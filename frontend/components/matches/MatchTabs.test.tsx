@@ -56,10 +56,14 @@ describe("MatchTabs", () => {
     expect(screen.queryByTestId("stage-header")).not.toBeInTheDocument();
   });
 
-  it("switches to stage sections, most-recent stage first", async () => {
+  it("switches to collapsible stage sections, most-recent first, first open", async () => {
     renderTabs();
     await userEvent.click(screen.getByRole("button", { name: /por fase/i }));
     const headers = screen.getAllByTestId("stage-header").map((el) => el.textContent);
     expect(headers).toEqual(["16vos", "Grupos"]);
+    // Most-recent stage (R32 = 16vos) starts expanded; the older one collapsed.
+    const sections = document.querySelectorAll("details");
+    expect(sections[0]).toHaveAttribute("open");
+    expect(sections[1]).not.toHaveAttribute("open");
   });
 });

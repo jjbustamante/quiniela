@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import type { MatchesView, MatchView } from "@/lib/api/matches";
 import { formatMatchDateTime } from "@/lib/format-datetime";
 import { groupMatchesByStage } from "@/lib/matches-by-stage";
+import { StageSection } from "@/components/shared/StageSection";
 import { MatchListItem } from "./MatchListItem";
 
 type Tab = "past" | "today" | "upcoming";
@@ -88,15 +89,14 @@ export function MatchTabs({ view, timeZone }: { view: MatchesView; timeZone: str
           )}
         </>
       ) : (
-        <div className="flex flex-col gap-5">
-          {groupMatchesByStage([...view.past, ...view.today, ...view.upcoming], now).map((g) => (
-            <section key={g.roundCode} className="flex flex-col gap-2">
-              <div
-                data-testid="stage-header"
-                className="chrome-label chrome-label-muted border-b-[1.5px] border-[var(--color-line-ink)] pb-1"
-              >
-                {tRound(`chip${g.roundCode}` as never)}
-              </div>
+        <div className="flex flex-col gap-2">
+          {groupMatchesByStage([...view.past, ...view.today, ...view.upcoming], now).map((g, i) => (
+            <StageSection
+              key={g.roundCode}
+              header={tRound(`chip${g.roundCode}` as never)}
+              count={g.matches.length}
+              defaultOpen={i === 0}
+            >
               {g.matches.map((m) => (
                 <MatchListItem
                   key={m.id}
@@ -106,7 +106,7 @@ export function MatchTabs({ view, timeZone }: { view: MatchesView; timeZone: str
                   labels={labelsFor(m)}
                 />
               ))}
-            </section>
+            </StageSection>
           ))}
         </div>
       )}
