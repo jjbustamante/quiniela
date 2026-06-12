@@ -21,6 +21,10 @@ vulnerabilities:
     statement: "rsync remote memory disclosure via integer overflow — Ubuntu base in heroku/builder:26. Waits on Heroku builder refresh."
     expired_at: 2026-06-23
 
+  - id: CVE-2026-45447
+    statement: "OpenSSL PKCS7_verify heap use-after-free (openssl/libssl3t64) — Ubuntu base in heroku/builder:26. Not app-fixable (SSR frontend doesn't process untrusted PKCS7); waits on Heroku builder refresh shipping openssl 3.5.5-1ubuntu3.2."
+    expired_at: 2026-06-23
+
   # ─── Buildpack tooling layer (heroku-buildpacks-nodejs internals) ──────
   # Our app's lockfile already has minimatch@9.0.9 + picomatch@4.0.4 +
   # no tar dep (verified via pnpm-lock.yaml). These versions are in the
