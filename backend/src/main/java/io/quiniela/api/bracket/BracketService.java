@@ -196,6 +196,9 @@ public class BracketService {
     if (deadline != null && now.isAfter(deadline)) {
       throw new BracketLockedException("Bets locked for this round");
     }
+    if (match.getKickoffAt() != null && now.isAfter(match.getKickoffAt())) {
+      throw new BracketLockedException("Este partido ya comenzó");
+    }
 
     // For knockout draw bets, predictedWinnerId must be one of the match's teams.
     Long predictedWinnerId = req.predictedWinnerId();

@@ -115,4 +115,58 @@ class BracketControllerIT extends AbstractIntegrationTest {
           "UPDATE tournament SET group_stage_deadline = NOW() + INTERVAL '30 days' WHERE id = 1");
     }
   }
+
+  @Test
+  void saveBetRejectsWhenMatchKickoffIsInThePast() throws Exception {
+    org.springframework.jdbc.core.JdbcTemplate jdbc =
+        new org.springframework.jdbc.core.JdbcTemplate(dataSource);
+    // Keep round deadline open; push only match 1's kickoff into the past.
+    try {
+      jdbc.update("UPDATE match SET kickoff_at = NOW() - INTERVAL '1 hour' WHERE id = 1");
+
+      var u = new User("g-br4", "br4@example.com", "BR4", null, UserRole.CAPTAIN);
+      u.setInvitePath("br4-abc");
+      u = users.save(u);
+      String token = jwt.issue(u);
+
+      mockMvc
+          .perform(
+              org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                      "/api/bracket/bet")
+                  .header("Authorization", "Bearer " + token)
+                  .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                  .content("{\"matchId\":1,\"scoreT1\":2,\"scoreT2\":1}"))
+          .andExpect(status().isLocked());
+    } finally {
+      // Restore match 1 kickoff to a future time so it doesn't pollute other tests.
+      jdbc.update("UPDATE match SET kickoff_at = NOW() + INTERVAL '30 days' WHERE id = 1");
+    }
+  }
+
+  @Test
+  void saveBetSucceedsWhenMatchKickoffIsInTheFuture() throws Exception {
+    org.springframework.jdbc.core.JdbcTemplate jdbc =
+        new org.springframework.jdbc.core.JdbcTemplate(dataSource);
+    // Ensure match 2 has a future kickoff and round deadline is open.
+    try {
+      jdbc.update("UPDATE match SET kickoff_at = NOW() + INTERVAL '2 hours' WHERE id = 2");
+
+      var u = new User("g-br5", "br5@example.com", "BR5", null, UserRole.CAPTAIN);
+      u.setInvitePath("br5-abc");
+      u = users.save(u);
+      String token = jwt.issue(u);
+
+      mockMvc
+          .perform(
+              org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                      "/api/bracket/bet")
+                  .header("Authorization", "Bearer " + token)
+                  .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                  .content("{\"matchId\":2,\"scoreT1\":1,\"scoreT2\":0}"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.matchId").value(2));
+    } finally {
+      jdbc.update("UPDATE match SET kickoff_at = NOW() + INTERVAL '30 days' WHERE id = 2");
+    }
+  }
 }
