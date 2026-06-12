@@ -1,4 +1,4 @@
--- V021: Frozen per-match points in bet.points + kickoff-lock in the scoring trigger.
+-- V022: Frozen per-match points in bet.points + kickoff-lock in the scoring trigger.
 --
 -- New column bet.points stores the points each bet ACTUALLY scored, frozen at
 -- scoring time. The trigger is updated to:
