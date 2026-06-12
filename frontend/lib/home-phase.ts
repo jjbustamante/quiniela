@@ -102,15 +102,21 @@ export function computeHomeState(args: {
   }
 
   // ── Recap ─────────────────────────────────────────────────────────────────
+  // A match that finished TODAY lives in the `today` bucket (buckets are by kickoff date, not
+  // played status), so results must include played-today matches — not just `past` — or a game
+  // that ended today would show as an upcoming fixture with no result. "Next" is the soonest
+  // match NOT yet played (today's unplayed + upcoming).
+  const playedToday = matches.today.filter((m) => m.played);
+  const notPlayedToday = matches.today.filter((m) => !m.played);
   let recap: Recap;
-  if (matches.past.length === 0) {
+  if (matches.past.length === 0 && playedToday.length === 0) {
     recap = { kind: "preKickoff", potCents: summary.pool.potCents, currency: summary.pool.currency, panaCount: summary.pool.panaCount, startDate: summary.tournament.startDate };
   } else {
-    const recent = [...matches.past]
+    const recent = [...matches.past, ...playedToday]
       .sort((a, b) => Date.parse(b.kickoffAt) - Date.parse(a.kickoffAt))
       .slice(0, 2)
       .map((m: MatchView): RecapResult => ({ matchId: m.id, t1Code: m.team1.code, t1Flag: m.team1.flag, t2Code: m.team2.code, t2Flag: m.team2.flag, s1: m.score?.t1 ?? null, s2: m.score?.t2 ?? null, pointsEarned: m.pointsEarned }));
-    const upcoming = [...matches.today, ...matches.upcoming].sort((a, b) => Date.parse(a.kickoffAt) - Date.parse(b.kickoffAt));
+    const upcoming = [...notPlayedToday, ...matches.upcoming].sort((a, b) => Date.parse(a.kickoffAt) - Date.parse(b.kickoffAt));
     const n = upcoming[0];
     const next: RecapNext = n ? { t1Code: n.team1.code, t1Flag: n.team1.flag, t2Code: n.team2.code, t2Flag: n.team2.flag, kickoffAt: n.kickoffAt } : null;
     recap = { kind: "results", recent, next };
