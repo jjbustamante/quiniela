@@ -9,6 +9,7 @@ import io.quiniela.api.footballdata.FootballDataClient.MatchScoreFull;
 import io.quiniela.api.footballdata.FootballDataClient.MatchTeam;
 import io.quiniela.api.support.AbstractIntegrationTest;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,6 +18,12 @@ class FootballDataSyncFreezeIT extends AbstractIntegrationTest {
 
   @Autowired FootballDataSyncService sync;
   @Autowired JdbcTemplate jdbc;
+
+  @AfterEach
+  void cleanup() {
+    jdbc.execute("DELETE FROM match WHERE id IN (8001, 8002)");
+    jdbc.execute("DELETE FROM team WHERE id IN (7001, 7002, 7003, 7004)");
+  }
 
   @Test
   void doesNotRewriteAnAlreadyPlayedMatch() {

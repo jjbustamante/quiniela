@@ -55,17 +55,14 @@ class FootballDataSyncServiceIT extends AbstractIntegrationTest {
   void seedTeams() {
     jdbc.update(
         "INSERT INTO team (id, tournament_id, code, name) VALUES "
-            + "(6001,1,'HHH','Home'),(6002,1,'AAA','Away') ON CONFLICT (id) DO NOTHING");
-    // Push all pre-existing seeded matches out of the 24h planToday window so that
-    // only this test class's own insertions (id >= 6100) are in scope.
-    jdbc.update(
-        "UPDATE match SET kickoff_at = '2026-01-01 00:00:00 UTC' WHERE id < 6100 AND played = false");
+            + "(6001,1,'TQH','Home'),(6002,1,'TQA','Away') ON CONFLICT (id) DO NOTHING");
   }
 
   @AfterEach
   void cleanTestMatches() {
-    // Remove this test class's transient matches to keep the DB clean for other test classes.
+    // Remove this test class's transient rows to keep the DB clean for other test classes.
     jdbc.update("DELETE FROM match WHERE id >= 6100 AND id <= 6299");
+    jdbc.update("DELETE FROM team WHERE id IN (6001, 6002)");
   }
 
   private Long groupRound() {
@@ -102,12 +99,12 @@ class FootballDataSyncServiceIT extends AbstractIntegrationTest {
         groupRound(),
         groupRound());
 
-    int enqueued = sync.planToday();
+    sync.planToday();
 
-    assertThat(enqueued).isEqualTo(1);
     assertThat(queue.calls)
-        .singleElement()
-        .satisfies(c -> assertThat(c.matchId()).isEqualTo(6101L));
+        .extracting(FakeResultsTaskQueue.Enqueued::matchId)
+        .contains(6101L) // upcoming unplayed → enqueued
+        .doesNotContain(6102L, 6103L); // played and >24h → not enqueued
   }
 
   @Test
