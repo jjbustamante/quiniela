@@ -4,6 +4,7 @@ import io.quiniela.api.ranking.ScorecardView.MatchScore;
 import io.quiniela.api.ranking.ScorecardView.StageScore;
 import io.quiniela.api.ranking.ScorecardView.TeamRef;
 import io.quiniela.api.scoring.ScoreBreakdown;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,7 +65,8 @@ public class ScorecardService {
                t1.code AS t1_code, t1.name AS t1_name, t1.flag_emoji AS t1_flag,
                t2.code AS t2_code, t2.name AS t2_name, t2.flag_emoji AS t2_flag,
                b.score_t1 AS bet_t1, b.score_t2 AS bet_t2, b.predicted_winner_id AS pred_winner,
-               m.score_t1 AS act_t1, m.score_t2 AS act_t2, m.advanced_team_id AS adv_team
+               m.score_t1 AS act_t1, m.score_t2 AS act_t2, m.advanced_team_id AS adv_team,
+               b.points AS frozen_points, b.created_at AS bet_created_at
         FROM bet b
         JOIN quiniela q ON q.id = b.quiniela_id
         JOIN match m ON m.id = b.match_id
@@ -84,9 +86,19 @@ public class ScorecardService {
           Integer actT2 = (Integer) rs.getObject("act_t2");
           Long predWinner = (Long) rs.getObject("pred_winner");
           Long advTeam = (Long) rs.getObject("adv_team");
+          int frozenPoints = rs.getInt("frozen_points");
+          Timestamp kickoffTs = rs.getTimestamp("kickoff_at");
+          Timestamp betCreatedAt = rs.getTimestamp("bet_created_at");
 
+          // Compute live breakdown to detect divergence from frozen points.
           ScoreBreakdown breakdown =
               ScoreBreakdown.of(knockout, betT1, betT2, actT1, actT2, predWinner, advTeam, mult);
+
+          // Determine note: only when live total differs from what was actually frozen.
+          String note = null;
+          if (breakdown.total() != frozenPoints) {
+            note = betCreatedAt.after(kickoffTs) ? "PLACED_AFTER_KICKOFF" : "EDITED_AFTER_KICKOFF";
+          }
 
           MatchScore ms =
               new MatchScore(
@@ -95,17 +107,20 @@ public class ScorecardService {
                       rs.getString("t1_code"), rs.getString("t1_name"), rs.getString("t1_flag")),
                   new TeamRef(
                       rs.getString("t2_code"), rs.getString("t2_name"), rs.getString("t2_flag")),
-                  rs.getTimestamp("kickoff_at").toInstant().toString(),
+                  kickoffTs.toInstant().toString(),
                   betT1,
                   betT2,
                   actT1,
                   actT2,
-                  breakdown);
+                  breakdown,
+                  frozenPoints,
+                  note);
 
           String roundName = rs.getString("round_name");
           StageAcc acc = byRound.computeIfAbsent(roundCode, k -> new StageAcc(roundName));
           acc.matches.add(ms);
-          acc.points += breakdown.total();
+          // Accumulate frozen points (not live total) for the per-round subtotal.
+          acc.points += frozenPoints;
         },
         DEFAULT_POOL_ID,
         userId);

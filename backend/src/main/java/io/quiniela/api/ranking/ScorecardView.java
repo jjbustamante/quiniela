@@ -18,7 +18,15 @@ public record ScorecardView(
       Integer betScoreT2,
       Integer actualScoreT1,
       Integer actualScoreT2,
-      ScoreBreakdown breakdown) {}
+      ScoreBreakdown breakdown,
+      /** Frozen displayed points (from {@code bet.points}). */
+      int points,
+      /**
+       * Non-null when frozen points differ from live recompute: {@code "PLACED_AFTER_KICKOFF"} if
+       * the bet was created after the match kicked off; {@code "EDITED_AFTER_KICKOFF"} if it was
+       * created before but edited after.
+       */
+      String note) {}
 
   public record StageScore(
       String roundCode, String roundName, int points, List<MatchScore> matches) {}
