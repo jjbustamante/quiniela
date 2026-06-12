@@ -133,6 +133,29 @@ it("LIVE when groups are locked and no round is open to fill", () => {
   if (s.recap.kind === "results") expect(s.recap.recent[0].pointsEarned).toBe(7);
 });
 
+it("a match that finished TODAY shows in results, not as the upcoming fixture", () => {
+  const b = bracket({
+    groups: [{ code: "A", filled: 6, total: 6, locked: true, matches: [] }],
+    knockouts: [{ code: "R32", name: "Dieciseisavos", filled: 0, total: 16, unlocked: false, locked: false, matches: [] }],
+  });
+  // `today` bucket holds one game already played (1-1, +2) and one still to come today.
+  const m = matches({
+    today: [
+      { id: 537333, roundCode: "GROUP", groupCode: "B", kickoffAt: new Date(nowGroupsLive - 3600000).toISOString(), team1: { code: "CAN", name: "Canadá", flag: "🇨🇦" }, team2: { code: "BIH", name: "Bosnia", flag: "🇧🇦" }, score: { t1: 1, t2: 1 }, played: true, yourPick: { t1: 1, t2: 2 }, pointsEarned: 2, breakdown: null, pickWinner: null, winner: null },
+      { id: 537345, roundCode: "GROUP", groupCode: "D", kickoffAt: new Date(nowGroupsLive + 3600000).toISOString(), team1: { code: "USA", name: "USA", flag: "🇺🇸" }, team2: { code: "PAR", name: "Paraguay", flag: "🇵🇾" }, score: null, played: false, yourPick: null, pointsEarned: null, breakdown: null, pickWinner: null, winner: null },
+    ],
+  });
+  const s = computeHomeState({ bracket: b, ranking: ranking(), matches: m, summary: summary(), nowMs: nowGroupsLive });
+  expect(s.recap.kind).toBe("results");
+  if (s.recap.kind === "results") {
+    expect(
+      s.recap.recent.some((r) => r.matchId === 537333 && r.s1 === 1 && r.s2 === 1 && r.pointsEarned === 2),
+    ).toBe(true);
+    // the played-today game is NOT shown as the upcoming fixture — the unplayed one is.
+    expect(s.recap.next?.t1Code).toBe("USA");
+  }
+});
+
 it("CHAMPION when every match is played, with payout for a prize rank", () => {
   const b = bracket({ groups: [{ code: "A", filled: 6, total: 6, locked: true, matches: [] }], knockouts: [{ code: "FINAL", name: "Final", filled: 1, total: 1, unlocked: true, locked: true, matches: [] }] });
   const r = ranking({ entries: [{ rank: 2, userId: 1, displayName: "Tú", points: 96, delta: null, isYou: true, isBot: false }] });
