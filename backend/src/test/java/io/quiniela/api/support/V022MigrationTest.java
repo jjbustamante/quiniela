@@ -3,6 +3,7 @@ package io.quiniela.api.support;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.sql.DataSource;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,16 @@ class V022MigrationTest extends AbstractIntegrationTest {
   private Long matchId;
   private Long beforeQuinielaId;
   private Long afterQuinielaId;
+
+  // Delete the seeded match (cascades its bets) so it doesn't pollute the shared
+  // Testcontainers singleton — other ITs assert on the seeded 104-match count.
+  @AfterEach
+  void cleanupSeededMatch() {
+    if (jdbc != null && matchId != null) {
+      jdbc.update("DELETE FROM bet WHERE match_id = ?", matchId);
+      jdbc.update("DELETE FROM match WHERE id = ?", matchId);
+    }
+  }
 
   @BeforeEach
   void seedMatchAndBets() {
