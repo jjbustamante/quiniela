@@ -26,18 +26,26 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http, JwtDecoder jwtDecoder)
-      throws Exception {
+  public SecurityFilterChain filterChain(
+      HttpSecurity http, JwtDecoder jwtDecoder, SyncTokenFilter syncTokenFilter) throws Exception {
     http.csrf(csrf -> csrf.disable())
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             authz ->
                 authz
-                    .requestMatchers("/actuator/**", "/auth/**", "/api/invite/**", "/api/public/**")
+                    .requestMatchers(
+                        "/actuator/**",
+                        "/auth/**",
+                        "/api/invite/**",
+                        "/api/public/**",
+                        "/internal/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
-        .oauth2ResourceServer(rs -> rs.jwt(Customizer.withDefaults()));
+        .oauth2ResourceServer(rs -> rs.jwt(Customizer.withDefaults()))
+        .addFilterBefore(
+            syncTokenFilter,
+            org.springframework.security.web.access.intercept.AuthorizationFilter.class);
     return http.build();
   }
 
