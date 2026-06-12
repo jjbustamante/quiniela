@@ -93,7 +93,7 @@ public class FootballDataSyncService {
     for (Map<String, Object> row : due) {
       long id = ((Number) row.get("id")).longValue();
       Instant kickoff = ((java.sql.Timestamp) row.get("kickoff_at")).toInstant();
-      Instant when = kickoff.plus(Duration.ofMinutes(props.matchMinDurationMinutes()));
+      Instant when = kickoff.plus(Duration.ofMinutes(props.firstPollOffsetMinutes()));
       queue.enqueue(id, when, "match-" + id + "-" + when.getEpochSecond());
       count++;
     }

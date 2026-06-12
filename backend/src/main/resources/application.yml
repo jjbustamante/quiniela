@@ -89,9 +89,9 @@ app:
 
   sync:
     token: ${APP_SYNC_TOKEN:}                       # shared secret; empty => /internal/** returns 401
-    match-min-duration-minutes: ${APP_SYNC_MATCH_MIN_DURATION_MINUTES:105}
+    first-poll-offset-minutes: ${APP_SYNC_FIRST_POLL_OFFSET_MINUTES:0}
     poll-window-hours: ${APP_SYNC_POLL_WINDOW_HOURS:5}
-    retry-interval-minutes: ${APP_SYNC_RETRY_INTERVAL_MINUTES:15}
+    retry-interval-minutes: ${APP_SYNC_RETRY_INTERVAL_MINUTES:5}
     tasks:
       enabled: ${APP_SYNC_TASKS_ENABLED:false}
       queue: ${APP_SYNC_TASKS_QUEUE:}               # projects/<p>/locations/<l>/queues/results-sync

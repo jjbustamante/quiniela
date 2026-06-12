@@ -9,9 +9,9 @@ class SyncPropertiesTest {
   @Test
   void appliesDefaultsWhenNullsGiven() {
     SyncProperties p = new SyncProperties(null, null, null, null, null);
-    assertThat(p.matchMinDurationMinutes()).isEqualTo(105);
+    assertThat(p.firstPollOffsetMinutes()).isEqualTo(0);
     assertThat(p.pollWindowHours()).isEqualTo(5);
-    assertThat(p.retryIntervalMinutes()).isEqualTo(15);
+    assertThat(p.retryIntervalMinutes()).isEqualTo(5);
     assertThat(p.tasks().enabled()).isFalse();
   }
 }
