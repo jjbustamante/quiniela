@@ -37,11 +37,14 @@ class MatchesControllerIT extends AbstractIntegrationTest {
 
   @AfterEach
   void restoreMatch1() {
-    // Restore V006 seed values that some tests mutate so other suites see clean state.
+    // Restore seed values that some tests mutate so other suites see clean state.
+    // Use a NOW()-relative future kickoff (matching V021's re-anchor) so match 1
+    // returns to the "upcoming" bucket regardless of the calendar date the suite
+    // runs on — an absolute date here becomes a past-bucket pollutant once it passes.
     jdbc.update(
         "UPDATE match SET score_t1 = NULL, score_t2 = NULL, played = FALSE, winner_id = NULL,"
             + " advanced_team_id = NULL,"
-            + " kickoff_at = TIMESTAMPTZ '2026-06-11 17:00 UTC' WHERE id = 1");
+            + " kickoff_at = NOW() + INTERVAL '10 days' WHERE id = 1");
   }
 
   @Test

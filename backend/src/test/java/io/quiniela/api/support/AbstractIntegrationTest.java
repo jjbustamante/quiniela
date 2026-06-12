@@ -52,5 +52,15 @@ public abstract class AbstractIntegrationTest {
         "INSERT INTO users (google_sub, email, display_name, role, is_bot) "
             + "VALUES ('paul-bot-oracle', 'paul@laquinieladelospanas.com', 'Pulpo Paul 🐙', 'player', TRUE) "
             + "ON CONFLICT (google_sub) DO NOTHING");
+
+    // Reset the betting deadlines to an OPEN (future) window before each test.
+    // The tournament row is shared across the singleton Testcontainer and is NOT
+    // cleaned by the deletes above, so a deadline pushed into the past by an
+    // earlier test (or the now-elapsed seeded date) would otherwise leak a closed
+    // window into the next test. Tests that need a closed round set their own past
+    // deadline after this runs (subclass @BeforeEach + test body run later).
+    jdbcTemplate.update(
+        "UPDATE tournament SET group_stage_deadline = NOW() + INTERVAL '10 days',"
+            + " knockout_deadline = NOW() + INTERVAL '27 days' WHERE id = 1");
   }
 }

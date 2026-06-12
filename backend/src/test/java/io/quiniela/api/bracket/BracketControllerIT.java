@@ -108,8 +108,11 @@ class BracketControllerIT extends AbstractIntegrationTest {
                   .content("{\"matchId\":1,\"scoreT1\":2,\"scoreT2\":1}"))
           .andExpect(status().isLocked());
     } finally {
+      // Restore an OPEN window (NOW()-relative). An absolute date here becomes a
+      // past deadline once the calendar passes it, which leaks a closed window into
+      // later tests via the shared singleton container.
       jdbc.update(
-          "UPDATE tournament SET group_stage_deadline = TIMESTAMPTZ '2026-06-11 17:00 UTC' WHERE id = 1");
+          "UPDATE tournament SET group_stage_deadline = NOW() + INTERVAL '30 days' WHERE id = 1");
     }
   }
 }
