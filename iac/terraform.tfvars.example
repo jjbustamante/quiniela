@@ -17,6 +17,10 @@ github_repository = "jjbustamante/quiniela"
 # Get the value with: tofu output -raw web_service_url
 # web_service_url = "https://quiniela-web-XXXXXXXXXX-uc.a.run.app"
 
+# api base URL — needed by the results-sync (APP_SYNC_TASKS_TARGET_BASE).
+# Get the value with: tofu output -raw api_service_url
+# api_base_url = "https://quiniela-api-XXXXXXXXXX-uc.a.run.app"
+
 # ─── Custom domain (Cloudflare DNS + Cloud Run domain mapping) ──────────────
 custom_domain      = "quiniela.dpdns.org"
 cloudflare_zone_id = "FILL_ME_IN"       # find on the zone's Overview page in Cloudflare

@@ -143,8 +143,11 @@ resource "google_cloud_run_v2_service" "api" {
         value = google_cloud_tasks_queue.results_sync.id
       }
       env {
-        name  = "APP_SYNC_TASKS_TARGET_BASE"
-        value = google_cloud_run_v2_service.api.uri
+        name = "APP_SYNC_TASKS_TARGET_BASE"
+        # Can't use google_cloud_run_v2_service.api.uri here — a Cloud Run service
+        # may not reference its own attributes. Set via tfvar after first apply
+        # (same pattern as web_service_url).
+        value = var.api_base_url
       }
 
       # Octopus Paul AI predictions via Vertex AI. APP_PAUL_PROVIDER=vertex selects

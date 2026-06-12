@@ -83,6 +83,20 @@ variable "web_service_url" {
   default     = ""
 }
 
+variable "api_base_url" {
+  description = <<-EOT
+    Public URL of the api Cloud Run service. The results-sync needs it as
+    APP_SYNC_TASKS_TARGET_BASE so Cloud Tasks can call /internal/sync/results
+    back on this service. Same manual-step rationale as web_service_url: a
+    Cloud Run service can't reference its own .uri inside its own env vars.
+    Set AFTER first apply (run `tofu output -raw api_service_url`), add it to
+    terraform.tfvars, then re-run `tofu apply`. Leave empty until then —
+    APP_SYNC_TASKS_ENABLED stays effective only once this is set.
+  EOT
+  type        = string
+  default     = ""
+}
+
 # ─── Cloudflare / custom domain ─────────────────────────────────────────────
 
 variable "cloudflare_api_token" {
