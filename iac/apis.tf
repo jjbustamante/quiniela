@@ -17,6 +17,8 @@ locals {
     "cloudresourcemanager.googleapis.com", # Project-level API calls
     "billingbudgets.googleapis.com",       # Budget alerts — used in a later PR
     "aiplatform.googleapis.com",           # Vertex AI Gemini — powers Octopus Paul predictions
+    "cloudscheduler.googleapis.com",       # daily sync planner
+    "cloudtasks.googleapis.com",           # per-match result-check tasks
   ]
 }
 

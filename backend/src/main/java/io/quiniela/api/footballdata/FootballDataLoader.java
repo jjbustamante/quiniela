@@ -1,9 +1,6 @@
 package io.quiniela.api.footballdata;
 
-import io.quiniela.api.match.Round;
-import io.quiniela.api.match.RoundRepository;
 import io.quiniela.api.team.TeamRepository;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -29,13 +26,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class FootballDataLoader implements ApplicationRunner {
 
   private static final Logger log = LoggerFactory.getLogger(FootballDataLoader.class);
-  private static final Long TOURNAMENT_ID = 1L;
 
   private final boolean enabled;
   private final String competitionCode;
   private final FootballDataClient client;
   private final TeamRepository teams;
-  private final RoundRepository rounds;
+  private final FootballDataSyncService sync;
   private final JdbcTemplate jdbc;
 
   public FootballDataLoader(
@@ -43,13 +39,13 @@ public class FootballDataLoader implements ApplicationRunner {
       @Value("${app.football-data.competition-code:WC}") String competitionCode,
       FootballDataClient client,
       TeamRepository teams,
-      RoundRepository rounds,
+      FootballDataSyncService sync,
       DataSource dataSource) {
     this.enabled = enabled;
     this.competitionCode = competitionCode;
     this.client = client;
     this.teams = teams;
-    this.rounds = rounds;
+    this.sync = sync;
     this.jdbc = new JdbcTemplate(dataSource);
   }
 
@@ -116,7 +112,7 @@ public class FootballDataLoader implements ApplicationRunner {
       if (standings != null && standings.standings() != null) {
         for (var g : standings.standings()) {
           if (!"TOTAL".equals(g.type())) continue; // skip HOME/AWAY duplicates
-          String groupLetter = mapGroupName(g.group());
+          String groupLetter = FootballDataSyncService.mapGroupName(g.group());
           if (groupLetter == null) continue;
           for (var row : g.table()) {
             groupByTeam.put(row.team().id(), groupLetter);
@@ -140,7 +136,7 @@ public class FootballDataLoader implements ApplicationRunner {
             "INSERT INTO team (id, tournament_id, code, name, group_code, flag_emoji) "
                 + "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING",
             t.id(),
-            TOURNAMENT_ID,
+            FootballDataSyncService.TOURNAMENT_ID,
             tla,
             name,
             groupCode,
@@ -152,104 +148,9 @@ public class FootballDataLoader implements ApplicationRunner {
     jdbc.execute("SELECT setval('team_id_seq', GREATEST(1, (SELECT MAX(id) FROM team)))");
     log.info("football-data loader: inserted {} teams", teamsInserted);
 
-    // Insert matches.
-    Map<String, Long> roundByCode = new HashMap<>();
-    for (Round r : rounds.findAll()) roundByCode.put(r.getCode(), r.getId());
-
+    // Insert/refresh matches via the shared sync service (freeze guard inside).
     var matchesResp = client.getMatches(competitionCode);
-    int matchesInserted = 0;
-    if (matchesResp != null && matchesResp.matches() != null) {
-      for (var m : matchesResp.matches()) {
-        String roundCode = mapStageToRoundCode(m.stage());
-        Long roundId = roundByCode.get(roundCode);
-        if (roundId == null) {
-          log.debug("Skipping match {}: unmapped stage {}", m.id(), m.stage());
-          continue;
-        }
-        String groupCode = "GROUP".equals(roundCode) ? mapGroupName(m.group()) : null;
-        Long team1Id = m.homeTeam() != null ? m.homeTeam().id() : null;
-        Long team2Id = m.awayTeam() != null ? m.awayTeam().id() : null;
-        Instant kickoff = m.utcDate() != null ? Instant.parse(m.utcDate()) : Instant.now();
-        Integer scoreT1 =
-            m.score() != null && m.score().fullTime() != null ? m.score().fullTime().home() : null;
-        Integer scoreT2 =
-            m.score() != null && m.score().fullTime() != null ? m.score().fullTime().away() : null;
-        boolean played = "FINISHED".equals(m.status());
-        Long advancedTeamId = advancingTeamId(m);
-
-        // UPSERT so a re-sync lands real results onto the row inserted at first load.
-        // Updating score_t1/score_t2/advanced_team_id fires the BEFORE UPDATE trigger,
-        // which recomputes points. team ids use COALESCE so a knockout slot already
-        // filled isn't blanked by a later TBD payload. group_code/round_id never change.
-        jdbc.update(
-            "INSERT INTO match "
-                + "(id, tournament_id, round_id, group_code, team_1_id, team_2_id, "
-                + " score_t1, score_t2, advanced_team_id, played, kickoff_at) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
-                + "ON CONFLICT (id) DO UPDATE SET "
-                + "  team_1_id = COALESCE(EXCLUDED.team_1_id, match.team_1_id), "
-                + "  team_2_id = COALESCE(EXCLUDED.team_2_id, match.team_2_id), "
-                + "  score_t1 = EXCLUDED.score_t1, "
-                + "  score_t2 = EXCLUDED.score_t2, "
-                + "  advanced_team_id = EXCLUDED.advanced_team_id, "
-                + "  played = EXCLUDED.played, "
-                + "  kickoff_at = EXCLUDED.kickoff_at",
-            m.id(),
-            TOURNAMENT_ID,
-            roundId,
-            groupCode,
-            team1Id,
-            team2Id,
-            scoreT1,
-            scoreT2,
-            advancedTeamId,
-            played,
-            java.sql.Timestamp.from(kickoff));
-        matchesInserted++;
-      }
-    }
-    jdbc.execute("SELECT setval('match_id_seq', GREATEST(1, (SELECT MAX(id) FROM match)))");
-    log.info("football-data loader: inserted {} matches", matchesInserted);
-  }
-
-  /** Map football-data.org's "Group A" -> "A". Returns null for unrecognized values. */
-  static String mapGroupName(String apiGroup) {
-    if (apiGroup == null) return null;
-    if (apiGroup.startsWith("Group ") && apiGroup.length() == 7) {
-      return apiGroup.substring(6, 7);
-    }
-    if (apiGroup.startsWith("GROUP_") && apiGroup.length() == 7) {
-      return apiGroup.substring(6, 7);
-    }
-    return null;
-  }
-
-  /**
-   * The team that progresses from a finished knockout, per football-data.org's score.winner. Works
-   * for both regulation/ET wins and penalty shootouts (winner names the progressing side). Returns
-   * null for a true draw (group stage) or missing data.
-   */
-  static Long advancingTeamId(FootballDataClient.MatchApi m) {
-    if (m.score() == null || m.score().winner() == null) return null;
-    return switch (m.score().winner()) {
-      case "HOME_TEAM" -> m.homeTeam() != null ? m.homeTeam().id() : null;
-      case "AWAY_TEAM" -> m.awayTeam() != null ? m.awayTeam().id() : null;
-      default -> null; // DRAW or unrecognized
-    };
-  }
-
-  /** Map football-data.org match.stage codes to our round.code values. */
-  static String mapStageToRoundCode(String apiStage) {
-    if (apiStage == null) return null;
-    return switch (apiStage) {
-      case "GROUP_STAGE" -> "GROUP";
-      case "LAST_32", "ROUND_OF_32" -> "R32";
-      case "LAST_16", "ROUND_OF_16" -> "R16";
-      case "QUARTER_FINALS", "QUARTERFINALS" -> "QF";
-      case "SEMI_FINALS", "SEMIFINALS" -> "SF";
-      case "THIRD_PLACE", "PLAY_OFF_FOR_THIRD_PLACE" -> "THIRD_PLACE";
-      case "FINAL" -> "FINAL";
-      default -> null;
-    };
+    int matchesInserted = sync.upsertMatches(matchesResp);
+    log.info("football-data loader: upserted {} matches", matchesInserted);
   }
 }

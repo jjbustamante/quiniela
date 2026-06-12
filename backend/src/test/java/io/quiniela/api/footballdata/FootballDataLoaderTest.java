@@ -8,24 +8,24 @@ class FootballDataLoaderTest {
 
   @Test
   void mapGroupNameHandlesSpaceAndUnderscoreForms() {
-    assertThat(FootballDataLoader.mapGroupName("Group A")).isEqualTo("A");
-    assertThat(FootballDataLoader.mapGroupName("Group L")).isEqualTo("L");
-    assertThat(FootballDataLoader.mapGroupName("GROUP_F")).isEqualTo("F");
-    assertThat(FootballDataLoader.mapGroupName(null)).isNull();
-    assertThat(FootballDataLoader.mapGroupName("Knockout")).isNull();
+    assertThat(FootballDataSyncService.mapGroupName("Group A")).isEqualTo("A");
+    assertThat(FootballDataSyncService.mapGroupName("Group L")).isEqualTo("L");
+    assertThat(FootballDataSyncService.mapGroupName("GROUP_F")).isEqualTo("F");
+    assertThat(FootballDataSyncService.mapGroupName(null)).isNull();
+    assertThat(FootballDataSyncService.mapGroupName("Knockout")).isNull();
   }
 
   @Test
   void mapStageToRoundCodeCoversAllSupportedStages() {
-    assertThat(FootballDataLoader.mapStageToRoundCode("GROUP_STAGE")).isEqualTo("GROUP");
-    assertThat(FootballDataLoader.mapStageToRoundCode("ROUND_OF_32")).isEqualTo("R32");
-    assertThat(FootballDataLoader.mapStageToRoundCode("LAST_16")).isEqualTo("R16");
-    assertThat(FootballDataLoader.mapStageToRoundCode("QUARTER_FINALS")).isEqualTo("QF");
-    assertThat(FootballDataLoader.mapStageToRoundCode("SEMI_FINALS")).isEqualTo("SF");
-    assertThat(FootballDataLoader.mapStageToRoundCode("THIRD_PLACE")).isEqualTo("THIRD_PLACE");
-    assertThat(FootballDataLoader.mapStageToRoundCode("FINAL")).isEqualTo("FINAL");
-    assertThat(FootballDataLoader.mapStageToRoundCode("UNKNOWN_STAGE")).isNull();
-    assertThat(FootballDataLoader.mapStageToRoundCode(null)).isNull();
+    assertThat(FootballDataSyncService.mapStageToRoundCode("GROUP_STAGE")).isEqualTo("GROUP");
+    assertThat(FootballDataSyncService.mapStageToRoundCode("ROUND_OF_32")).isEqualTo("R32");
+    assertThat(FootballDataSyncService.mapStageToRoundCode("LAST_16")).isEqualTo("R16");
+    assertThat(FootballDataSyncService.mapStageToRoundCode("QUARTER_FINALS")).isEqualTo("QF");
+    assertThat(FootballDataSyncService.mapStageToRoundCode("SEMI_FINALS")).isEqualTo("SF");
+    assertThat(FootballDataSyncService.mapStageToRoundCode("THIRD_PLACE")).isEqualTo("THIRD_PLACE");
+    assertThat(FootballDataSyncService.mapStageToRoundCode("FINAL")).isEqualTo("FINAL");
+    assertThat(FootballDataSyncService.mapStageToRoundCode("UNKNOWN_STAGE")).isNull();
+    assertThat(FootballDataSyncService.mapStageToRoundCode(null)).isNull();
   }
 
   @org.junit.jupiter.api.Test
@@ -42,7 +42,8 @@ class FootballDataLoaderTest {
         new FootballDataClient.MatchApi(
             7001L, "2026-07-01T18:00:00Z", "FINISHED", "LAST_32", null, home, away, drawScore);
 
-    org.junit.jupiter.api.Assertions.assertEquals(1002L, FootballDataLoader.advancingTeamId(m));
+    org.junit.jupiter.api.Assertions.assertEquals(
+        1002L, FootballDataSyncService.advancingTeamId(m));
   }
 
   @org.junit.jupiter.api.Test
@@ -63,6 +64,6 @@ class FootballDataLoaderTest {
             away,
             drawScore);
 
-    org.junit.jupiter.api.Assertions.assertNull(FootballDataLoader.advancingTeamId(m));
+    org.junit.jupiter.api.Assertions.assertNull(FootballDataSyncService.advancingTeamId(m));
   }
 }

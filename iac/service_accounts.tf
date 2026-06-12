@@ -119,6 +119,22 @@ resource "google_secret_manager_secret_iam_member" "api_runtime_football_data" {
   member    = "serviceAccount:${google_service_account.api_runtime.email}"
 }
 
+# sync-token secret — api reads it as APP_SYNC_TOKEN to authenticate /internal/**
+resource "google_secret_manager_secret_iam_member" "api_runtime_sync_token" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.sync_token.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api_runtime.email}"
+}
+
+# Cloud Tasks enqueuer — api enqueues per-match result-check tasks into the
+# results-sync queue during planToday / syncMatch re-enqueue.
+resource "google_project_iam_member" "api_runtime_cloudtasks_enqueuer" {
+  project = var.project_id
+  role    = "roles/cloudtasks.enqueuer"
+  member  = "serviceAccount:${google_service_account.api_runtime.email}"
+}
+
 # Vertex AI — Octopus Paul calls Gemini through aiplatform.googleapis.com using
 # this SA's ADC (no API key). roles/aiplatform.user grants predict/generateContent.
 # Replaces the former gemini-api-key secretAccessor binding (AI Studio path).

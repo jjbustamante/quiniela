@@ -56,6 +56,8 @@
              scope doesn't inherit dependency-management so we pin explicitly. -->
         <flyway.version>11.20.3</flyway.version>
 
+        <google-cloud-tasks.version>2.51.0</google-cloud-tasks.version>
+
         <!-- Flyway Maven plugin defaults — point at local docker-compose Postgres.
              Override per-invocation: `./mvnw flyway:info -Dflyway.url=...`.
              App-runtime migrations still run via Spring Boot's flyway-core
@@ -199,6 +201,16 @@
             <groupId>com.google.genai</groupId>
             <artifactId>google-genai</artifactId>
             <version>${google-genai.version}</version>
+        </dependency>
+
+        <!-- Cloud Tasks client — used by CloudTasksResultsQueue (prod only,
+             active when app.sync.tasks.enabled=true). In local/test the
+             NoopResultsTaskQueue fallback is active instead so the library
+             is never called. -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-tasks</artifactId>
+            <version>${google-cloud-tasks.version}</version>
         </dependency>
 
         <dependency>

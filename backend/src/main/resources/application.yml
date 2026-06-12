@@ -86,3 +86,13 @@ app:
     models: ${APP_PAUL_MODELS:gemini-2.5-pro,gemini-2.5-flash}
     # Model used for the ensemble-judge synthesis of Paul's OFFICIAL bet.
     ensemble-model: ${APP_PAUL_ENSEMBLE_MODEL:gemini-2.5-pro}
+
+  sync:
+    token: ${APP_SYNC_TOKEN:}                       # shared secret; empty => /internal/** returns 401
+    match-min-duration-minutes: ${APP_SYNC_MATCH_MIN_DURATION_MINUTES:105}
+    poll-window-hours: ${APP_SYNC_POLL_WINDOW_HOURS:5}
+    retry-interval-minutes: ${APP_SYNC_RETRY_INTERVAL_MINUTES:15}
+    tasks:
+      enabled: ${APP_SYNC_TASKS_ENABLED:false}
+      queue: ${APP_SYNC_TASKS_QUEUE:}               # projects/<p>/locations/<l>/queues/results-sync
+      target-base: ${APP_SYNC_TASKS_TARGET_BASE:}   # the api's own Cloud Run base URL
