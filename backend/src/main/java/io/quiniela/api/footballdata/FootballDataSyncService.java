@@ -4,12 +4,15 @@ import io.quiniela.api.footballdata.FootballDataClient.CompetitionMatchesRespons
 import io.quiniela.api.footballdata.FootballDataClient.MatchApi;
 import io.quiniela.api.match.Round;
 import io.quiniela.api.match.RoundRepository;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,10 +30,116 @@ public class FootballDataSyncService {
 
   private final RoundRepository rounds;
   private final JdbcTemplate jdbc;
+  private final FootballDataClient client;
+  private final ResultsTaskQueue queue;
+  private final SyncProperties props;
+  private final boolean footballDataEnabled;
+  private final String competitionCode;
 
-  public FootballDataSyncService(RoundRepository rounds, DataSource dataSource) {
+  public FootballDataSyncService(
+      RoundRepository rounds,
+      DataSource dataSource,
+      FootballDataClient client,
+      ResultsTaskQueue queue,
+      SyncProperties props,
+      @Value("${app.football-data.enabled:false}") boolean footballDataEnabled,
+      @Value("${app.football-data.competition-code:WC}") String competitionCode) {
     this.rounds = rounds;
     this.jdbc = new JdbcTemplate(dataSource);
+    this.client = client;
+    this.queue = queue;
+    this.props = props;
+    this.footballDataEnabled = footballDataEnabled;
+    this.competitionCode = competitionCode;
+  }
+
+  public record SyncResult(
+      boolean apiCalled, int matchesUpserted, int enqueued, String skippedReason) {
+    static SyncResult skipped(String reason) {
+      return new SyncResult(false, 0, 0, reason);
+    }
+  }
+
+  /** Daily entry point: refresh fixtures, then enqueue today's per-match checks. */
+  public SyncResult runDaily() {
+    if (!footballDataEnabled) return SyncResult.skipped("integration disabled");
+    SyncResult full = syncFull();
+    int enqueued = planToday();
+    return new SyncResult(full.apiCalled(), full.matchesUpserted(), enqueued, null);
+  }
+
+  /** Ungated full upsert (fixtures + any finished results for unplayed rows). */
+  public SyncResult syncFull() {
+    if (!footballDataEnabled) return SyncResult.skipped("integration disabled");
+    try {
+      int n = upsertMatches(client.getMatches(competitionCode));
+      return new SyncResult(true, n, 0, null);
+    } catch (Exception e) {
+      log.warn("syncFull failed", e);
+      return new SyncResult(true, 0, 0, "api error: " + e.getMessage());
+    }
+  }
+
+  /** Enqueue one task per not-yet-played match kicking off within the next 24h. */
+  public int planToday() {
+    List<Map<String, Object>> due =
+        jdbc.queryForList(
+            "SELECT id, kickoff_at FROM match "
+                + "WHERE tournament_id = ? AND played = false "
+                + "  AND kickoff_at BETWEEN now() AND now() + interval '24 hours' "
+                + "ORDER BY kickoff_at",
+            TOURNAMENT_ID);
+    int count = 0;
+    for (Map<String, Object> row : due) {
+      long id = ((Number) row.get("id")).longValue();
+      Instant kickoff = ((java.sql.Timestamp) row.get("kickoff_at")).toInstant();
+      Instant when = kickoff.plus(Duration.ofMinutes(props.matchMinDurationMinutes()));
+      queue.enqueue(id, when, "match-" + id + "-" + when.getEpochSecond());
+      count++;
+    }
+    log.info("planToday: enqueued {} result checks", count);
+    return count;
+  }
+
+  /** Per-task check: apply result if final, else re-enqueue within the poll window. */
+  public SyncResult syncMatch(long matchId) {
+    if (!footballDataEnabled) return SyncResult.skipped("integration disabled");
+
+    Map<String, Object> row;
+    try {
+      row = jdbc.queryForMap("SELECT played, kickoff_at FROM match WHERE id = ?", matchId);
+    } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+      return SyncResult.skipped("unknown match");
+    }
+    if (Boolean.TRUE.equals(row.get("played"))) return SyncResult.skipped("already final");
+
+    int n;
+    try {
+      n = upsertMatches(client.getMatches(competitionCode));
+    } catch (Exception e) {
+      log.warn("syncMatch {} api error", matchId, e);
+      maybeReEnqueue(matchId, ((java.sql.Timestamp) row.get("kickoff_at")).toInstant());
+      return new SyncResult(true, 0, 0, "api error: " + e.getMessage());
+    }
+
+    Boolean nowPlayed =
+        jdbc.queryForObject("SELECT played FROM match WHERE id = ?", Boolean.class, matchId);
+    if (Boolean.TRUE.equals(nowPlayed)) {
+      return new SyncResult(true, n, 0, null); // got it; no re-enqueue
+    }
+    int enq = maybeReEnqueue(matchId, ((java.sql.Timestamp) row.get("kickoff_at")).toInstant());
+    return new SyncResult(true, n, enq, null);
+  }
+
+  private int maybeReEnqueue(long matchId, Instant kickoff) {
+    Instant deadline = kickoff.plus(Duration.ofHours(props.pollWindowHours()));
+    Instant next = Instant.now().plus(Duration.ofMinutes(props.retryIntervalMinutes()));
+    if (next.isAfter(deadline)) {
+      log.warn("giving up on match {} — past poll window ({})", matchId, deadline);
+      return 0;
+    }
+    queue.enqueue(matchId, next, "match-" + matchId + "-" + next.getEpochSecond());
+    return 1;
   }
 
   /** UPSERT every match in the payload. Already-played rows are frozen (no UPDATE, no trigger). */

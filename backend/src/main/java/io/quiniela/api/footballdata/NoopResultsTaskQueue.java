@@ -14,7 +14,7 @@ public class NoopResultsTaskQueue {
 
   @Bean
   @ConditionalOnMissingBean(ResultsTaskQueue.class)
-  ResultsTaskQueue noopResultsTaskQueue() {
+  ResultsTaskQueue resultsTaskQueueNoop() {
     return (matchId, when, dedupName) ->
         log.info("[noop queue] would enqueue match {} at {} (name={})", matchId, when, dedupName);
   }
