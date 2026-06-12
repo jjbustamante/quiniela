@@ -42,6 +42,13 @@ export default async function RankingPage() {
           </span>
         </div>
 
+        {ranking.liveScoring && (
+          <div className="mx-3 mt-2 inline-flex items-center gap-1.5 border-[1.5px] border-[var(--color-accent-red)] px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-accent-red)]">
+            <span className="inline-block h-2 w-2 rounded-full bg-[var(--color-accent-red)]" />
+            {t("liveBanner")}
+          </div>
+        )}
+
         {count === 0 ? (
           <section className="mx-3 mt-6 border-[1.5px] border-dashed border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] p-6 text-center">
             <p className="font-display text-base font-extrabold uppercase tracking-tight text-[var(--color-text-muted)]">

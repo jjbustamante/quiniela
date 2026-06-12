@@ -12,6 +12,7 @@ function match(over: Partial<MatchView> & { id: number; roundCode: string; kicko
     team2: { code: "MEX", name: "México", flag: "🇲🇽" },
     score: { t1: 2, t2: 1 },
     played: true,
+    live: false,
     yourPick: null,
     pointsEarned: null,
     breakdown: null,

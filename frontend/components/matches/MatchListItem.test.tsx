@@ -14,6 +14,7 @@ function match(overrides: Partial<MatchView> = {}): MatchView {
     team2: { code: "PAR", name: "Paraguay", flag: "🇵🇾" },
     score: { t1: 1, t2: 1 },
     played: true,
+    live: false,
     yourPick: { t1: 1, t2: 1 },
     pointsEarned: 4,
     breakdown: { outcome: 3, team1Exact: 0, team2Exact: 0, goalDiff: 1, multiplier: 1, total: 4 },
@@ -139,5 +140,83 @@ describe("MatchListItem — breakdown toggle", () => {
       <MatchListItem match={match({ pointsEarned: null, breakdown: null })} labels={labels} showResult now={Date.parse("2026-06-30T00:00:00Z")} />,
     );
     expect(screen.queryByRole("button", { name: /ver desglose/i })).not.toBeInTheDocument();
+  });
+});
+
+describe("MatchListItem — live match", () => {
+  it("shows the live score with the EN VIVO indicator for a live match", () => {
+    render(
+      <MatchListItem
+        match={match({
+          played: false,
+          live: true,
+          score: { t1: 2, t2: 0 },
+          pointsEarned: 7,
+          breakdown: { outcome: 3, team1Exact: 2, team2Exact: 2, goalDiff: 0, multiplier: 1, total: 7 },
+        })}
+        labels={labels}
+        showResult
+        now={Date.parse("2026-06-29T16:00:00Z")}
+      />,
+    );
+    // Live score is shown
+    expect(screen.getByText("2–0")).toBeInTheDocument();
+    // EN VIVO indicator is shown
+    expect(screen.getByText("EN VIVO")).toBeInTheDocument();
+    // Points badge is rendered (provisional)
+    expect(screen.getByRole("button", { name: /ver desglose/i })).toBeInTheDocument();
+    expect(screen.getByText("+7 PTS")).toBeInTheDocument();
+  });
+
+  it("provisional points badge is visually distinct from a played match (has a live dot inside)", () => {
+    const { container: liveContainer } = render(
+      <MatchListItem
+        match={match({
+          played: false,
+          live: true,
+          score: { t1: 1, t2: 0 },
+          pointsEarned: 3,
+          breakdown: { outcome: 3, team1Exact: 0, team2Exact: 0, goalDiff: 0, multiplier: 1, total: 3 },
+        })}
+        labels={labels}
+        showResult
+        now={Date.parse("2026-06-29T16:00:00Z")}
+      />,
+    );
+
+    const { container: playedContainer } = render(
+      <MatchListItem
+        match={match({ played: true, live: false, score: { t1: 1, t2: 0 }, pointsEarned: 3 })}
+        labels={labels}
+        showResult
+        now={Date.parse("2026-06-29T16:00:00Z")}
+      />,
+    );
+
+    const liveBtn = liveContainer.querySelector("button[aria-expanded]");
+    const playedBtn = playedContainer.querySelector("button[aria-expanded]");
+    // Live badge uses red background class; played badge uses gold
+    expect(liveBtn?.className).toContain("color-accent-red");
+    expect(playedBtn?.className).toContain("color-accent-gold");
+  });
+
+  it("upcoming match with no kickoff yet shows VS, not EN VIVO", () => {
+    render(
+      <MatchListItem
+        match={match({
+          played: false,
+          live: false,
+          score: null,
+          pointsEarned: null,
+          breakdown: null,
+          kickoffAt: "2026-07-01T15:30:00Z",
+        })}
+        labels={labels}
+        showResult={false}
+        now={Date.parse("2026-06-29T16:00:00Z")}
+      />,
+    );
+    expect(screen.getByText("VS")).toBeInTheDocument();
+    expect(screen.queryByText("EN VIVO")).not.toBeInTheDocument();
   });
 });

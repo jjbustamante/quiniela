@@ -9,6 +9,7 @@ function m(over: Partial<MatchView> & { id: number; roundCode: string; kickoffAt
     team2: { code: "B", name: "B", flag: "🏳" },
     score: null,
     played: false,
+    live: false,
     yourPick: null,
     pointsEarned: null,
     breakdown: null,

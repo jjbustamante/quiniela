@@ -15,6 +15,8 @@ export type RankingEntry = {
 export type RankingView = {
   entries: RankingEntry[];
   updatedAt: string;
+  /** True when at least one match is currently in-play. Points may change. */
+  liveScoring: boolean;
 };
 
 export async function getRanking(): Promise<RankingView> {

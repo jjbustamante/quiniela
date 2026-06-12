@@ -30,6 +30,7 @@ function ranking(over: Partial<RankingView> = {}): RankingView {
       { rank: 1, userId: 1, displayName: "Tú", points: 0, delta: null, isYou: true, isBot: false },
     ],
     updatedAt: "2026-06-01T00:00:00Z",
+    liveScoring: false,
     ...over,
   };
 }
@@ -124,7 +125,7 @@ it("LIVE when groups are locked and no round is open to fill", () => {
     groups: [{ code: "A", filled: 6, total: 6, locked: true, matches: [] }],
     knockouts: [{ code: "R32", name: "Dieciseisavos", filled: 0, total: 16, unlocked: false, locked: false, matches: [] }],
   });
-  const m = matches({ past: [{ id: 1, roundCode: "GROUP", groupCode: "A", kickoffAt: new Date(nowGroupsLive - 3600000).toISOString(), team1: { code: "BRA", name: "Brasil", flag: "🇧🇷" }, team2: { code: "GHA", name: "Ghana", flag: "🇬🇭" }, score: { t1: 2, t2: 0 }, played: true, yourPick: { t1: 2, t2: 0 }, pointsEarned: 7, breakdown: null, pickWinner: null, winner: null }] });
+  const m = matches({ past: [{ id: 1, roundCode: "GROUP", groupCode: "A", kickoffAt: new Date(nowGroupsLive - 3600000).toISOString(), team1: { code: "BRA", name: "Brasil", flag: "🇧🇷" }, team2: { code: "GHA", name: "Ghana", flag: "🇬🇭" }, score: { t1: 2, t2: 0 }, played: true, live: false, yourPick: { t1: 2, t2: 0 }, pointsEarned: 7, breakdown: null, pickWinner: null, winner: null }] });
   const r = ranking({ entries: [{ rank: 1, userId: 1, displayName: "Tú", points: 12, delta: null, isYou: true, isBot: false }] });
   const s = computeHomeState({ bracket: b, ranking: r, matches: m, summary: summary(), nowMs: nowGroupsLive });
   expect(s.focus.kind).toBe("live");
@@ -141,8 +142,8 @@ it("a match that finished TODAY shows in results, not as the upcoming fixture", 
   // `today` bucket holds one game already played (1-1, +2) and one still to come today.
   const m = matches({
     today: [
-      { id: 537333, roundCode: "GROUP", groupCode: "B", kickoffAt: new Date(nowGroupsLive - 3600000).toISOString(), team1: { code: "CAN", name: "Canadá", flag: "🇨🇦" }, team2: { code: "BIH", name: "Bosnia", flag: "🇧🇦" }, score: { t1: 1, t2: 1 }, played: true, yourPick: { t1: 1, t2: 2 }, pointsEarned: 2, breakdown: null, pickWinner: null, winner: null },
-      { id: 537345, roundCode: "GROUP", groupCode: "D", kickoffAt: new Date(nowGroupsLive + 3600000).toISOString(), team1: { code: "USA", name: "USA", flag: "🇺🇸" }, team2: { code: "PAR", name: "Paraguay", flag: "🇵🇾" }, score: null, played: false, yourPick: null, pointsEarned: null, breakdown: null, pickWinner: null, winner: null },
+      { id: 537333, roundCode: "GROUP", groupCode: "B", kickoffAt: new Date(nowGroupsLive - 3600000).toISOString(), team1: { code: "CAN", name: "Canadá", flag: "🇨🇦" }, team2: { code: "BIH", name: "Bosnia", flag: "🇧🇦" }, score: { t1: 1, t2: 1 }, played: true, live: false, yourPick: { t1: 1, t2: 2 }, pointsEarned: 2, breakdown: null, pickWinner: null, winner: null },
+      { id: 537345, roundCode: "GROUP", groupCode: "D", kickoffAt: new Date(nowGroupsLive + 3600000).toISOString(), team1: { code: "USA", name: "USA", flag: "🇺🇸" }, team2: { code: "PAR", name: "Paraguay", flag: "🇵🇾" }, score: null, played: false, live: false, yourPick: null, pointsEarned: null, breakdown: null, pickWinner: null, winner: null },
     ],
   });
   const s = computeHomeState({ bracket: b, ranking: ranking(), matches: m, summary: summary(), nowMs: nowGroupsLive });
@@ -159,7 +160,7 @@ it("a match that finished TODAY shows in results, not as the upcoming fixture", 
 it("CHAMPION when every match is played, with payout for a prize rank", () => {
   const b = bracket({ groups: [{ code: "A", filled: 6, total: 6, locked: true, matches: [] }], knockouts: [{ code: "FINAL", name: "Final", filled: 1, total: 1, unlocked: true, locked: true, matches: [] }] });
   const r = ranking({ entries: [{ rank: 2, userId: 1, displayName: "Tú", points: 96, delta: null, isYou: true, isBot: false }] });
-  const m = matches({ past: [{ id: 1, roundCode: "FINAL", groupCode: null, kickoffAt: "2026-07-19T17:00:00Z", team1: { code: "ARG", name: "Argentina", flag: "🇦🇷" }, team2: { code: "FRA", name: "Francia", flag: "🇫🇷" }, score: { t1: 1, t2: 0 }, played: true, yourPick: null, pointsEarned: null, breakdown: null, pickWinner: null, winner: null }] });
+  const m = matches({ past: [{ id: 1, roundCode: "FINAL", groupCode: null, kickoffAt: "2026-07-19T17:00:00Z", team1: { code: "ARG", name: "Argentina", flag: "🇦🇷" }, team2: { code: "FRA", name: "Francia", flag: "🇫🇷" }, score: { t1: 1, t2: 0 }, played: true, live: false, yourPick: null, pointsEarned: null, breakdown: null, pickWinner: null, winner: null }] });
   const s = computeHomeState({ bracket: b, ranking: r, matches: m, summary: summary(), nowMs: Date.parse("2026-07-20T00:00:00Z") });
   expect(s.focus.kind).toBe("champion");
   if (s.focus.kind === "champion") expect(s.focus.payoutCents).toBe(3900);
@@ -170,7 +171,7 @@ it("CHAMPION on finale day: the played FINAL still sits in today's bucket", () =
   // not `past`. CHAMPION must still fire (it must not fall through to LIVE).
   const b = bracket({ groups: [{ code: "A", filled: 6, total: 6, locked: true, matches: [] }], knockouts: [{ code: "FINAL", name: "Final", filled: 1, total: 1, unlocked: true, locked: true, matches: [] }] });
   const r = ranking({ entries: [{ rank: 2, userId: 1, displayName: "Tú", points: 96, delta: null, isYou: true, isBot: false }] });
-  const m = matches({ today: [{ id: 1, roundCode: "FINAL", groupCode: null, kickoffAt: "2026-07-19T17:00:00Z", team1: { code: "ARG", name: "Argentina", flag: "🇦🇷" }, team2: { code: "FRA", name: "Francia", flag: "🇫🇷" }, score: { t1: 1, t2: 0 }, played: true, yourPick: null, pointsEarned: null, breakdown: null, pickWinner: null, winner: null }] });
+  const m = matches({ today: [{ id: 1, roundCode: "FINAL", groupCode: null, kickoffAt: "2026-07-19T17:00:00Z", team1: { code: "ARG", name: "Argentina", flag: "🇦🇷" }, team2: { code: "FRA", name: "Francia", flag: "🇫🇷" }, score: { t1: 1, t2: 0 }, played: true, live: false, yourPick: null, pointsEarned: null, breakdown: null, pickWinner: null, winner: null }] });
   const s = computeHomeState({ bracket: b, ranking: r, matches: m, summary: summary(), nowMs: Date.parse("2026-07-19T21:00:00Z") });
   expect(s.focus.kind).toBe("champion");
 });

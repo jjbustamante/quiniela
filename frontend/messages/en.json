@@ -286,7 +286,8 @@
     "trendUp": "▲",
     "trendDown": "▼",
     "trendFlat": "—",
-    "prizeFor": "Prize"
+    "prizeFor": "Prize",
+    "liveBanner": "Some matches are live — points may change."
   },
   "scorecard": {
     "backToTable": "Table",

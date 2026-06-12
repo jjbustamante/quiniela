@@ -29,6 +29,11 @@ export type MatchView = {
   /** Per-match point components (caller's own pick). Null when unplayed or no bet. */
   breakdown: ScoreBreakdown | null;
   /**
+   * True when the match is currently in-play: has a score but is not yet `played`.
+   * When true, `score` holds the live score and `pointsEarned` holds provisional points.
+   */
+  live: boolean;
+  /**
    * Team the caller predicted to advance when their knockout pick was a draw.
    * Null for group bets, non-draw picks, or no bet. (Actual knockout results are
    * never stored as draws — penalties are folded into the score — so there is no

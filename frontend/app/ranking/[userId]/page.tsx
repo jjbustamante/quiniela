@@ -20,6 +20,7 @@ export default async function ScorecardPage({
   const card = await getScorecard(Number(userId));
   const t = await getTranslations("scorecard");
   const tRound = await getTranslations("home");
+  const tRanking = await getTranslations("ranking");
 
   // Most-recent stage first (backend returns round-sequence ascending).
   const stages = [...card.stages].reverse();
@@ -58,6 +59,13 @@ export default async function ScorecardPage({
             {t("totalPoints", { n: card.totalPoints })}
           </span>
         </div>
+
+        {card.liveScoring && (
+          <div className="mx-3 mt-2 inline-flex items-center gap-1.5 border-[1.5px] border-[var(--color-accent-red)] px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-accent-red)]">
+            <span className="inline-block h-2 w-2 rounded-full bg-[var(--color-accent-red)]" />
+            {tRanking("liveBanner")}
+          </div>
+        )}
 
         {stages.length === 0 ? (
           <section className="mx-3 mt-6 border-[1.5px] border-dashed border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] p-6 text-center">
