@@ -300,7 +300,9 @@
     "multiplier": "×{n}",
     "pts": "+{n}",
     "noPoints": "Aún sin puntos",
-    "toggleBreakdown": "Ver desglose"
+    "toggleBreakdown": "Ver desglose",
+    "PLACED_AFTER_KICKOFF": "Registraste esta predicción después de que terminó el partido, por eso no suma puntos.",
+    "EDITED_AFTER_KICKOFF": "Editaste esta predicción después de que terminó el partido; se conservó tu puntaje original."
   },
   "payments": {
     "title": "PAGOS",

@@ -33,6 +33,7 @@ export default async function ScorecardPage({
     bdDiff: t("bdDiff"),
     multiplier: (n: number) => t("multiplier", { n }),
     pts: (n: number) => t("pts", { n }),
+    noteText: (key: 'PLACED_AFTER_KICKOFF' | 'EDITED_AFTER_KICKOFF') => t(key),
   };
 
   return (

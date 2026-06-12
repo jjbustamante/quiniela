@@ -20,7 +20,10 @@ export type MatchScore = {
   betScoreT2: number | null;
   actualScoreT1: number | null;
   actualScoreT2: number | null;
+  /** Frozen points actually scored for this match (what counts). Display this, not breakdown.total. */
+  points: number;
   breakdown: ScoreBreakdown;
+  note?: 'PLACED_AFTER_KICKOFF' | 'EDITED_AFTER_KICKOFF' | null;
 };
 
 export type StageScore = {
