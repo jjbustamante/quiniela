@@ -62,32 +62,34 @@ public class FootballDataSyncService {
 
       // WHERE NOT match.played freezes finalized games: the UPDATE is suppressed entirely,
       // so the BEFORE UPDATE points trigger never fires for an already-scored match.
-      jdbc.update(
-          "INSERT INTO match "
-              + "(id, tournament_id, round_id, group_code, team_1_id, team_2_id, "
-              + " score_t1, score_t2, advanced_team_id, played, kickoff_at) "
-              + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
-              + "ON CONFLICT (id) DO UPDATE SET "
-              + "  team_1_id = COALESCE(EXCLUDED.team_1_id, match.team_1_id), "
-              + "  team_2_id = COALESCE(EXCLUDED.team_2_id, match.team_2_id), "
-              + "  score_t1 = EXCLUDED.score_t1, "
-              + "  score_t2 = EXCLUDED.score_t2, "
-              + "  advanced_team_id = EXCLUDED.advanced_team_id, "
-              + "  played = EXCLUDED.played, "
-              + "  kickoff_at = EXCLUDED.kickoff_at "
-              + "WHERE NOT match.played",
-          m.id(),
-          TOURNAMENT_ID,
-          roundId,
-          groupCode,
-          team1Id,
-          team2Id,
-          scoreT1,
-          scoreT2,
-          advancedTeamId,
-          played,
-          java.sql.Timestamp.from(kickoff));
-      n++;
+      // jdbc.update returns 0 when the freeze guard blocks the write, 1 when it lands.
+      int rows =
+          jdbc.update(
+              "INSERT INTO match "
+                  + "(id, tournament_id, round_id, group_code, team_1_id, team_2_id, "
+                  + " score_t1, score_t2, advanced_team_id, played, kickoff_at) "
+                  + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                  + "ON CONFLICT (id) DO UPDATE SET "
+                  + "  team_1_id = COALESCE(EXCLUDED.team_1_id, match.team_1_id), "
+                  + "  team_2_id = COALESCE(EXCLUDED.team_2_id, match.team_2_id), "
+                  + "  score_t1 = EXCLUDED.score_t1, "
+                  + "  score_t2 = EXCLUDED.score_t2, "
+                  + "  advanced_team_id = EXCLUDED.advanced_team_id, "
+                  + "  played = EXCLUDED.played, "
+                  + "  kickoff_at = EXCLUDED.kickoff_at "
+                  + "WHERE NOT match.played",
+              m.id(),
+              TOURNAMENT_ID,
+              roundId,
+              groupCode,
+              team1Id,
+              team2Id,
+              scoreT1,
+              scoreT2,
+              advancedTeamId,
+              played,
+              java.sql.Timestamp.from(kickoff));
+      n += rows;
     }
     jdbc.execute("SELECT setval('match_id_seq', GREATEST(1, (SELECT MAX(id) FROM match)))");
     return n;

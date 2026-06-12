@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class FootballDataLoader implements ApplicationRunner {
 
   private static final Logger log = LoggerFactory.getLogger(FootballDataLoader.class);
-  private static final Long TOURNAMENT_ID = 1L;
 
   private final boolean enabled;
   private final String competitionCode;
@@ -137,7 +136,7 @@ public class FootballDataLoader implements ApplicationRunner {
             "INSERT INTO team (id, tournament_id, code, name, group_code, flag_emoji) "
                 + "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING",
             t.id(),
-            TOURNAMENT_ID,
+            FootballDataSyncService.TOURNAMENT_ID,
             tla,
             name,
             groupCode,
