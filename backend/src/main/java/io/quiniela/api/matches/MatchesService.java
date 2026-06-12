@@ -161,14 +161,26 @@ public class MatchesService {
             quinielaId == null ? -1L : quinielaId,
             DEFAULT_TOURNAMENT_ID);
 
-    // Bucket by UTC day. NOW() is the server's clock; using LocalDateTime here would be
-    // timezone-ambiguous. Compute start_of_today and start_of_tomorrow once.
-    var startOfToday =
+    // Bucket by the caller's LOCAL calendar day (their display timezone), not UTC — otherwise a
+    // match that kicked off late "yesterday" in their zone (e.g. 21:00 Bogotá = 02:00 UTC) shows
+    // under "Today" just because it's still the same UTC date. The day boundaries are computed in
+    // the user's zone (COALESCE to America/Bogota for users who never set one) and the +1 day is
+    // done in local time so it stays correct across any DST transition.
+    java.time.Instant[] bounds =
         jdbc.queryForObject(
-                "SELECT DATE_TRUNC('day', NOW() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'",
-                java.sql.Timestamp.class)
-            .toInstant();
-    var startOfTomorrow = startOfToday.plusSeconds(86_400);
+            "SELECT DATE_TRUNC('day', NOW() AT TIME ZONE u.tz) AT TIME ZONE u.tz AS today_start, "
+                + "(DATE_TRUNC('day', NOW() AT TIME ZONE u.tz) + INTERVAL '1 day') AT TIME ZONE u.tz "
+                + "  AS tomorrow_start "
+                + "FROM (SELECT COALESCE((SELECT timezone FROM users WHERE id = ?), "
+                + "                      'America/Bogota') AS tz) u",
+            (rs, n) ->
+                new java.time.Instant[] {
+                  rs.getTimestamp("today_start").toInstant(),
+                  rs.getTimestamp("tomorrow_start").toInstant()
+                },
+            callerUserId);
+    var startOfToday = bounds[0];
+    var startOfTomorrow = bounds[1];
 
     List<MatchRow> past = new ArrayList<>();
     List<MatchRow> today = new ArrayList<>();

@@ -173,6 +173,29 @@ class MatchesControllerIT extends AbstractIntegrationTest {
   }
 
   @Test
+  void bucketsByCallersTimezoneNotUtc() throws Exception {
+    // The default user's timezone is America/Bogota (UTC-5).
+    var u = saveUser("mt-tz", "TZ Caller");
+    String token = jwt.issue(u);
+
+    // 1h before midnight TODAY in Bogotá = late "yesterday" in Bogotá, yet still the same UTC
+    // calendar day (e.g. 23:00 Bogotá = 04:00 UTC). This is exactly the screenshot bug: under
+    // UTC bucketing it wrongly shows under "Today"; it must bucket as PAST in the caller's zone.
+    jdbc.update(
+        "UPDATE match SET kickoff_at ="
+            + " (DATE_TRUNC('day', NOW() AT TIME ZONE 'America/Bogota') AT TIME ZONE 'America/Bogota')"
+            + " - INTERVAL '1 hour' WHERE id = 1");
+
+    mockMvc
+        .perform(get("/api/matches").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.past[?(@.id == 1)].id").value(org.hamcrest.Matchers.hasItem(1)))
+        .andExpect(
+            jsonPath("$.today[?(@.id == 1)].id")
+                .value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.hasItem(1))));
+  }
+
+  @Test
   void knockoutDrawWrongPredictedWinnerDoesNotGetOutcomeBonusInPointsEarned() throws Exception {
     var u = saveUser("mt-kowrong", "KO Wrong Caller");
     String token = jwt.issue(u);
