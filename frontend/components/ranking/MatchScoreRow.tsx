@@ -32,7 +32,7 @@ export function MatchScoreRow({ match, labels }: { match: MatchScore; labels: La
           {team(match.team1)}–{team(match.team2)}
         </span>
         <span className="shrink-0 font-display text-base font-extrabold text-[var(--color-accent-red)]">
-          {labels.pts(b.total)}
+          {labels.pts(match.points)}
         </span>
       </div>
       <div className="mt-0.5 flex items-baseline justify-between gap-2 text-xs text-[var(--color-text-muted)]">
@@ -44,7 +44,7 @@ export function MatchScoreRow({ match, labels }: { match: MatchScore; labels: La
           <span className="font-bold">{score(match.actualScoreT1, match.actualScoreT2)}</span>
         </span>
       </div>
-      {parts.length > 0 && (
+      {parts.length > 0 && !match.note && (
         <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.04em] text-[var(--color-text-muted)]">
           {parts.join(" · ")}
         </div>

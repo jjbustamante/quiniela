@@ -13,6 +13,7 @@ function match(over: Partial<MatchScore> = {}): MatchScore {
     betScoreT2: 1,
     actualScoreT1: 2,
     actualScoreT2: 1,
+    points: 14,
     breakdown: { outcome: 3, team1Exact: 2, team2Exact: 2, goalDiff: 0, multiplier: 2, total: 14 },
     ...over,
   };
@@ -49,6 +50,7 @@ describe("MatchScoreRow", () => {
     render(
       <MatchScoreRow
         match={match({
+          points: 0,
           breakdown: { outcome: 0, team1Exact: 0, team2Exact: 0, goalDiff: 0, multiplier: 1, total: 0 },
         })}
         labels={labels}
@@ -62,6 +64,7 @@ describe("MatchScoreRow", () => {
     render(
       <MatchScoreRow
         match={match({
+          points: 0,
           breakdown: { outcome: 0, team1Exact: 0, team2Exact: 0, goalDiff: 0, multiplier: 3, total: 0 },
         })}
         labels={labels}
@@ -71,14 +74,41 @@ describe("MatchScoreRow", () => {
     expect(screen.queryByText(/×3/)).not.toBeInTheDocument();
   });
 
-  it("renders the PLACED_AFTER_KICKOFF note when note is set", () => {
-    render(<MatchScoreRow match={match({ note: "PLACED_AFTER_KICKOFF" })} labels={labels} />);
+  it("shows frozen points (0), the note, and hides the live breakdown for a placed-after bet", () => {
+    // Frozen 0, but the current prediction would recompute to 5 — the badge must show the frozen 0,
+    // not the phantom live total, and the live breakdown is suppressed.
+    render(
+      <MatchScoreRow
+        match={match({
+          points: 0,
+          breakdown: { outcome: 3, team1Exact: 2, team2Exact: 0, goalDiff: 0, multiplier: 1, total: 5 },
+          note: "PLACED_AFTER_KICKOFF",
+        })}
+        labels={labels}
+      />,
+    );
+    expect(screen.getByText("+0")).toBeInTheDocument();
+    expect(screen.queryByText("+5")).not.toBeInTheDocument();
     expect(screen.getByText(NOTE_PLACED)).toBeInTheDocument();
+    expect(screen.queryByText(/resultado/)).not.toBeInTheDocument();
   });
 
-  it("renders the EDITED_AFTER_KICKOFF note when note is set", () => {
-    render(<MatchScoreRow match={match({ note: "EDITED_AFTER_KICKOFF" })} labels={labels} />);
+  it("shows frozen points (original), the note, and hides the live breakdown for an edited-after bet", () => {
+    // Frozen 4 (original), current prediction recomputes to 7 — badge shows 4, breakdown hidden.
+    render(
+      <MatchScoreRow
+        match={match({
+          points: 4,
+          breakdown: { outcome: 3, team1Exact: 2, team2Exact: 2, goalDiff: 0, multiplier: 1, total: 7 },
+          note: "EDITED_AFTER_KICKOFF",
+        })}
+        labels={labels}
+      />,
+    );
+    expect(screen.getByText("+4")).toBeInTheDocument();
+    expect(screen.queryByText("+7")).not.toBeInTheDocument();
     expect(screen.getByText(NOTE_EDITED)).toBeInTheDocument();
+    expect(screen.queryByText(/resultado/)).not.toBeInTheDocument();
   });
 
   it("renders no note when note is absent", () => {
