@@ -10,6 +10,7 @@ type Labels = {
   bdDiff: string;
   multiplier: (n: number) => string;
   pts: (n: number) => string;
+  noteText?: (key: 'PLACED_AFTER_KICKOFF' | 'EDITED_AFTER_KICKOFF') => string;
 };
 
 function team(t: TeamRef): string {
@@ -47,6 +48,11 @@ export function MatchScoreRow({ match, labels }: { match: MatchScore; labels: La
         <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.04em] text-[var(--color-text-muted)]">
           {parts.join(" · ")}
         </div>
+      )}
+      {match.note && labels.noteText && (
+        <p className="mt-1 text-[11px] text-[var(--color-text-muted)]">
+          {labels.noteText(match.note)}
+        </p>
       )}
     </div>
   );

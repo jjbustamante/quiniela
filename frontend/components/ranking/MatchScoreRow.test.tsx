@@ -18,6 +18,9 @@ function match(over: Partial<MatchScore> = {}): MatchScore {
   };
 }
 
+const NOTE_PLACED = "Registraste esta predicción después de que terminó el partido, por eso no suma puntos.";
+const NOTE_EDITED = "Editaste esta predicción después de que terminó el partido; se conservó tu puntaje original.";
+
 const labels = {
   pick: "PICK",
   result: "REAL",
@@ -27,6 +30,8 @@ const labels = {
   bdDiff: "diferencia",
   multiplier: (n: number) => `×${n}`,
   pts: (n: number) => `+${n}`,
+  noteText: (key: "PLACED_AFTER_KICKOFF" | "EDITED_AFTER_KICKOFF") =>
+    key === "PLACED_AFTER_KICKOFF" ? NOTE_PLACED : NOTE_EDITED,
 };
 
 describe("MatchScoreRow", () => {
@@ -64,5 +69,21 @@ describe("MatchScoreRow", () => {
     );
     expect(screen.getByText("+0")).toBeInTheDocument();
     expect(screen.queryByText(/×3/)).not.toBeInTheDocument();
+  });
+
+  it("renders the PLACED_AFTER_KICKOFF note when note is set", () => {
+    render(<MatchScoreRow match={match({ note: "PLACED_AFTER_KICKOFF" })} labels={labels} />);
+    expect(screen.getByText(NOTE_PLACED)).toBeInTheDocument();
+  });
+
+  it("renders the EDITED_AFTER_KICKOFF note when note is set", () => {
+    render(<MatchScoreRow match={match({ note: "EDITED_AFTER_KICKOFF" })} labels={labels} />);
+    expect(screen.getByText(NOTE_EDITED)).toBeInTheDocument();
+  });
+
+  it("renders no note when note is absent", () => {
+    render(<MatchScoreRow match={match()} labels={labels} />);
+    expect(screen.queryByText(NOTE_PLACED)).not.toBeInTheDocument();
+    expect(screen.queryByText(NOTE_EDITED)).not.toBeInTheDocument();
   });
 });

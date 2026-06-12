@@ -21,6 +21,7 @@ export type MatchScore = {
   actualScoreT1: number | null;
   actualScoreT2: number | null;
   breakdown: ScoreBreakdown;
+  note?: 'PLACED_AFTER_KICKOFF' | 'EDITED_AFTER_KICKOFF' | null;
 };
 
 export type StageScore = {

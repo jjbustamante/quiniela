@@ -300,7 +300,9 @@
     "multiplier": "×{n}",
     "pts": "+{n}",
     "noPoints": "No points yet",
-    "toggleBreakdown": "Show breakdown"
+    "toggleBreakdown": "Show breakdown",
+    "PLACED_AFTER_KICKOFF": "This prediction was entered after the match ended, so it doesn't add points.",
+    "EDITED_AFTER_KICKOFF": "This prediction was edited after the match ended; your original score was kept."
   },
   "payments": {
     "title": "PAYMENTS",
