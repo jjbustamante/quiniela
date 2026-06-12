@@ -5,7 +5,11 @@ import java.util.List;
 
 /** A player's points broken down by stage and, within a stage, by match. */
 public record ScorecardView(
-    long userId, String displayName, int totalPoints, List<StageScore> stages) {
+    long userId,
+    String displayName,
+    int totalPoints,
+    List<StageScore> stages,
+    boolean liveScoring) {
 
   public record TeamRef(String code, String name, String flag) {}
 

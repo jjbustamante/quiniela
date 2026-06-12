@@ -51,7 +51,8 @@ public class RankingService {
             DEFAULT_POOL_ID);
 
     String updatedAt = computeUpdatedAt();
-    return new RankingView(List.copyOf(new ArrayList<>(entries)), updatedAt);
+    boolean liveScoring = computeLiveScoring();
+    return new RankingView(List.copyOf(new ArrayList<>(entries)), updatedAt, liveScoring);
   }
 
   /**
@@ -87,6 +88,19 @@ public class RankingService {
                 false,
                 false),
         DEFAULT_POOL_ID);
+  }
+
+  /**
+   * Returns true when at least one match in tournament 1 is currently live (score present, not
+   * played).
+   */
+  private boolean computeLiveScoring() {
+    Boolean result =
+        jdbc.queryForObject(
+            "SELECT EXISTS(SELECT 1 FROM match WHERE tournament_id = 1"
+                + " AND played = false AND score_t1 IS NOT NULL)",
+            Boolean.class);
+    return Boolean.TRUE.equals(result);
   }
 
   /**

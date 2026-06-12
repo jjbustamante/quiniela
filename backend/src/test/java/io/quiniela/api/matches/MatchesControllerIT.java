@@ -282,6 +282,38 @@ class MatchesControllerIT extends AbstractIntegrationTest {
             jsonPath("$.past[?(@.id == 1)].pointsEarned").value(org.hamcrest.Matchers.hasItem(7)));
   }
 
+  @Test
+  void liveMatchSurfacesLiveFlagAndProvisionalPoints() throws Exception {
+    var u = saveUser("mt-live", "Live Caller");
+    String token = jwt.issue(u);
+
+    // Place a bet on match #1.
+    insertBet(u.getId(), 1L, 2, 1);
+
+    // Seed the match as LIVE: score present but played=FALSE, kickoff 2 days in the past
+    // so it lands in past[] regardless of the caller's timezone (America/Bogota default).
+    jdbc.update(
+        "UPDATE match SET kickoff_at = NOW() - INTERVAL '2 days',"
+            + " score_t1 = 2, score_t2 = 1, played = FALSE WHERE id = 1");
+
+    try {
+      mockMvc
+          .perform(get("/api/matches").header("Authorization", "Bearer " + token))
+          .andExpect(status().isOk())
+          // Live match has a past kickoff → lands in past[] bucket.
+          .andExpect(
+              jsonPath("$.past[?(@.id == 1)].live").value(org.hamcrest.Matchers.hasItem(true)))
+          // Provisional points: bet 2-1 vs live 2-1, group → 7 points.
+          .andExpect(
+              jsonPath("$.past[?(@.id == 1)].pointsEarned")
+                  .value(org.hamcrest.Matchers.hasItem(7)));
+    } finally {
+      jdbc.update(
+          "UPDATE match SET score_t1 = NULL, score_t2 = NULL, played = FALSE,"
+              + " kickoff_at = NOW() + INTERVAL '10 days' WHERE id = 1");
+    }
+  }
+
   private User saveUser(String slug, String displayName) {
     var u = new User("g-" + slug, slug + "@example.com", displayName, null, UserRole.CAPTAIN);
     u.setInvitePath(slug);

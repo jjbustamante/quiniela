@@ -131,6 +131,12 @@ public class ScorecardService {
           new StageScore(
               e.getKey(), e.getValue().roundName, e.getValue().points, e.getValue().matches));
     }
-    return new ScorecardView(userId, displayName, totalPoints, stages);
+    Boolean liveResult =
+        jdbc.queryForObject(
+            "SELECT EXISTS(SELECT 1 FROM match WHERE tournament_id = 1"
+                + " AND played = false AND score_t1 IS NOT NULL)",
+            Boolean.class);
+    boolean liveScoring = Boolean.TRUE.equals(liveResult);
+    return new ScorecardView(userId, displayName, totalPoints, stages, liveScoring);
   }
 }

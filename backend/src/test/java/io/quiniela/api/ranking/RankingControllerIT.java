@@ -85,6 +85,35 @@ class RankingControllerIT extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.entries[2].isYou").value(false));
   }
 
+  @Test
+  void liveScoring_falseWhenNoLiveMatch() throws Exception {
+    var caller = saveUser("rk-ls-false", "LS False Caller");
+    String token = jwt.issue(caller);
+
+    mockMvc
+        .perform(get("/api/ranking").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.liveScoring").value(false));
+  }
+
+  @Test
+  void liveScoring_trueWhenAMatchIsLive() throws Exception {
+    var caller = saveUser("rk-ls-true", "LS True Caller");
+    String token = jwt.issue(caller);
+
+    // Seed match 1 as live: score present, played=FALSE.
+    jdbc.update("UPDATE match SET score_t1 = 1, score_t2 = 0, played = FALSE WHERE id = 1");
+
+    try {
+      mockMvc
+          .perform(get("/api/ranking").header("Authorization", "Bearer " + token))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.liveScoring").value(true));
+    } finally {
+      jdbc.update("UPDATE match SET score_t1 = NULL, score_t2 = NULL, played = FALSE WHERE id = 1");
+    }
+  }
+
   private User saveUser(String slug, String displayName) {
     var u = new User("g-" + slug, slug + "@example.com", displayName, null, UserRole.CAPTAIN);
     u.setInvitePath(slug);
