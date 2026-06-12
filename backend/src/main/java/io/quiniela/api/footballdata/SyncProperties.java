@@ -6,15 +6,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "app.sync")
 public record SyncProperties(
     String token,
-    Integer matchMinDurationMinutes,
+    Integer firstPollOffsetMinutes,
     Integer pollWindowHours,
     Integer retryIntervalMinutes,
     Tasks tasks) {
 
   public SyncProperties {
-    if (matchMinDurationMinutes == null) matchMinDurationMinutes = 105;
+    if (firstPollOffsetMinutes == null) firstPollOffsetMinutes = 0;
     if (pollWindowHours == null) pollWindowHours = 5;
-    if (retryIntervalMinutes == null) retryIntervalMinutes = 15;
+    if (retryIntervalMinutes == null) retryIntervalMinutes = 5;
     if (tasks == null) tasks = new Tasks(null, null, null);
   }
 

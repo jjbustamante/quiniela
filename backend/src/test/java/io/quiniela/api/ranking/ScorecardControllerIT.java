@@ -96,6 +96,44 @@ class ScorecardControllerIT extends AbstractIntegrationTest {
         .andExpect(status().isNotFound());
   }
 
+  @Test
+  void liveScoring_falseWhenNoLiveMatch() throws Exception {
+    // setUp already puts match 1 as played=TRUE; no other match is live.
+    String token = jwt.issue(viewer);
+    mockMvc
+        .perform(
+            get("/api/ranking/" + target.getId() + "/scorecard")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.liveScoring").value(false));
+  }
+
+  @Test
+  void liveScoring_trueWhenAMatchIsLive() throws Exception {
+    // Seed a second live match (match 2: score present, played=FALSE).
+    // match 1 is played=TRUE from setUp.
+    Long match2Id =
+        jdbc.queryForObject(
+            "SELECT id FROM match WHERE tournament_id = 1 AND id <> 1 ORDER BY id LIMIT 1",
+            Long.class);
+    jdbc.update(
+        "UPDATE match SET score_t1 = 1, score_t2 = 0, played = FALSE WHERE id = ?", match2Id);
+
+    try {
+      String token = jwt.issue(viewer);
+      mockMvc
+          .perform(
+              get("/api/ranking/" + target.getId() + "/scorecard")
+                  .header("Authorization", "Bearer " + token))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.liveScoring").value(true));
+    } finally {
+      jdbc.update(
+          "UPDATE match SET score_t1 = NULL, score_t2 = NULL, played = FALSE WHERE id = ?",
+          match2Id);
+    }
+  }
+
   // ── Task 3: Frozen bet.points + note tests ─────────────────────────────────
 
   /**

@@ -38,6 +38,8 @@ export type Scorecard = {
   displayName: string | null;
   totalPoints: number;
   stages: StageScore[];
+  /** True when at least one match is currently in-play. Points may change. */
+  liveScoring: boolean;
 };
 
 export async function getScorecard(userId: number): Promise<Scorecard> {

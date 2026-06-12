@@ -83,6 +83,16 @@ export function MatchListItem({
                 </span>
               )}
             </>
+          ) : match.live && match.score ? (
+            <>
+              <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-accent-red)]">
+                <span className="inline-block h-2 w-2 rounded-full bg-[var(--color-accent-red)]" />
+                {labels.live}
+              </span>
+              <span className="font-display text-[26px] font-black leading-none tracking-[-0.04em] text-[var(--color-accent-red)]">
+                {match.score.t1}–{match.score.t2}
+              </span>
+            </>
           ) : isLive ? (
             <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--color-accent-red)]">
               <span className="inline-block h-2 w-2 rounded-full bg-[var(--color-accent-red)]" />
@@ -132,9 +142,16 @@ export function MatchListItem({
             onClick={() => setShowBreakdown((v) => !v)}
             aria-expanded={showBreakdown}
             aria-label={labels.toggleBreakdown}
-            className="bg-[var(--color-accent-gold)] px-1.5 py-0.5 text-[var(--color-text-primary)]"
+            className={
+              match.live
+                ? "bg-[var(--color-accent-red)] px-1.5 py-0.5 text-white"
+                : "bg-[var(--color-accent-gold)] px-1.5 py-0.5 text-[var(--color-text-primary)]"
+            }
           >
             {labels.formatPoints(match.pointsEarned)}
+            {match.live && (
+              <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-white align-middle opacity-80" />
+            )}
           </button>
         )}
       </div>

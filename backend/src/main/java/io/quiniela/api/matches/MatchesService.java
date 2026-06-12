@@ -34,6 +34,7 @@ public class MatchesService {
       TeamRef team2,
       ScorePair score,
       boolean played,
+      boolean live,
       ScorePair yourPick,
       Integer pointsEarned,
       TeamRef pickWinner,
@@ -128,8 +129,10 @@ public class MatchesService {
                           rs.getString("aw_flag"));
               Long predWinner = (Long) rs.getObject("pred_winner");
               Long advTeam = (Long) rs.getObject("adv_team");
+              boolean played = rs.getBoolean("played");
+              boolean live = !played && rs.getObject("m_score_t1") != null;
               ScoreBreakdown breakdown =
-                  (rs.getBoolean("played") && rs.getObject("bet_t1") != null)
+                  (rs.getObject("m_score_t1") != null && rs.getObject("bet_t1") != null)
                       ? ScoreBreakdown.of(
                           !"GROUP".equals(rs.getString("round_code")),
                           rs.getInt("bet_t1"),
@@ -151,7 +154,8 @@ public class MatchesService {
                   new TeamRef(
                       rs.getString("t2_code"), rs.getString("t2_name"), rs.getString("t2_flag")),
                   score,
-                  rs.getBoolean("played"),
+                  played,
+                  live,
                   yourPick,
                   pointsEarned,
                   pickWinner,

@@ -1,6 +1,7 @@
 package io.quiniela.api.footballdata;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import io.quiniela.api.footballdata.FootballDataClient.CompetitionMatchesResponse;
 import io.quiniela.api.footballdata.FootballDataClient.MatchApi;
@@ -8,6 +9,7 @@ import io.quiniela.api.footballdata.FootballDataClient.MatchScore;
 import io.quiniela.api.footballdata.FootballDataClient.MatchScoreFull;
 import io.quiniela.api.footballdata.FootballDataClient.MatchTeam;
 import io.quiniela.api.support.AbstractIntegrationTest;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,6 +107,16 @@ class FootballDataSyncServiceIT extends AbstractIntegrationTest {
         .extracting(FakeResultsTaskQueue.Enqueued::matchId)
         .contains(6101L) // upcoming unplayed → enqueued
         .doesNotContain(6102L, 6103L); // played and >24h → not enqueued
+
+    // firstPollOffsetMinutes=0 → first poll scheduled at kickoff (within 5s tolerance)
+    java.sql.Timestamp kickoffTs =
+        jdbc.queryForObject(
+            "SELECT kickoff_at FROM match WHERE id = 6101", java.sql.Timestamp.class);
+    java.time.Instant kickoff = kickoffTs.toInstant();
+    assertThat(queue.calls)
+        .filteredOn(c -> c.matchId() == 6101L)
+        .singleElement()
+        .satisfies(c -> assertThat(c.when()).isCloseTo(kickoff, within(5, ChronoUnit.SECONDS)));
   }
 
   @Test
@@ -134,13 +146,22 @@ class FootballDataSyncServiceIT extends AbstractIntegrationTest {
         groupRound());
     stubbed = new CompetitionMatchesResponse(List.of(match(6202, "IN_PLAY", null, null)));
 
+    java.time.Instant before = java.time.Instant.now();
     sync.syncMatch(6202L);
+    java.time.Instant after = java.time.Instant.now();
 
     assertThat(jdbc.queryForObject("SELECT played FROM match WHERE id = 6202", Boolean.class))
         .isFalse();
+    // retryIntervalMinutes=5 → re-enqueued ~5 min from now
     assertThat(queue.calls)
         .singleElement()
-        .satisfies(c -> assertThat(c.matchId()).isEqualTo(6202L));
+        .satisfies(
+            c -> {
+              assertThat(c.matchId()).isEqualTo(6202L);
+              java.time.Instant expectedNext = before.plus(java.time.Duration.ofMinutes(5));
+              java.time.Instant expectedNextHigh = after.plus(java.time.Duration.ofMinutes(5));
+              assertThat(c.when()).isBetween(expectedNext, expectedNextHigh);
+            });
   }
 
   @Test
