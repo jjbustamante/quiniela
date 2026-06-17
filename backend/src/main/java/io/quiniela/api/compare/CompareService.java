@@ -25,7 +25,7 @@ public class CompareService {
     this.lockClock = lockClock;
   }
 
-  public record ScoreCount(int scoreT1, int scoreT2, int count) {}
+  public record ScoreCount(int scoreT1, int scoreT2, int count, int rivalsAboveCount) {}
 
   public record MatchConsensus(
       Long matchId,
@@ -44,9 +44,15 @@ public class CompareService {
       List<ScoreCount> distribution,
       int totalPicks,
       boolean majority,
-      boolean rebel) {}
+      boolean rebel,
+      int rivalsAboveTotal,
+      int rivalsAbovePicked) {}
 
-  public record GroupConsensusView(List<MatchConsensus> matches) {}
+  public record GroupConsensusView(
+      Instant serverTime,
+      List<MatchConsensus> past,
+      List<MatchConsensus> today,
+      List<MatchConsensus> upcoming) {}
 
   public record H2HMatch(
       Long matchId,
@@ -73,7 +79,28 @@ public class CompareService {
       int differCount,
       Integer myPoints,
       Integer rivalPoints,
-      List<H2HMatch> matches) {}
+      Instant serverTime,
+      List<H2HMatch> past,
+      List<H2HMatch> today,
+      List<H2HMatch> upcoming) {}
+
+  public record MatchPick(
+      String displayName,
+      int rank,
+      int points,
+      boolean isYou,
+      boolean isBot,
+      boolean isAboveMe,
+      int scoreT1,
+      int scoreT2,
+      Integer pointsEarned) {}
+
+  public record MatchPicksView(
+      Long matchId,
+      Integer actualScoreT1,
+      Integer actualScoreT2,
+      boolean played,
+      List<MatchPick> picks) {}
 
   private record MatchMeta(
       long id,
@@ -87,6 +114,25 @@ public class CompareService {
       Integer actualT2,
       boolean played,
       int pointsMultiplier) {}
+
+  private record DayBounds(Instant startOfToday, Instant startOfTomorrow) {}
+
+  private DayBounds dayBounds(Long userId) {
+    Instant[] b =
+        jdbc.queryForObject(
+            "SELECT DATE_TRUNC('day', NOW() AT TIME ZONE u.tz) AT TIME ZONE u.tz AS today_start, "
+                + "(DATE_TRUNC('day', NOW() AT TIME ZONE u.tz) + INTERVAL '1 day') AT TIME ZONE u.tz "
+                + "  AS tomorrow_start "
+                + "FROM (SELECT COALESCE((SELECT timezone FROM users WHERE id = ?), "
+                + "                      'America/Bogota') AS tz) u",
+            (rs, n) ->
+                new Instant[] {
+                  rs.getTimestamp("today_start").toInstant(),
+                  rs.getTimestamp("tomorrow_start").toInstant()
+                },
+            userId);
+    return new DayBounds(b[0], b[1]);
+  }
 
   private List<MatchMeta> fetchMatchMeta() {
     return jdbc.query(
@@ -141,19 +187,44 @@ public class CompareService {
 
     Map<Long, int[]> myBets = fetchBetsForUser(userId);
 
-    Map<Long, Map<String, Integer>> dist = new HashMap<>();
+    Integer myPointsObj =
+        jdbc.query(
+            "SELECT points FROM quiniela WHERE pool_id = ? AND user_id = ?",
+            rs -> rs.next() ? rs.getInt("points") : null,
+            POOL_ID,
+            userId);
+    int myPoints = myPointsObj == null ? 0 : myPointsObj;
+
+    Integer rivalsAboveTotalObj =
+        jdbc.queryForObject(
+            """
+            SELECT COUNT(*) FROM quiniela q JOIN users u ON u.id = q.user_id
+            WHERE q.pool_id = ? AND u.role <> 'admin' AND q.points > ?
+            """,
+            Integer.class,
+            POOL_ID,
+            myPoints);
+    int rivalsAboveTotal = rivalsAboveTotalObj == null ? 0 : rivalsAboveTotalObj;
+
+    Map<Long, Map<String, int[]>> dist = new HashMap<>(); // key -> [count, aboveCount]
     jdbc.query(
         """
-        SELECT b.match_id, b.score_t1, b.score_t2, COUNT(*) AS cnt
-        FROM bet b JOIN quiniela q ON q.id = b.quiniela_id
+        SELECT b.match_id, b.score_t1, b.score_t2,
+               COUNT(*) AS cnt,
+               COUNT(*) FILTER (WHERE u.role <> 'admin' AND q.points > ?) AS above_cnt
+        FROM bet b
+        JOIN quiniela q ON q.id = b.quiniela_id
+        JOIN users u ON u.id = q.user_id
         WHERE q.pool_id = ?
         GROUP BY b.match_id, b.score_t1, b.score_t2
         """,
         rs -> {
           long mid = rs.getLong("match_id");
           String key = rs.getInt("score_t1") + ":" + rs.getInt("score_t2");
-          dist.computeIfAbsent(mid, k -> new HashMap<>()).put(key, rs.getInt("cnt"));
+          dist.computeIfAbsent(mid, k -> new HashMap<>())
+              .put(key, new int[] {rs.getInt("cnt"), rs.getInt("above_cnt")});
         },
+        myPoints,
         POOL_ID);
 
     List<MatchConsensus> out = new ArrayList<>();
@@ -168,25 +239,29 @@ public class CompareService {
 
       List<ScoreCount> distribution = new ArrayList<>();
       int total = 0;
+      int rivalsAbovePicked = 0;
       boolean majority = false;
       boolean rebel = false;
 
       if (revealed) {
-        Map<String, Integer> counts = dist.getOrDefault(m.id(), Map.of());
+        Map<String, int[]> counts = dist.getOrDefault(m.id(), Map.of());
         int max = 0;
         for (var e : counts.entrySet()) {
           String[] parts = e.getKey().split(":");
-          int c = e.getValue();
+          int c = e.getValue()[0];
+          int above = e.getValue()[1];
           total += c;
+          rivalsAbovePicked += above;
           max = Math.max(max, c);
           distribution.add(
-              new ScoreCount(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), c));
+              new ScoreCount(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), c, above));
         }
         distribution.sort((a, b) -> b.count() - a.count());
         if (mine != null) {
-          int myCount = counts.getOrDefault(myT1 + ":" + myT2, 0);
+          int myCount =
+              counts.containsKey(myT1 + ":" + myT2) ? counts.get(myT1 + ":" + myT2)[0] : 0;
           int peak = max;
-          long peakCount = counts.values().stream().filter(v -> v == peak).count();
+          long peakCount = counts.values().stream().filter(v -> v[0] == peak).count();
           majority = myCount > 0 && myCount == max && peakCount == 1;
           rebel = myCount == 1 && total > 1;
         }
@@ -210,9 +285,23 @@ public class CompareService {
               distribution,
               total,
               majority,
-              rebel));
+              rebel,
+              rivalsAboveTotal,
+              rivalsAbovePicked));
     }
-    return new GroupConsensusView(out);
+    DayBounds bounds = dayBounds(userId);
+    List<MatchConsensus> past = new ArrayList<>();
+    List<MatchConsensus> today = new ArrayList<>();
+    List<MatchConsensus> upcoming = new ArrayList<>();
+    for (MatchConsensus mc : out) {
+      Instant k = Instant.parse(mc.kickoffAt());
+      if (k.isBefore(bounds.startOfToday())) past.add(mc);
+      else if (k.isBefore(bounds.startOfTomorrow())) today.add(mc);
+      else upcoming.add(mc);
+    }
+    past.sort((a, b) -> Instant.parse(b.kickoffAt()).compareTo(Instant.parse(a.kickoffAt())));
+    return new GroupConsensusView(
+        Instant.now(), List.copyOf(past), List.copyOf(today), List.copyOf(upcoming));
   }
 
   /**
@@ -243,6 +332,102 @@ public class CompareService {
     if (!exact && (betT1 - betT2) == (actualT1 - actualT2)) total += 1; // signed goal difference
 
     return total * multiplier;
+  }
+
+  @Transactional(readOnly = true)
+  public MatchPicksView getMatchPicks(Long userId, Long matchId) {
+    MatchMeta meta =
+        jdbc.query(
+            """
+            SELECT m.id, r.code AS round_code, m.kickoff_at, m.score_t1, m.score_t2, m.played,
+                   r.points_multiplier AS points_multiplier,
+                   t1.code AS t1_code, t1.flag_emoji AS t1_flag,
+                   t2.code AS t2_code, t2.flag_emoji AS t2_flag
+            FROM match m
+            JOIN round r ON r.id = m.round_id
+            LEFT JOIN team t1 ON t1.id = m.team_1_id
+            LEFT JOIN team t2 ON t2.id = m.team_2_id
+            WHERE m.id = ? AND m.tournament_id = ?
+            """,
+            rs ->
+                rs.next()
+                    ? new MatchMeta(
+                        rs.getLong("id"),
+                        rs.getString("round_code"),
+                        rs.getString("t1_code"),
+                        rs.getString("t1_flag"),
+                        rs.getString("t2_code"),
+                        rs.getString("t2_flag"),
+                        rs.getTimestamp("kickoff_at").toInstant().toString(),
+                        (Integer) rs.getObject("score_t1"),
+                        (Integer) rs.getObject("score_t2"),
+                        rs.getBoolean("played"),
+                        rs.getInt("points_multiplier"))
+                    : null,
+            matchId,
+            TOURNAMENT_ID);
+    if (meta == null) {
+      throw new org.springframework.web.server.ResponseStatusException(
+          org.springframework.http.HttpStatus.NOT_FOUND, "Unknown match");
+    }
+
+    var deadlines = lockClock.fetchTournamentDeadlines(TOURNAMENT_ID);
+    boolean revealed =
+        meta.played() || LockClock.isMatchRevealable(Instant.now(), deadlines, meta.roundCode());
+    if (!revealed) {
+      throw new org.springframework.web.server.ResponseStatusException(
+          org.springframework.http.HttpStatus.FORBIDDEN, "Match not revealed");
+    }
+
+    Integer myPointsObj =
+        jdbc.query(
+            "SELECT points FROM quiniela WHERE pool_id = ? AND user_id = ?",
+            rs -> rs.next() ? rs.getInt("points") : null,
+            POOL_ID,
+            userId);
+    int myPoints = myPointsObj == null ? 0 : myPointsObj;
+
+    List<MatchPick> picks =
+        jdbc.query(
+            """
+            WITH ranked AS (
+              SELECT q.id AS quiniela_id, q.user_id, u.display_name, q.points, u.is_bot,
+                     RANK() OVER (ORDER BY q.points DESC) AS rk
+              FROM quiniela q JOIN users u ON u.id = q.user_id
+              WHERE q.pool_id = ? AND u.role <> 'admin'
+            )
+            SELECT r.display_name, r.points, r.user_id, r.is_bot, r.rk,
+                   b.score_t1, b.score_t2
+            FROM ranked r
+            JOIN bet b ON b.quiniela_id = r.quiniela_id AND b.match_id = ?
+            ORDER BY r.rk ASC, r.display_name ASC
+            """,
+            (rs, n) -> {
+              int s1 = rs.getInt("score_t1");
+              int s2 = rs.getInt("score_t2");
+              int pts = rs.getInt("points");
+              long uid = rs.getLong("user_id");
+              Integer earned =
+                  meta.played() && meta.actualT1() != null && meta.actualT2() != null
+                      ? scoreMatchForBet(
+                          meta.pointsMultiplier(), s1, s2, meta.actualT1(), meta.actualT2())
+                      : null;
+              return new MatchPick(
+                  rs.getString("display_name"),
+                  rs.getInt("rk"),
+                  pts,
+                  userId != null && userId.equals(uid),
+                  rs.getBoolean("is_bot"),
+                  pts > myPoints,
+                  s1,
+                  s2,
+                  earned);
+            },
+            POOL_ID,
+            matchId);
+
+    return new MatchPicksView(
+        meta.id(), meta.actualT1(), meta.actualT2(), meta.played(), List.copyOf(picks));
   }
 
   @Transactional(readOnly = true)
@@ -337,6 +522,27 @@ public class CompareService {
               rvT2,
               state));
     }
-    return new H2HView(rivalUserId, rivalName, agree, differ, myPoints, rivalPoints, matches);
+    DayBounds bounds = dayBounds(userId);
+    List<H2HMatch> past = new ArrayList<>();
+    List<H2HMatch> today = new ArrayList<>();
+    List<H2HMatch> upcoming = new ArrayList<>();
+    for (H2HMatch hm : matches) {
+      Instant k = Instant.parse(hm.kickoffAt());
+      if (k.isBefore(bounds.startOfToday())) past.add(hm);
+      else if (k.isBefore(bounds.startOfTomorrow())) today.add(hm);
+      else upcoming.add(hm);
+    }
+    past.sort((a, b) -> Instant.parse(b.kickoffAt()).compareTo(Instant.parse(a.kickoffAt())));
+    return new H2HView(
+        rivalUserId,
+        rivalName,
+        agree,
+        differ,
+        myPoints,
+        rivalPoints,
+        Instant.now(),
+        List.copyOf(past),
+        List.copyOf(today),
+        List.copyOf(upcoming));
   }
 }

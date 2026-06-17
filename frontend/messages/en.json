@@ -238,7 +238,21 @@
     "youTag": "you",
     "lockedTitle": "NOT YET,\nHANG TIGHT.",
     "lockedHelp": "Everyone's picks are revealed once the bracket locks.",
-    "noRival": "Pick a rival to see the duel."
+    "noRival": "Pick a rival to see the duel.",
+    "viewByDate": "By date",
+    "viewByStage": "By stage",
+    "tabPast": "PAST",
+    "tabToday": "TODAY",
+    "tabUpcoming": "UPCOMING",
+    "emptyPast": "No matches played yet",
+    "emptyToday": "No matches today",
+    "emptyUpcoming": "No more matches",
+    "rivalsAbove": "{n} ahead of you",
+    "rivalsAboveWith": "{n} with you",
+    "picksTitle": "Who picked what",
+    "picksAboveOnly": "Ahead of you",
+    "picksClose": "Close",
+    "colPoints": "Pts"
   },
   "invite_sheet": {
     "title": "Invite a friend",

@@ -1,6 +1,11 @@
 import { api } from "./client";
 
-export type ScoreCount = { scoreT1: number; scoreT2: number; count: number };
+export type ScoreCount = {
+  scoreT1: number;
+  scoreT2: number;
+  count: number;
+  rivalsAboveCount: number;
+};
 
 export type MatchConsensus = {
   matchId: number;
@@ -20,9 +25,16 @@ export type MatchConsensus = {
   totalPicks: number;
   majority: boolean;
   rebel: boolean;
+  rivalsAboveTotal: number;
+  rivalsAbovePicked: number;
 };
 
-export type GroupConsensusView = { matches: MatchConsensus[] };
+export type GroupConsensusView = {
+  serverTime: string;
+  past: MatchConsensus[];
+  today: MatchConsensus[];
+  upcoming: MatchConsensus[];
+};
 
 export type H2HMatchState = "agree" | "differ" | "hidden";
 
@@ -52,7 +64,30 @@ export type H2HView = {
   differCount: number;
   myPoints: number | null;
   rivalPoints: number | null;
-  matches: H2HMatch[];
+  serverTime: string;
+  past: H2HMatch[];
+  today: H2HMatch[];
+  upcoming: H2HMatch[];
+};
+
+export type MatchPick = {
+  displayName: string | null;
+  rank: number;
+  points: number;
+  isYou: boolean;
+  isBot: boolean;
+  isAboveMe: boolean;
+  scoreT1: number;
+  scoreT2: number;
+  pointsEarned: number | null;
+};
+
+export type MatchPicksView = {
+  matchId: number;
+  actualScoreT1: number | null;
+  actualScoreT2: number | null;
+  played: boolean;
+  picks: MatchPick[];
 };
 
 export async function getGroupConsensus(): Promise<GroupConsensusView> {
@@ -61,4 +96,8 @@ export async function getGroupConsensus(): Promise<GroupConsensusView> {
 
 export async function getH2H(vs: number): Promise<H2HView> {
   return api<H2HView>(`/api/compare/h2h?vs=${vs}`);
+}
+
+export async function getMatchPicks(matchId: number): Promise<MatchPicksView> {
+  return api<MatchPicksView>(`/api/compare/match/${matchId}/picks`);
 }

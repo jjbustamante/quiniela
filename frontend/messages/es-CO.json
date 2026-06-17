@@ -238,7 +238,21 @@
     "youTag": "tú",
     "lockedTitle": "AÚN NO,\nPACIENCIA.",
     "lockedHelp": "Los picks de los demás se revelan cuando se cierre la quiniela.",
-    "noRival": "Elige un rival para ver el duelo."
+    "noRival": "Elige un rival para ver el duelo.",
+    "viewByDate": "Por fecha",
+    "viewByStage": "Por fase",
+    "tabPast": "PASADOS",
+    "tabToday": "HOY",
+    "tabUpcoming": "PRÓXIMOS",
+    "emptyPast": "Aún no hay partidos jugados",
+    "emptyToday": "Sin partidos hoy",
+    "emptyUpcoming": "No hay más partidos",
+    "rivalsAbove": "{n} por encima de ti",
+    "rivalsAboveWith": "{n} contigo",
+    "picksTitle": "Quién eligió qué",
+    "picksAboveOnly": "Por encima de ti",
+    "picksClose": "Cerrar",
+    "colPoints": "Pts"
   },
   "invite_sheet": {
     "title": "Invita a un pana",
