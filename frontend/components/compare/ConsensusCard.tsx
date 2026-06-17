@@ -72,7 +72,7 @@ export function ConsensusCard({ m }: { m: MatchConsensus }) {
                 type="button"
                 data-testid="rivals-above-mark"
                 className="ml-1 shrink-0 rounded bg-[var(--color-accent-gold)] px-1 text-[9px] font-extrabold text-[var(--color-line-ink)]"
-                onClick={() => open(undefined, true)}
+                onClick={() => open(key, true)}
               >
                 ↑{s.rivalsAboveCount}
               </button>

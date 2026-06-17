@@ -9,7 +9,14 @@ vi.mock("@/lib/actions/compare-picks", () => ({
   fetchMatchPicks: vi.fn(async (): Promise<MatchPicksView> => ({
     matchId: 1, actualScoreT1: null, actualScoreT2: null, played: false,
     picks: [
-      { displayName: "Carlos", rank: 1, points: 99, isYou: false, isBot: false, isAboveMe: true, scoreT1: 2, scoreT2: 0, pointsEarned: null },
+      // Two rivals-above who picked 2-1 → must appear when tapping the 2-1 ↑ mark
+      { displayName: "Ana", rank: 1, points: 110, isYou: false, isBot: false, isAboveMe: true, scoreT1: 2, scoreT2: 1, pointsEarned: null },
+      { displayName: "Luis", rank: 2, points: 105, isYou: false, isBot: false, isAboveMe: true, scoreT1: 2, scoreT2: 1, pointsEarned: null },
+      // Rival-above who picked a DIFFERENT scoreline (2-0) → must be EXCLUDED when tapping 2-1 mark
+      { displayName: "Carlos", rank: 3, points: 99, isYou: false, isBot: false, isAboveMe: true, scoreT1: 2, scoreT2: 0, pointsEarned: null },
+      // Non-above picker on 2-1 → must be EXCLUDED when tapping 2-1 mark
+      { displayName: "Pedro", rank: 8, points: 40, isYou: false, isBot: false, isAboveMe: false, scoreT1: 2, scoreT2: 1, pointsEarned: null },
+      // The user themselves
       { displayName: "Tú", rank: 9, points: 0, isYou: true, isBot: false, isAboveMe: false, scoreT1: 2, scoreT2: 1, pointsEarned: null },
     ],
   })),
@@ -45,18 +52,35 @@ const m: MatchConsensus = {
 };
 
 describe("ConsensusCard drill-down", () => {
-  it("loads and shows named picks when a bar is tapped", async () => {
+  it("loads and shows all pickers on that scoreline when the 2-1 bar is tapped", async () => {
     wrap(m);
-    await userEvent.click(screen.getByRole("button", { name: /2–0/ }));
-    expect(await screen.findByText("Carlos")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /2–1/ }));
+    // Ana, Luis, Pedro, and Tú all picked 2-1 → all shown
+    expect(await screen.findByText("Ana")).toBeInTheDocument();
+    expect(screen.getByText("Luis")).toBeInTheDocument();
+    expect(screen.getByText("Pedro")).toBeInTheDocument();
+    // Carlos picked 2-0 → excluded
+    expect(screen.queryByText("Carlos")).not.toBeInTheDocument();
   });
 
-  it("filters to rivals-above when the ↑ mark is tapped", async () => {
+  it("filters to rivals-above on the 2-1 scoreline when the 2-1 ↑ mark is tapped", async () => {
     wrap(m);
+    // The 2-1 row is first in distribution; find its mark explicitly by label
     const marks = screen.getAllByTestId("rivals-above-mark");
+    // marks[0] = 2-1 row (first distribution entry), marks[1] = 2-0 row
     await userEvent.click(marks[0]);
-    expect(await screen.findByText("Carlos")).toBeInTheDocument();
-    // 'Tú' is not above me, so filtered out of the above-only view
+
+    // Ana and Luis: above-me AND picked 2-1 → must appear
+    expect(await screen.findByText("Ana")).toBeInTheDocument();
+    expect(screen.getByText("Luis")).toBeInTheDocument();
+
+    // Carlos: above-me but picked 2-0 → must NOT appear
+    expect(screen.queryByText("Carlos")).not.toBeInTheDocument();
+
+    // Pedro: picked 2-1 but NOT above-me → must NOT appear
+    expect(screen.queryByText("Pedro")).not.toBeInTheDocument();
+
+    // Tú: isYou, not above-me → must NOT appear
     expect(screen.queryByText("Tú")).not.toBeInTheDocument();
   });
 });
