@@ -1,115 +1,73 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
-import { describe, it, expect, vi } from "vitest";
-import type { GroupConsensusView } from "@/lib/api/compare";
+import { describe, it, expect } from "vitest";
+import type { GroupConsensusView, MatchConsensus } from "@/lib/api/compare";
 import { GroupConsensus } from "./GroupConsensus";
 
-vi.mock("next-intl/server", () => ({
-  getTranslations: async () => (key: string) => {
-    const map: Record<string, string> = {
-      lockedTitle: "AÚN NO",
-      lockedHelp: "se revela al cerrar",
-      majority: "Con la mayoría",
-      rebel: "Rebelde",
-      youTag: "tú",
-      chipGROUP: "Grupos",
-      chipR32: "16vos",
-    };
-    return map[key] ?? key;
+const messages = {
+  compare: {
+    lockedTitle: "AÚN NO", lockedHelp: "se revela al cerrar",
+    majority: "Con la mayoría", rebel: "Rebelde", youTag: "tú",
+    viewByDate: "Por fecha", viewByStage: "Por fase",
+    tabPast: "Pasados", tabToday: "Hoy", tabUpcoming: "Próximos",
+    emptyPast: "—", emptyToday: "Sin partidos hoy", emptyUpcoming: "—",
+    rivalsAbove: "{n} por encima de ti", rivalsAboveWith: "{n} contigo",
+    picksTitle: "Quién eligió qué", picksAboveOnly: "Por encima de ti",
+    picksClose: "Cerrar", colPoints: "Pts",
   },
-}));
+  home: { chipGROUP: "Grupos", chipR32: "16vos" },
+};
 
-const messages = {};
+function card(over: Partial<MatchConsensus> & { matchId: number; roundCode: string; kickoffAt: string }): MatchConsensus {
+  return {
+    team1Code: "BRA", team1Flag: "🇧🇷", team2Code: "SRB", team2Flag: "🇷🇸",
+    actualScoreT1: null, actualScoreT2: null, played: true, revealed: true,
+    myScoreT1: 1, myScoreT2: 0,
+    distribution: [{ scoreT1: 1, scoreT2: 0, count: 2, rivalsAboveCount: 0 }],
+    totalPicks: 2, majority: true, rebel: false,
+    rivalsAboveTotal: 0, rivalsAbovePicked: 0,
+    ...over,
+  };
+}
 
-async function renderGC(data: GroupConsensusView) {
-  const ui = await GroupConsensus({ data });
+function renderGC(data: GroupConsensusView) {
   return render(
     <NextIntlClientProvider locale="es-CO" messages={messages}>
-      {ui}
+      <GroupConsensus data={data} />
     </NextIntlClientProvider>,
   );
 }
 
+const base: GroupConsensusView = { serverTime: "2026-06-16T12:00:00Z", past: [], today: [], upcoming: [] };
+
 describe("GroupConsensus", () => {
-  it("shows the locked state when nothing is revealed", async () => {
-    await renderGC({
-      matches: [
-        {
-          matchId: 1,
-          roundCode: "GROUP",
-          team1Code: "BRA",
-          team1Flag: "🇧🇷",
-          team2Code: "SRB",
-          team2Flag: "🇷🇸",
-          kickoffAt: "2026-06-11T17:00:00Z",
-          actualScoreT1: null,
-          actualScoreT2: null,
-          played: false,
-          revealed: false,
-          myScoreT1: 2,
-          myScoreT2: 1,
-          distribution: [],
-          totalPicks: 0,
-          majority: false,
-          rebel: false,
-        },
-      ],
-    });
-    expect(screen.getByText("AÚN NO")).toBeInTheDocument();
+  it("defaults to the Today tab in date mode", () => {
+    renderGC({ ...base, today: [card({ matchId: 1, roundCode: "GROUP", kickoffAt: "2026-06-16T15:00:00Z" })] });
+    expect(screen.getByRole("button", { name: /hoy/i })).toBeInTheDocument();
+    expect(screen.getByText("1–0")).toBeInTheDocument();
+    expect(screen.queryByTestId("stage-header")).not.toBeInTheDocument();
   });
 
-  it("renders a consensus bar and the rebel tag when revealed", async () => {
-    await renderGC({
-      matches: [
-        {
-          matchId: 1,
-          roundCode: "GROUP",
-          team1Code: "BRA",
-          team1Flag: "🇧🇷",
-          team2Code: "SRB",
-          team2Flag: "🇷🇸",
-          kickoffAt: "2026-06-11T17:00:00Z",
-          actualScoreT1: null,
-          actualScoreT2: null,
-          played: false,
-          revealed: true,
-          myScoreT1: 4,
-          myScoreT2: 4,
-          distribution: [
-            { scoreT1: 1, scoreT2: 0, count: 5 },
-            { scoreT1: 4, scoreT2: 4, count: 1 },
-          ],
-          totalPicks: 6,
-          majority: false,
-          rebel: true,
-        },
-      ],
-    });
-    expect(screen.getByText("Rebelde")).toBeInTheDocument();
+  it("shows an empty-today message when today is empty", () => {
+    renderGC({ ...base, upcoming: [card({ matchId: 2, roundCode: "GROUP", kickoffAt: "2026-06-20T15:00:00Z" })] });
+    // initial tab falls back to upcoming when today is empty (mirrors MatchTabs)
     expect(screen.getByText("1–0")).toBeInTheDocument();
   });
 
-  function revealedMatch(over: Partial<import("@/lib/api/compare").MatchConsensus> & { matchId: number; roundCode: string; kickoffAt: string }) {
-    return {
-      team1Code: "A", team1Flag: "🏳", team2Code: "B", team2Flag: "🏳",
-      actualScoreT1: null, actualScoreT2: null, played: true, revealed: true,
-      myScoreT1: 1, myScoreT2: 0, distribution: [{ scoreT1: 1, scoreT2: 0, count: 2 }],
-      totalPicks: 2, majority: true, rebel: false,
-      ...over,
-    } as import("@/lib/api/compare").MatchConsensus;
-  }
-
-  it("groups revealed matches into stage sections, most-recent first, first open", async () => {
-    await renderGC({
-      matches: [
-        revealedMatch({ matchId: 1, roundCode: "GROUP", kickoffAt: "2026-06-01T15:00:00Z" }),
-        revealedMatch({ matchId: 2, roundCode: "R32", kickoffAt: "2026-06-05T15:00:00Z" }),
-      ],
+  it("switches to stage sections", async () => {
+    renderGC({
+      ...base,
+      past: [card({ matchId: 1, roundCode: "GROUP", kickoffAt: "2026-06-01T15:00:00Z" })],
+      today: [card({ matchId: 2, roundCode: "R32", kickoffAt: "2026-06-16T15:00:00Z" })],
     });
+    await userEvent.click(screen.getByRole("button", { name: /por fase/i }));
     const headers = screen.getAllByTestId("stage-header").map((el) => el.textContent);
     expect(headers).toEqual(["16vos", "Grupos"]);
-    const sections = document.querySelectorAll("details");
-    expect(sections[0]).toHaveAttribute("open");
-    expect(sections[1]).not.toHaveAttribute("open");
+  });
+
+  it("shows the locked state when everything is empty", () => {
+    renderGC(base);
+    expect(screen.getByText("AÚN NO")).toBeInTheDocument();
   });
 });
