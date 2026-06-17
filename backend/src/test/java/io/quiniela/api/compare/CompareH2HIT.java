@@ -80,11 +80,16 @@ class CompareH2HIT extends AbstractIntegrationTest {
         .perform(get("/api/compare/h2h?vs=" + rival).header("Authorization", "Bearer " + token(me)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.rivalUserId").value((int) rival))
-        .andExpect(jsonPath("$.matches[0].matchId").value(1))
-        .andExpect(jsonPath("$.matches[0].revealed").value(false))
-        .andExpect(jsonPath("$.matches[0].state").value("hidden"))
-        .andExpect(jsonPath("$.matches[0].myScoreT1").value(2))
-        .andExpect(jsonPath("$.matches[0].rivalScoreT1").doesNotExist());
+        .andExpect(jsonPath("$.serverTime").exists())
+        .andExpect(jsonPath("$.past").isArray())
+        .andExpect(jsonPath("$.today").isArray())
+        .andExpect(jsonPath("$.upcoming").isArray())
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].revealed").value(org.hamcrest.Matchers.hasItem(false)))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].state").value(org.hamcrest.Matchers.hasItem("hidden")))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].myScoreT1").value(org.hamcrest.Matchers.hasItem(2)));
   }
 
   @Test
@@ -99,10 +104,15 @@ class CompareH2HIT extends AbstractIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.differCount").value(1))
         .andExpect(jsonPath("$.agreeCount").value(0))
-        .andExpect(jsonPath("$.matches[0].revealed").value(true))
-        .andExpect(jsonPath("$.matches[0].state").value("differ"))
-        .andExpect(jsonPath("$.matches[0].rivalScoreT1").value(0))
-        .andExpect(jsonPath("$.matches[0].rivalScoreT2").value(0));
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].revealed").value(org.hamcrest.Matchers.hasItem(true)))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].state").value(org.hamcrest.Matchers.hasItem("differ")))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].rivalScoreT1").value(org.hamcrest.Matchers.hasItem(0)))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].rivalScoreT2")
+                .value(org.hamcrest.Matchers.hasItem(0)));
   }
 
   @Test
@@ -125,7 +135,8 @@ class CompareH2HIT extends AbstractIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.agreeCount").value(1))
         .andExpect(jsonPath("$.differCount").value(0))
-        .andExpect(jsonPath("$.matches[0].state").value("agree"));
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].state").value(org.hamcrest.Matchers.hasItem("agree")));
   }
 
   @Test

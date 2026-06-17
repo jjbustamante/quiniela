@@ -79,7 +79,10 @@ public class CompareService {
       int differCount,
       Integer myPoints,
       Integer rivalPoints,
-      List<H2HMatch> matches) {}
+      Instant serverTime,
+      List<H2HMatch> past,
+      List<H2HMatch> today,
+      List<H2HMatch> upcoming) {}
 
   public record MatchPick(
       String displayName,
@@ -519,6 +522,27 @@ public class CompareService {
               rvT2,
               state));
     }
-    return new H2HView(rivalUserId, rivalName, agree, differ, myPoints, rivalPoints, matches);
+    DayBounds bounds = dayBounds(userId);
+    List<H2HMatch> past = new ArrayList<>();
+    List<H2HMatch> today = new ArrayList<>();
+    List<H2HMatch> upcoming = new ArrayList<>();
+    for (H2HMatch hm : matches) {
+      Instant k = Instant.parse(hm.kickoffAt());
+      if (k.isBefore(bounds.startOfToday())) past.add(hm);
+      else if (k.isBefore(bounds.startOfTomorrow())) today.add(hm);
+      else upcoming.add(hm);
+    }
+    past.sort((a, b) -> Instant.parse(b.kickoffAt()).compareTo(Instant.parse(a.kickoffAt())));
+    return new H2HView(
+        rivalUserId,
+        rivalName,
+        agree,
+        differ,
+        myPoints,
+        rivalPoints,
+        Instant.now(),
+        List.copyOf(past),
+        List.copyOf(today),
+        List.copyOf(upcoming));
   }
 }
