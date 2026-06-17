@@ -28,7 +28,6 @@ export function GroupConsensus({ data }: { data: GroupConsensusView }) {
     );
   }
 
-  const now = new Date(data.serverTime).getTime();
   const list = tab === "past" ? data.past : tab === "today" ? data.today : data.upcoming;
   const emptyLabel = tab === "past" ? t("emptyPast") : tab === "today" ? t("emptyToday") : t("emptyUpcoming");
 
@@ -58,6 +57,7 @@ export function GroupConsensus({ data }: { data: GroupConsensusView }) {
         </>
       ) : (
         <div className="flex flex-col gap-2">
+          {/* Compare only lists revealed matches; treat all as "started" so stages order by phase recency (later rounds first), matching the prior server component. */}
           {groupMatchesByStage(all, Number.MAX_SAFE_INTEGER).map((g, i) => (
             <StageSection key={g.roundCode} header={tRound(`chip${g.roundCode}` as never)} count={g.matches.length} defaultOpen={i === 0}>
               {g.matches.map((m) => <ConsensusCard key={m.matchId} m={m} />)}
