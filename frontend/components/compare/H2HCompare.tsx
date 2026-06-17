@@ -29,9 +29,10 @@ export function H2HCompare({ data }: { data: H2HView | null }) {
   const tRound = useTranslations("home");
 
   // Hooks must come before any conditional return.
+  // Prefer the first bucket that has REVEALED matches so we don't default onto an all-hidden Today.
   const initial: Tab =
-    data && data.today.length > 0 ? "today"
-    : data && data.upcoming.length > 0 ? "upcoming"
+    data && data.today.some((m) => m.revealed) ? "today"
+    : data && data.upcoming.some((m) => m.revealed) ? "upcoming"
     : "past";
   const [mode, setMode] = useState<Mode>("date");
   const [tab, setTab] = useState<Tab>(initial);
@@ -65,7 +66,13 @@ export function H2HCompare({ data }: { data: H2HView | null }) {
 
   const rival = data.rivalDisplayName ?? `#${data.rivalUserId}`;
 
-  const bucketList = tab === "past" ? data.past : tab === "today" ? data.today : data.upcoming;
+  // Derive per-bucket revealed lists so hidden matches don't inflate badge counts
+  // or create header-only empty tables when an entire bucket is unrevealed.
+  const pastR = data.past.filter((m) => m.revealed);
+  const todayR = data.today.filter((m) => m.revealed);
+  const upcomingR = data.upcoming.filter((m) => m.revealed);
+
+  const bucketList = tab === "past" ? pastR : tab === "today" ? todayR : upcomingR;
   const emptyLabel = tab === "past" ? t("emptyPast") : tab === "today" ? t("emptyToday") : t("emptyUpcoming");
 
   return (
@@ -84,9 +91,9 @@ export function H2HCompare({ data }: { data: H2HView | null }) {
       {mode === "date" ? (
         <>
           <div className="flex gap-1 border-b-[1.5px] border-[var(--color-line-ink)] px-1">
-            <TabButton active={tab === "past"} onClick={() => setTab("past")}>{t("tabPast")} · {data.past.length}</TabButton>
-            <TabButton active={tab === "today"} onClick={() => setTab("today")}>{t("tabToday")} · {data.today.length}</TabButton>
-            <TabButton active={tab === "upcoming"} onClick={() => setTab("upcoming")}>{t("tabUpcoming")} · {data.upcoming.length}</TabButton>
+            <TabButton active={tab === "past"} onClick={() => setTab("past")}>{t("tabPast")} · {pastR.length}</TabButton>
+            <TabButton active={tab === "today"} onClick={() => setTab("today")}>{t("tabToday")} · {todayR.length}</TabButton>
+            <TabButton active={tab === "upcoming"} onClick={() => setTab("upcoming")}>{t("tabUpcoming")} · {upcomingR.length}</TabButton>
           </div>
           {bucketList.length === 0 ? (
             <div className="mt-6 border-[1.5px] border-dashed border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] p-6 text-center">

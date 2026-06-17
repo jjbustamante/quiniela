@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import type { GroupConsensusView, MatchConsensus } from "@/lib/api/compare";
+import type { GroupConsensusView } from "@/lib/api/compare";
 import { groupMatchesByStage } from "@/lib/matches-by-stage";
 import { StageSection } from "@/components/shared/StageSection";
 import { ConsensusCard } from "./ConsensusCard";

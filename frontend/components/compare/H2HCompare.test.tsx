@@ -125,4 +125,73 @@ describe("H2HCompare", () => {
     const text = within(r32).getAllByRole("row").map((r) => r.textContent).join(" | ");
     expect(text.indexOf("DF")).toBeLessThan(text.indexOf("AG"));
   });
+
+  it("shows empty-state when today bucket has only hidden matches; skips to upcoming as default tab", () => {
+    renderH2H({
+      ...base,
+      today: [
+        h2hMatch({
+          matchId: 99,
+          roundCode: "GROUP",
+          kickoffAt: "2026-06-16T15:00:00Z",
+          state: "hidden",
+          revealed: false,
+          played: false,
+          actualScoreT1: null,
+          actualScoreT2: null,
+          myScoreT1: null,
+          myScoreT2: null,
+          rivalScoreT1: null,
+          rivalScoreT2: null,
+        }),
+      ],
+      upcoming: [
+        h2hMatch({ matchId: 100, roundCode: "GROUP", kickoffAt: "2026-06-17T15:00:00Z", state: "agree" }),
+      ],
+    });
+    // Default tab should be "upcoming" because today has zero revealed matches.
+    const upcomingTabBtn = screen.getByRole("button", { name: /próximos/i });
+    expect(upcomingTabBtn.className).toContain("border-[var(--color-accent-red)]");
+
+    // Clicking the Today tab must show the empty-state message, not a data row.
+    const todayTabBtn = screen.getByRole("button", { name: /hoy/i });
+    userEvent.click(todayTabBtn);
+    // The badge must show · 0 (revealed count)
+    expect(todayTabBtn.textContent).toContain("· 0");
+
+    // After clicking Today, the empty-state message should appear and no data rows for the hidden match.
+    // Use findByText so we tolerate async state updates from userEvent.
+  });
+
+  it("renders empty-state message on Today tab when today has only hidden matches (click flow)", async () => {
+    renderH2H({
+      ...base,
+      today: [
+        h2hMatch({
+          matchId: 99,
+          roundCode: "GROUP",
+          kickoffAt: "2026-06-16T15:00:00Z",
+          state: "hidden",
+          revealed: false,
+          played: false,
+          actualScoreT1: null,
+          actualScoreT2: null,
+          myScoreT1: null,
+          myScoreT2: null,
+          rivalScoreT1: null,
+          rivalScoreT2: null,
+        }),
+      ],
+      upcoming: [
+        h2hMatch({ matchId: 100, roundCode: "GROUP", kickoffAt: "2026-06-17T15:00:00Z", state: "agree" }),
+      ],
+    });
+    // Navigate to the Today tab explicitly.
+    await userEvent.click(screen.getByRole("button", { name: /hoy/i }));
+    // Empty-state message must be visible.
+    expect(screen.getByText("Sin partidos hoy")).toBeInTheDocument();
+    // No data row should exist for the hidden match (team codes "A" and "B" should not appear in a table row).
+    const dataRows = document.querySelectorAll("tbody tr");
+    expect(dataRows.length).toBe(0);
+  });
 });
