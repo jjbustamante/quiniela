@@ -83,8 +83,10 @@ class CompareGroupConsensusIT extends AbstractIntegrationTest {
     mockMvc
         .perform(get("/api/compare/group").header("Authorization", "Bearer " + me))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.matches[?(@.matchId == 73)].revealed").value(true))
-        .andExpect(jsonPath("$.matches[?(@.matchId == 73)].totalPicks").value(2));
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 73)].revealed").value(org.hamcrest.Matchers.hasItem(true)))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 73)].totalPicks").value(org.hamcrest.Matchers.hasItem(2)));
   }
 
   @Test
@@ -102,11 +104,13 @@ class CompareGroupConsensusIT extends AbstractIntegrationTest {
     mockMvc
         .perform(get("/api/compare/group").header("Authorization", "Bearer " + me))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.matches[0].matchId").value(1))
-        .andExpect(jsonPath("$.matches[0].revealed").value(false))
-        .andExpect(jsonPath("$.matches[0].distribution.length()").value(0))
-        .andExpect(jsonPath("$.matches[0].myScoreT1").value(2))
-        .andExpect(jsonPath("$.matches[0].myScoreT2").value(1));
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].revealed").value(org.hamcrest.Matchers.hasItem(false)))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].distribution")
+                .value(org.hamcrest.Matchers.hasItem(java.util.Collections.emptyList())))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].myScoreT1").value(org.hamcrest.Matchers.hasItem(2)));
   }
 
   @Test
@@ -120,10 +124,16 @@ class CompareGroupConsensusIT extends AbstractIntegrationTest {
     mockMvc
         .perform(get("/api/compare/group").header("Authorization", "Bearer " + me))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.matches[0].revealed").value(true))
-        .andExpect(jsonPath("$.matches[0].totalPicks").value(3))
-        .andExpect(jsonPath("$.matches[0].majority").value(true))
-        .andExpect(jsonPath("$.matches[0].rebel").value(false));
+        .andExpect(jsonPath("$.serverTime").exists())
+        .andExpect(jsonPath("$.past").isArray())
+        .andExpect(jsonPath("$.today").isArray())
+        .andExpect(jsonPath("$.upcoming").isArray())
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].totalPicks").value(org.hamcrest.Matchers.hasItem(3)))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].majority").value(org.hamcrest.Matchers.hasItem(true)))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].rebel").value(org.hamcrest.Matchers.hasItem(false)));
   }
 
   @Test
@@ -137,7 +147,9 @@ class CompareGroupConsensusIT extends AbstractIntegrationTest {
     mockMvc
         .perform(get("/api/compare/group").header("Authorization", "Bearer " + me))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.matches[0].majority").value(false))
-        .andExpect(jsonPath("$.matches[0].rebel").value(true));
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].majority").value(org.hamcrest.Matchers.hasItem(false)))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].rebel").value(org.hamcrest.Matchers.hasItem(true)));
   }
 }

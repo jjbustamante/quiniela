@@ -46,7 +46,11 @@ public class CompareService {
       boolean majority,
       boolean rebel) {}
 
-  public record GroupConsensusView(List<MatchConsensus> matches) {}
+  public record GroupConsensusView(
+      Instant serverTime,
+      List<MatchConsensus> past,
+      List<MatchConsensus> today,
+      List<MatchConsensus> upcoming) {}
 
   public record H2HMatch(
       Long matchId,
@@ -87,6 +91,25 @@ public class CompareService {
       Integer actualT2,
       boolean played,
       int pointsMultiplier) {}
+
+  private record DayBounds(Instant startOfToday, Instant startOfTomorrow) {}
+
+  private DayBounds dayBounds(Long userId) {
+    Instant[] b =
+        jdbc.queryForObject(
+            "SELECT DATE_TRUNC('day', NOW() AT TIME ZONE u.tz) AT TIME ZONE u.tz AS today_start, "
+                + "(DATE_TRUNC('day', NOW() AT TIME ZONE u.tz) + INTERVAL '1 day') AT TIME ZONE u.tz "
+                + "  AS tomorrow_start "
+                + "FROM (SELECT COALESCE((SELECT timezone FROM users WHERE id = ?), "
+                + "                      'America/Bogota') AS tz) u",
+            (rs, n) ->
+                new Instant[] {
+                  rs.getTimestamp("today_start").toInstant(),
+                  rs.getTimestamp("tomorrow_start").toInstant()
+                },
+            userId);
+    return new DayBounds(b[0], b[1]);
+  }
 
   private List<MatchMeta> fetchMatchMeta() {
     return jdbc.query(
@@ -212,7 +235,19 @@ public class CompareService {
               majority,
               rebel));
     }
-    return new GroupConsensusView(out);
+    DayBounds bounds = dayBounds(userId);
+    List<MatchConsensus> past = new ArrayList<>();
+    List<MatchConsensus> today = new ArrayList<>();
+    List<MatchConsensus> upcoming = new ArrayList<>();
+    for (MatchConsensus mc : out) {
+      Instant k = Instant.parse(mc.kickoffAt());
+      if (k.isBefore(bounds.startOfToday())) past.add(mc);
+      else if (k.isBefore(bounds.startOfTomorrow())) today.add(mc);
+      else upcoming.add(mc);
+    }
+    past.sort((a, b) -> Instant.parse(b.kickoffAt()).compareTo(Instant.parse(a.kickoffAt())));
+    return new GroupConsensusView(
+        Instant.now(), List.copyOf(past), List.copyOf(today), List.copyOf(upcoming));
   }
 
   /**
