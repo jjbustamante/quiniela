@@ -81,6 +81,24 @@ public class CompareService {
       Integer rivalPoints,
       List<H2HMatch> matches) {}
 
+  public record MatchPick(
+      String displayName,
+      int rank,
+      int points,
+      boolean isYou,
+      boolean isBot,
+      boolean isAboveMe,
+      int scoreT1,
+      int scoreT2,
+      Integer pointsEarned) {}
+
+  public record MatchPicksView(
+      Long matchId,
+      Integer actualScoreT1,
+      Integer actualScoreT2,
+      boolean played,
+      List<MatchPick> picks) {}
+
   private record MatchMeta(
       long id,
       String roundCode,
@@ -311,6 +329,102 @@ public class CompareService {
     if (!exact && (betT1 - betT2) == (actualT1 - actualT2)) total += 1; // signed goal difference
 
     return total * multiplier;
+  }
+
+  @Transactional(readOnly = true)
+  public MatchPicksView getMatchPicks(Long userId, Long matchId) {
+    MatchMeta meta =
+        jdbc.query(
+            """
+            SELECT m.id, r.code AS round_code, m.kickoff_at, m.score_t1, m.score_t2, m.played,
+                   r.points_multiplier AS points_multiplier,
+                   t1.code AS t1_code, t1.flag_emoji AS t1_flag,
+                   t2.code AS t2_code, t2.flag_emoji AS t2_flag
+            FROM match m
+            JOIN round r ON r.id = m.round_id
+            LEFT JOIN team t1 ON t1.id = m.team_1_id
+            LEFT JOIN team t2 ON t2.id = m.team_2_id
+            WHERE m.id = ? AND m.tournament_id = ?
+            """,
+            rs ->
+                rs.next()
+                    ? new MatchMeta(
+                        rs.getLong("id"),
+                        rs.getString("round_code"),
+                        rs.getString("t1_code"),
+                        rs.getString("t1_flag"),
+                        rs.getString("t2_code"),
+                        rs.getString("t2_flag"),
+                        rs.getTimestamp("kickoff_at").toInstant().toString(),
+                        (Integer) rs.getObject("score_t1"),
+                        (Integer) rs.getObject("score_t2"),
+                        rs.getBoolean("played"),
+                        rs.getInt("points_multiplier"))
+                    : null,
+            matchId,
+            TOURNAMENT_ID);
+    if (meta == null) {
+      throw new org.springframework.web.server.ResponseStatusException(
+          org.springframework.http.HttpStatus.NOT_FOUND, "Unknown match");
+    }
+
+    var deadlines = lockClock.fetchTournamentDeadlines(TOURNAMENT_ID);
+    boolean revealed =
+        meta.played() || LockClock.isMatchRevealable(Instant.now(), deadlines, meta.roundCode());
+    if (!revealed) {
+      throw new org.springframework.web.server.ResponseStatusException(
+          org.springframework.http.HttpStatus.FORBIDDEN, "Match not revealed");
+    }
+
+    Integer myPointsObj =
+        jdbc.query(
+            "SELECT points FROM quiniela WHERE pool_id = ? AND user_id = ?",
+            rs -> rs.next() ? rs.getInt("points") : null,
+            POOL_ID,
+            userId);
+    int myPoints = myPointsObj == null ? 0 : myPointsObj;
+
+    List<MatchPick> picks =
+        jdbc.query(
+            """
+            WITH ranked AS (
+              SELECT q.id AS quiniela_id, q.user_id, u.display_name, q.points, u.is_bot,
+                     RANK() OVER (ORDER BY q.points DESC) AS rk
+              FROM quiniela q JOIN users u ON u.id = q.user_id
+              WHERE q.pool_id = ? AND u.role <> 'admin'
+            )
+            SELECT r.display_name, r.points, r.user_id, r.is_bot, r.rk,
+                   b.score_t1, b.score_t2
+            FROM ranked r
+            JOIN bet b ON b.quiniela_id = r.quiniela_id AND b.match_id = ?
+            ORDER BY r.rk ASC, r.display_name ASC
+            """,
+            (rs, n) -> {
+              int s1 = rs.getInt("score_t1");
+              int s2 = rs.getInt("score_t2");
+              int pts = rs.getInt("points");
+              long uid = rs.getLong("user_id");
+              Integer earned =
+                  meta.played() && meta.actualT1() != null && meta.actualT2() != null
+                      ? scoreMatchForBet(
+                          meta.pointsMultiplier(), s1, s2, meta.actualT1(), meta.actualT2())
+                      : null;
+              return new MatchPick(
+                  rs.getString("display_name"),
+                  rs.getInt("rk"),
+                  pts,
+                  userId != null && userId.equals(uid),
+                  rs.getBoolean("is_bot"),
+                  pts > myPoints,
+                  s1,
+                  s2,
+                  earned);
+            },
+            POOL_ID,
+            matchId);
+
+    return new MatchPicksView(
+        meta.id(), meta.actualT1(), meta.actualT2(), meta.played(), List.copyOf(picks));
   }
 
   @Transactional(readOnly = true)

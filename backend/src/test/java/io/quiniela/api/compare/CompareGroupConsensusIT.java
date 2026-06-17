@@ -154,6 +154,45 @@ class CompareGroupConsensusIT extends AbstractIntegrationTest {
   }
 
   @Test
+  void returnsNamedPicksRankedForARevealedMatch() throws Exception {
+    jdbc.update(
+        "UPDATE tournament SET group_stage_deadline = NOW() - INTERVAL '1 hour' WHERE id = 1");
+    String me = userWithBetOnMatch1("pk-me", 2, 1);
+    String top = userWithBetOnMatch1("pk-top", 1, 1);
+    jdbc.update(
+        "UPDATE quiniela SET points = 99 WHERE user_id = (SELECT id FROM users WHERE email = ?)",
+        "pk-top@example.com");
+
+    mockMvc
+        .perform(get("/api/compare/match/1/picks").header("Authorization", "Bearer " + me))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.matchId").value(1))
+        .andExpect(jsonPath("$.picks.length()").value(2))
+        // ranked by points DESC: the 99-point rival is first and is flagged above me
+        .andExpect(jsonPath("$.picks[0].isAboveMe").value(true))
+        .andExpect(jsonPath("$.picks[0].scoreT1").value(1))
+        .andExpect(
+            jsonPath("$.picks[?(@.isYou == true)].scoreT1")
+                .value(org.hamcrest.Matchers.hasItem(2)));
+  }
+
+  @Test
+  void forbidsPicksForAnUnrevealedMatch() throws Exception {
+    jdbc.update(
+        "UPDATE tournament SET group_stage_deadline = NOW() + INTERVAL '7 days' WHERE id = 1");
+    String me = userWithBetOnMatch1("pk-hidden-me", 2, 1);
+
+    mockMvc
+        .perform(get("/api/compare/match/1/picks").header("Authorization", "Bearer " + me))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void picksRequiresAuth() throws Exception {
+    mockMvc.perform(get("/api/compare/match/1/picks")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
   void countsRivalsRankedAboveMePerScoreline() throws Exception {
     jdbc.update(
         "UPDATE tournament SET group_stage_deadline = NOW() - INTERVAL '1 hour' WHERE id = 1");
