@@ -25,7 +25,7 @@ public class CompareService {
     this.lockClock = lockClock;
   }
 
-  public record ScoreCount(int scoreT1, int scoreT2, int count) {}
+  public record ScoreCount(int scoreT1, int scoreT2, int count, int rivalsAboveCount) {}
 
   public record MatchConsensus(
       Long matchId,
@@ -44,7 +44,9 @@ public class CompareService {
       List<ScoreCount> distribution,
       int totalPicks,
       boolean majority,
-      boolean rebel) {}
+      boolean rebel,
+      int rivalsAboveTotal,
+      int rivalsAbovePicked) {}
 
   public record GroupConsensusView(
       Instant serverTime,
@@ -164,19 +166,44 @@ public class CompareService {
 
     Map<Long, int[]> myBets = fetchBetsForUser(userId);
 
-    Map<Long, Map<String, Integer>> dist = new HashMap<>();
+    Integer myPointsObj =
+        jdbc.query(
+            "SELECT points FROM quiniela WHERE pool_id = ? AND user_id = ?",
+            rs -> rs.next() ? rs.getInt("points") : null,
+            POOL_ID,
+            userId);
+    int myPoints = myPointsObj == null ? 0 : myPointsObj;
+
+    Integer rivalsAboveTotalObj =
+        jdbc.queryForObject(
+            """
+            SELECT COUNT(*) FROM quiniela q JOIN users u ON u.id = q.user_id
+            WHERE q.pool_id = ? AND u.role <> 'admin' AND q.points > ?
+            """,
+            Integer.class,
+            POOL_ID,
+            myPoints);
+    int rivalsAboveTotal = rivalsAboveTotalObj == null ? 0 : rivalsAboveTotalObj;
+
+    Map<Long, Map<String, int[]>> dist = new HashMap<>(); // key -> [count, aboveCount]
     jdbc.query(
         """
-        SELECT b.match_id, b.score_t1, b.score_t2, COUNT(*) AS cnt
-        FROM bet b JOIN quiniela q ON q.id = b.quiniela_id
+        SELECT b.match_id, b.score_t1, b.score_t2,
+               COUNT(*) AS cnt,
+               COUNT(*) FILTER (WHERE u.role <> 'admin' AND q.points > ?) AS above_cnt
+        FROM bet b
+        JOIN quiniela q ON q.id = b.quiniela_id
+        JOIN users u ON u.id = q.user_id
         WHERE q.pool_id = ?
         GROUP BY b.match_id, b.score_t1, b.score_t2
         """,
         rs -> {
           long mid = rs.getLong("match_id");
           String key = rs.getInt("score_t1") + ":" + rs.getInt("score_t2");
-          dist.computeIfAbsent(mid, k -> new HashMap<>()).put(key, rs.getInt("cnt"));
+          dist.computeIfAbsent(mid, k -> new HashMap<>())
+              .put(key, new int[] {rs.getInt("cnt"), rs.getInt("above_cnt")});
         },
+        myPoints,
         POOL_ID);
 
     List<MatchConsensus> out = new ArrayList<>();
@@ -191,25 +218,29 @@ public class CompareService {
 
       List<ScoreCount> distribution = new ArrayList<>();
       int total = 0;
+      int rivalsAbovePicked = 0;
       boolean majority = false;
       boolean rebel = false;
 
       if (revealed) {
-        Map<String, Integer> counts = dist.getOrDefault(m.id(), Map.of());
+        Map<String, int[]> counts = dist.getOrDefault(m.id(), Map.of());
         int max = 0;
         for (var e : counts.entrySet()) {
           String[] parts = e.getKey().split(":");
-          int c = e.getValue();
+          int c = e.getValue()[0];
+          int above = e.getValue()[1];
           total += c;
+          rivalsAbovePicked += above;
           max = Math.max(max, c);
           distribution.add(
-              new ScoreCount(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), c));
+              new ScoreCount(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), c, above));
         }
         distribution.sort((a, b) -> b.count() - a.count());
         if (mine != null) {
-          int myCount = counts.getOrDefault(myT1 + ":" + myT2, 0);
+          int myCount =
+              counts.containsKey(myT1 + ":" + myT2) ? counts.get(myT1 + ":" + myT2)[0] : 0;
           int peak = max;
-          long peakCount = counts.values().stream().filter(v -> v == peak).count();
+          long peakCount = counts.values().stream().filter(v -> v[0] == peak).count();
           majority = myCount > 0 && myCount == max && peakCount == 1;
           rebel = myCount == 1 && total > 1;
         }
@@ -233,7 +264,9 @@ public class CompareService {
               distribution,
               total,
               majority,
-              rebel));
+              rebel,
+              rivalsAboveTotal,
+              rivalsAbovePicked));
     }
     DayBounds bounds = dayBounds(userId);
     List<MatchConsensus> past = new ArrayList<>();

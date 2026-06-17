@@ -152,4 +152,38 @@ class CompareGroupConsensusIT extends AbstractIntegrationTest {
         .andExpect(
             jsonPath("$..[?(@.matchId == 1)].rebel").value(org.hamcrest.Matchers.hasItem(true)));
   }
+
+  @Test
+  void countsRivalsRankedAboveMePerScoreline() throws Exception {
+    jdbc.update(
+        "UPDATE tournament SET group_stage_deadline = NOW() - INTERVAL '1 hour' WHERE id = 1");
+    // Me: pick 2-1, 0 points (bottom).
+    String me = userWithBetOnMatch1("rab-me", 2, 1);
+    // Two rivals ABOVE me (more points) who also picked 2-1.
+    userWithBetOnMatch1("rab-above1", 2, 1);
+    userWithBetOnMatch1("rab-above2", 2, 1);
+    jdbc.update(
+        "UPDATE quiniela SET points = 50 WHERE user_id = (SELECT id FROM users WHERE email = ?)",
+        "rab-above1@example.com");
+    jdbc.update(
+        "UPDATE quiniela SET points = 40 WHERE user_id = (SELECT id FROM users WHERE email = ?)",
+        "rab-above2@example.com");
+    // One rival BELOW me (0 points) who picked something else.
+    userWithBetOnMatch1("rab-below", 0, 0);
+
+    mockMvc
+        .perform(get("/api/compare/group").header("Authorization", "Bearer " + me))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].rivalsAboveTotal")
+                .value(org.hamcrest.Matchers.hasItem(2)))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 1)].rivalsAbovePicked")
+                .value(org.hamcrest.Matchers.hasItem(2)))
+        // the 2-1 scoreline carries both rivals-above
+        .andExpect(
+            jsonPath(
+                    "$..[?(@.matchId == 1)].distribution[?(@.scoreT1 == 2 && @.scoreT2 == 1)].rivalsAboveCount")
+                .value(org.hamcrest.Matchers.hasItem(2)));
+  }
 }
