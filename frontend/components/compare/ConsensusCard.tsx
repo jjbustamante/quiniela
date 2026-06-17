@@ -22,12 +22,12 @@ export function ConsensusCard({ m }: { m: MatchConsensus }) {
   const max = top.reduce((acc, s) => Math.max(acc, s.count), 1);
   const mineKey = m.myScoreT1 !== null ? `${m.myScoreT1}:${m.myScoreT2}` : null;
 
-  const [picks, setPicks] = useState<MatchPicksView | null>(null);
+  const [picks, setPicks] = useState<MatchPicksView | null | undefined>(undefined);
   const [filter, setFilter] = useState<{ score?: string; aboveOnly?: boolean } | null>(null);
 
   async function open(score?: string, aboveOnly?: boolean) {
     setFilter({ score, aboveOnly });
-    if (!picks) {
+    if (picks === undefined) {
       const { fetchMatchPicks } = await import("@/lib/actions/compare-picks");
       const data = await fetchMatchPicks(m.matchId);
       setPicks(data);
@@ -90,7 +90,7 @@ export function ConsensusCard({ m }: { m: MatchConsensus }) {
               {t("picksClose")}
             </button>
           </div>
-          {picks === null ? null : (
+          {picks ? (
             <ul className="flex flex-col gap-0.5">
               {filterPicks(picks.picks, filter).map((p, i) => (
                 <li key={`${p.rank}-${i}`} className={`flex items-center justify-between text-xs ${p.isYou ? "font-extrabold text-[var(--color-accent-red)]" : ""}`}>
@@ -102,7 +102,7 @@ export function ConsensusCard({ m }: { m: MatchConsensus }) {
                 </li>
               ))}
             </ul>
-          )}
+          ) : null}
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, cleanup } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import type { MatchConsensus, MatchPicksView } from "@/lib/api/compare";
 import { ConsensusCard } from "./ConsensusCard";
 
@@ -100,5 +100,42 @@ describe("ConsensusCard rivals-above", () => {
     wrap({ ...m, rivalsAboveTotal: 0, rivalsAbovePicked: 0,
       distribution: m.distribution.map((s) => ({ ...s, rivalsAboveCount: 0 })) });
     expect(screen.queryByTestId("rivals-above-mark")).not.toBeInTheDocument();
+  });
+});
+
+describe("ConsensusCard 403/null picks caching", () => {
+  afterEach(() => cleanup());
+
+  it("does not crash, shows panel header with no pick rows, and does not refetch on re-open", async () => {
+    // Override mock to return null (403 / unrevealed case)
+    const { fetchMatchPicks } = await import("@/lib/actions/compare-picks");
+    const mockFetch = fetchMatchPicks as ReturnType<typeof vi.fn>;
+    mockFetch.mockClear();
+    mockFetch.mockResolvedValueOnce(null as unknown as MatchPicksView);
+
+    wrap(m);
+    const user = userEvent.setup();
+
+    // Open panel for the first time
+    await user.click(screen.getByRole("button", { name: /2–1/ }));
+
+    // Panel header must appear (no crash)
+    expect(await screen.findByText("Quién eligió qué")).toBeInTheDocument();
+
+    // No pick rows rendered
+    expect(screen.queryByRole("listitem")).not.toBeInTheDocument();
+
+    // Call count after first open: 1
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    // Close the panel
+    await user.click(screen.getByRole("button", { name: /Cerrar/i }));
+
+    // Re-open same panel
+    await user.click(screen.getByRole("button", { name: /2–1/ }));
+    expect(await screen.findByText("Quién eligió qué")).toBeInTheDocument();
+
+    // Must still be 1 — cached null, no second fetch
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 });
