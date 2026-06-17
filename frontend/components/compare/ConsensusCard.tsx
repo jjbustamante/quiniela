@@ -25,6 +25,11 @@ export function ConsensusCard({ m }: { m: MatchConsensus }) {
           <span className="rounded-full bg-[var(--color-line-ink)] px-2 py-0.5 text-[10px] font-extrabold uppercase text-[var(--color-bg-paper)]">{t("majority")}</span>
         ) : null}
       </div>
+      {m.rivalsAboveTotal > 0 && (
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-[var(--color-text-muted)]">
+          {t("rivalsAbove", { n: m.rivalsAboveTotal })}
+        </p>
+      )}
       {top.map((s) => {
         const key = `${s.scoreT1}:${s.scoreT2}`;
         const isMine = key === mineKey;
@@ -35,6 +40,12 @@ export function ConsensusCard({ m }: { m: MatchConsensus }) {
               <span className={`block h-full ${isMine ? "bg-[var(--color-accent-red)]" : "bg-[#cbb8a0]"}`} style={{ width: `${Math.round((s.count / max) * 100)}%` }} />
             </span>
             <span className="w-10 text-right font-bold text-[var(--color-text-muted)]">{isMine ? t("youTag") : s.count}</span>
+            {s.rivalsAboveCount > 0 && (
+              <span data-testid="rivals-above-mark"
+                className="ml-1 shrink-0 rounded bg-[var(--color-accent-gold)] px-1 text-[9px] font-extrabold text-[var(--color-line-ink)]">
+                ↑{s.rivalsAboveCount}
+              </span>
+            )}
           </div>
         );
       })}
