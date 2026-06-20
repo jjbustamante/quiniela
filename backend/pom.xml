@@ -45,7 +45,7 @@
         <dependency-check.version>11.1.1</dependency-check.version>
         <!-- Spring AI 2.0.x targets Spring Boot 4. M8 is the latest pre-GA
              milestone as of 2026-05-30; swap to GA when released. -->
-        <spring-ai.version>2.0.0-M8</spring-ai.version>
+        <spring-ai.version>2.0.0</spring-ai.version>
         <!-- Google's unified GenAI SDK, used directly by VertexPaulOracle for the
              Vertex AI path (ADC auth, billed to GCP credits). Spring AI's Vertex
              module isn't published on the 2.0.x line, so we call the SDK directly
