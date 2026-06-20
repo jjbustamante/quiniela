@@ -57,6 +57,14 @@
         <flyway.version>11.20.3</flyway.version>
 
         <google-cloud-tasks.version>2.93.0</google-cloud-tasks.version>
+        <!-- google-cloud-tasks 2.93.0 pulls gax 2.81.0, which needs
+             google-auth-library 1.48.0 (the version with
+             com.google.auth.mtls.CertificateSourceUnavailableException).
+             google-api-client 2.9.0 transitively pins 1.30.0 as the nearest
+             dependency, so without this BOM Maven resolves 1.30.0 →
+             NoClassDefFoundError at CloudTasksClient.create() (gax
+             EndpointContext class-init). The BOM below forces 1.48.0. -->
+        <google-auth-library.version>1.48.0</google-auth-library.version>
 
         <!-- Flyway Maven plugin defaults — point at local docker-compose Postgres.
              Override per-invocation: `./mvnw flyway:info -Dflyway.url=...`.
@@ -86,6 +94,20 @@
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-bom</artifactId>
                 <version>${grpc.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- google-auth-library-bom imported BEFORE spring-ai-bom so it wins
+                 on com.google.auth:* versions (BOM precedence = declaration
+                 order). Aligns google-auth-library to 1.48.0 — the version gax
+                 2.81.0 (via google-cloud-tasks 2.93.0) requires — overriding the
+                 1.30.0 that google-api-client 2.9.0 pins transitively. Without it,
+                 CloudTasksClient.create() throws NoClassDefFoundError for
+                 com.google.auth.mtls.CertificateSourceUnavailableException. -->
+            <dependency>
+                <groupId>com.google.auth</groupId>
+                <artifactId>google-auth-library-bom</artifactId>
+                <version>${google-auth-library.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
