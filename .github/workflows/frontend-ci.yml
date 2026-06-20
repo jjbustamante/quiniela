@@ -140,6 +140,9 @@ jobs:
   # docker-push the SAME image and deploy. No double-build.
   #   - PRs / other branches: build + scan only (local image, no registry).
   #   - push to master: build + scan + push + deploy.
+  # NOTE: commits merged by the Actions GITHUB_TOKEN (e.g. Dependabot
+  # auto-merge) do NOT trigger a new run, so they don't auto-deploy. Push a
+  # follow-up commit (or re-run a real push run at the right SHA) to ship them.
   # ─────────────────────────────────────────────────────────────────────────
   build-scan-deploy:
     needs: [unit-tests, e2e-tests, audit]
