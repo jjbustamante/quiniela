@@ -37,6 +37,23 @@ updates:
         patterns:
           - "org.apache.maven.plugins*"
           - "*-maven-plugin"
+      # Keep the whole Google/gRPC client stack moving in lockstep. These
+      # libraries (gax, google-cloud-tasks, google-api-client, google-genai,
+      # google-auth-library-bom, grpc, protobuf) cross-depend on tightly
+      # coupled versions: on 2026-06-20 a lone google-cloud-tasks 2.51→2.93
+      # bump pulled gax 2.81.0 while google-auth-library stayed at the 1.30.0
+      # that google-api-client pinned → NoClassDefFoundError, breaking the
+      # live-score sync. Grouping them (incl. major) forces one coordinated
+      # PR; any major in the set means it won't auto-merge and gets reviewed.
+      # Listed BEFORE minor-and-patch so these match here, not the catch-all.
+      google-stack:
+        patterns:
+          - "com.google.*"
+          - "io.grpc*"
+        update-types:
+          - patch
+          - minor
+          - major
       minor-and-patch:
         update-types:
           - patch
