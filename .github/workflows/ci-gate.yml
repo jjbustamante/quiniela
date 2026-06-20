@@ -1,0 +1,121 @@
+# CI Gate — the single required status check for branch protection on master.
+#
+# Why this exists:
+#   Backend/Frontend/IaC CI are each path-filtered (backend/**, frontend/**,
+#   iac/**). A path-filtered workflow that doesn't run produces NO status, so
+#   marking e.g. "Backend CI" as a required check would deadlock every
+#   frontend-only PR (the backend check never reports → never mergeable).
+#
+#   This workflow has NO path filter, so it ALWAYS runs on a PR and therefore
+#   always reports the `ci-gate` status. It figures out which areas the PR
+#   actually changed and waits — at WORKFLOW granularity, to dodge the
+#   job-name collisions across the three CI workflows (unit-tests,
+#   build-scan-deploy, Trivy all appear in more than one) — for exactly those
+#   area workflows to conclude. It fails if any concluded non-success, and
+#   passes immediately when no code area changed (docs/CI-only PRs).
+#
+#   Require ONLY `ci-gate` on master. With repo auto-merge enabled, a
+#   Dependabot patch/minor PR then merges only after `ci-gate` is green —
+#   i.e. after the real CI it gates has actually passed.
+
+name: CI Gate
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  actions: read   # gh run list
+
+concurrency:
+  group: ci-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  ci-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0   # need base + head to diff
+
+      - name: Detect changed areas
+        id: changes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          # Mirror the three CI workflows' pull_request path filters EXACTLY.
+          FILES="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          echo "Changed files:"; echo "$FILES"
+          backend=false; frontend=false; iac=false
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            case "$f" in
+              backend/*|.github/workflows/backend-ci.yml)   backend=true ;;
+              frontend/*|.github/workflows/frontend-ci.yml) frontend=true ;;
+              iac/*|.github/workflows/iac-ci.yml)           iac=true ;;
+            esac
+          done <<< "$FILES"
+          echo "backend=$backend"  >> "$GITHUB_OUTPUT"
+          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
+          echo "iac=$iac"          >> "$GITHUB_OUTPUT"
+          echo "Areas → backend=$backend frontend=$frontend iac=$iac"
+
+      - name: Wait for area CI workflows to pass
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          NEED_BACKEND: ${{ steps.changes.outputs.backend }}
+          NEED_FRONTEND: ${{ steps.changes.outputs.frontend }}
+          NEED_IAC: ${{ steps.changes.outputs.iac }}
+        run: |
+          set -euo pipefail
+
+          required=()
+          [ "$NEED_BACKEND" = "true" ]  && required+=("Backend CI")
+          [ "$NEED_FRONTEND" = "true" ] && required+=("Frontend CI")
+          [ "$NEED_IAC" = "true" ]      && required+=("IaC CI")
+
+          if [ ${#required[@]} -eq 0 ]; then
+            echo "No backend/frontend/iac changes — nothing to gate. ✅"
+            exit 0
+          fi
+          echo "Gating on: ${required[*]}"
+
+          # Poll until each required workflow's run for THIS head SHA completes.
+          # Cap well above the slowest job (backend OWASP DC cold-cache ~15 min).
+          deadline=$(( $(date +%s) + 2400 ))   # 40 min
+          while :; do
+            pending=false
+            for wf in "${required[@]}"; do
+              run="$(gh run list --workflow "$wf" --limit 30 \
+                       --json headSha,event,status,conclusion \
+                     | jq -c --arg sha "$HEAD_SHA" \
+                       'map(select(.headSha == $sha and .event == "pull_request")) | first // null')"
+              if [ "$run" = "null" ]; then
+                echo "  $wf: run not created yet…"
+                pending=true; continue
+              fi
+              status="$(echo "$run" | jq -r '.status')"
+              conclusion="$(echo "$run" | jq -r '.conclusion // ""')"
+              echo "  $wf: status=$status conclusion=$conclusion"
+              if [ "$status" != "completed" ]; then
+                pending=true
+              elif [ "$conclusion" != "success" ]; then
+                echo "::error::$wf concluded '$conclusion' — gate fails."
+                exit 1
+              fi
+            done
+
+            if [ "$pending" = "false" ]; then
+              echo "All required CI workflows passed. ✅"
+              exit 0
+            fi
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "::error::Timed out after 40 min waiting for CI workflows."
+              exit 1
+            fi
+            sleep 20
+          done
