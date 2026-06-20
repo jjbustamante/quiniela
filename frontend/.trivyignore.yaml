@@ -11,6 +11,18 @@
 
 vulnerabilities:
 
+  # ─── Bundled in Next.js compiled output ────────────────────────────────
+  # undici is NOT in our pnpm dependency graph (lockfile has only
+  # undici-types); the flagged copy is vendored inside Next at
+  # next/dist/compiled/undici, so a pnpm override can't touch it. On Node 24
+  # Next uses native fetch, so the bundled undici is effectively unreachable
+  # at runtime. Drops when Next ships a release whose bundled undici is
+  # >= 6.27.0. Re-evaluate at expiry; bump Next if a patched release exists.
+
+  - id: CVE-2026-12151
+    statement: "undici DoS (unbounded memory) — vendored in next/dist/compiled/undici@6.25.0, not an app dep (not in pnpm graph). Node 24 uses native fetch so bundled undici is unreachable. Fixed in undici 6.27.0; waits on a Next.js bundle refresh."
+    expired_at: 2026-07-21
+
   # ─── Ubuntu base image (heroku/builder:26 → Ubuntu 22.04) ──────────────
 
   - id: CVE-2026-29518
