@@ -13,7 +13,7 @@ updates:
       day: monday
       time: "09:00"
       timezone: "America/Bogota"
-    target-branch: main
+    target-branch: master
     open-pull-requests-limit: 5
     labels:
       - dependencies
@@ -57,7 +57,7 @@ updates:
       day: monday
       time: "09:00"
       timezone: "America/Bogota"
-    target-branch: main
+    target-branch: master
     open-pull-requests-limit: 5
     labels:
       - dependencies
@@ -93,7 +93,7 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    target-branch: main
+    target-branch: master
     open-pull-requests-limit: 3
     labels:
       - dependencies
