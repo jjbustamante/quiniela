@@ -39,7 +39,7 @@
         <wiremock.version>3.13.2</wiremock.version>
 
         <!-- Build-plugin versions (externalized for visibility + atomic bumps) -->
-        <spotless.version>2.46.1</spotless.version>
+        <spotless.version>3.7.0</spotless.version>
         <google-java-format.version>1.28.0</google-java-format.version>
         <jacoco.version>0.8.15</jacoco.version>
         <dependency-check.version>11.1.1</dependency-check.version>
