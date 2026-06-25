@@ -81,13 +81,16 @@ jobs:
           cache: 'maven'
 
       # NVD database is ~1.5 GB and takes 10-15 min to download cold.
-      # Cache it across all CI runs (no hashFiles in key — bump `v1` to `v2`
-      # to force a full refresh after an OWASP DC major version upgrade).
+      # Cache it across all CI runs (no hashFiles in key). Bump the version
+      # suffix (e.g. `v2`→`v3`) to force a full refresh after an OWASP DC
+      # major upgrade — cache keys are immutable, so without a bump the new
+      # DC version restores the old cache but never saves its own, leaving
+      # every run to re-download the whole NVD DB. Bumped v2→v3 for DC 12.
       - name: Cache OWASP Dependency-Check NVD data
         uses: actions/cache@v5
         with:
           path: ~/.dependency-check/data
-          key: dependency-check-nvd-v2-${{ runner.os }}
+          key: dependency-check-nvd-v3-${{ runner.os }}
 
       - name: Run dependency-check
         working-directory: ./backend
