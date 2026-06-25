@@ -37,7 +37,7 @@ jobs:
       run:
         working-directory: ./backend
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
@@ -54,7 +54,7 @@ jobs:
       run:
         working-directory: ./backend
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
@@ -73,7 +73,7 @@ jobs:
     # the deployed image (incl. Java deps), so the artifact stays CVE-gated.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
@@ -120,7 +120,7 @@ jobs:
       id-token: write          # OIDC token exchange (publish path only)
       security-events: write   # SARIF upload (Trivy)
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
