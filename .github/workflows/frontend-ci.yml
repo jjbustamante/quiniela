@@ -153,7 +153,7 @@ jobs:
       security-events: write   # SARIF upload (Trivy)
     steps:
       - uses: actions/checkout@v7
-      - uses: buildpacks/github-actions/setup-pack@v5.12.4
+      - uses: buildpacks/github-actions/setup-pack@v5.12.5
         # Pin a specific tag — buildpacks/github-actions doesn't publish a floating v5 tag.
 
       - uses: aquasecurity/setup-trivy@v0.3.1
