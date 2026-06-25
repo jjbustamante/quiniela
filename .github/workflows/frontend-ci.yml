@@ -39,7 +39,7 @@ jobs:
       run:
         working-directory: ./frontend
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
         with: { version: 9 }
       - uses: actions/setup-node@v6
@@ -60,7 +60,7 @@ jobs:
       run:
         working-directory: ./frontend
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
         with: { version: 9 }
       - uses: actions/setup-node@v6
@@ -79,7 +79,7 @@ jobs:
       run:
         working-directory: ./frontend
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
         with: { version: 9 }
       - uses: actions/setup-node@v6
@@ -121,7 +121,7 @@ jobs:
       run:
         working-directory: ./frontend
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
         with: { version: 9 }
       - uses: actions/setup-node@v6
@@ -152,7 +152,7 @@ jobs:
       id-token: write          # OIDC token exchange (publish path only)
       security-events: write   # SARIF upload (Trivy)
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: buildpacks/github-actions/setup-pack@v5.12.4
         # Pin a specific tag — buildpacks/github-actions doesn't publish a floating v5 tag.
 
