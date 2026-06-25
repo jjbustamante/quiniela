@@ -48,21 +48,24 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
 
-      # NVD database is ~1.5 GB and takes 10-15 min to download cold.
-      # Cache it across runs (no hashFiles in key). Bump the version suffix
-      # (e.g. `v3`->`v4`) to force a full refresh after an OWASP DC major
-      # upgrade — cache keys are immutable, so without a bump a new DC version
-      # restores the old cache but never saves its own. `v3` = DC 12.
-      # NOTE: GitHub evicts caches untouched for 7 days; a weekly run sits
-      # right on that boundary, so some weeks start cold — the retry below
-      # absorbs that.
-      - name: Cache OWASP Dependency-Check NVD data
-        uses: actions/cache@v5
+      # NVD database is ~1.5 GB. PROGRESSIVE cache: the primary key embeds the
+      # run id so it never hits exactly — restore always falls through to the
+      # `…-v3-${os}-` prefix and picks the MOST RECENT cache. The save step
+      # (if: always(), unique run-id key) then persists whatever NVD data this
+      # run pulled, even a partial/interrupted download. So across runs the
+      # dataset CONVERGES even when no single run finishes (NVD 503 days) —
+      # DC resumes from the stored lastModified cursor next time. Bump the
+      # `v3` suffix to force a full refresh after an OWASP DC major upgrade
+      # (`v3` = DC 12). Old run-id caches are evicted LRU under the 10 GB cap.
+      - name: Restore NVD data cache
+        uses: actions/cache/restore@v5
         with:
           path: ~/.dependency-check/data
-          key: dependency-check-nvd-v3-${{ runner.os }}
+          key: dependency-check-nvd-v3-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            dependency-check-nvd-v3-${{ runner.os }}-
 
-      - name: Run dependency-check (advisory, retry on NVD outage)
+      - name: Run dependency-check (advisory, time-budgeted retry on NVD outage)
         id: dc
         working-directory: ./backend
         env:
@@ -71,13 +74,24 @@ jobs:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
           set +e
+          # Self-imposed budget kept under the job's timeout-minutes so an NVD
+          # outage ends with a GRACEFUL green "no report" exit (no issue, no
+          # noise) instead of a red timeout-cancel that skips the cache save.
+          budget_end=$(( $(date +%s) + 90 * 60 ))
           attempt=0
-          max=3
           rc=1
           while :; do
+            remaining=$(( budget_end - $(date +%s) ))
+            if [ "${remaining}" -le 120 ]; then
+              echo "completed=false" >> "$GITHUB_OUTPUT"
+              echo "::warning title=OWASP DC incomplete::NVD update did not finish within the time budget (likely 503/520). Partial NVD data cached for next run — no report, no issue."
+              exit 0
+            fi
             attempt=$((attempt+1))
-            echo "::group::dependency-check attempt ${attempt}/${max}"
-            ./mvnw -B -ntp dependency-check:check ${NVD_API_KEY:+-DnvdApiKey=$NVD_API_KEY}
+            echo "::group::dependency-check attempt ${attempt} (budget ${remaining}s left)"
+            # Cap each attempt at the remaining budget so one slow/hung NVD
+            # download can't overshoot the job timeout; -k force-kills after grace.
+            timeout -k 30 "${remaining}s" ./mvnw -B -ntp dependency-check:check ${NVD_API_KEY:+-DnvdApiKey=$NVD_API_KEY}
             rc=$?
             echo "::endgroup::"
             # A produced report == the scan actually ran to completion.
@@ -86,13 +100,8 @@ jobs:
             if [ -f target/dependency-check-report.sarif ]; then
               break
             fi
-            if [ "${attempt}" -ge "${max}" ]; then
-              echo "completed=false" >> "$GITHUB_OUTPUT"
-              echo "::warning title=OWASP DC incomplete::NVD update failed after ${max} attempts (likely 503/520). No report produced — no issue filed."
-              exit 0
-            fi
-            echo "::notice::No report produced (likely NVD outage) — retrying in 120s"
-            sleep 120
+            echo "::notice::No report yet (NVD outage / slow) — retrying after backoff"
+            sleep 60
           done
           echo "completed=true" >> "$GITHUB_OUTPUT"
           if [ "${rc}" -ne 0 ]; then
@@ -103,6 +112,16 @@ jobs:
             echo "::notice::OWASP Dependency-Check clean — no CVSS >= 7 findings."
           fi
           exit 0
+
+      # Persist whatever NVD data we pulled (full or partial) so the next run
+      # resumes from it. Unique run-id key => always saves; if: always() => runs
+      # even if the dc step was cancelled/killed.
+      - name: Save NVD data cache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: ~/.dependency-check/data
+          key: dependency-check-nvd-v3-${{ runner.os }}-${{ github.run_id }}
 
       - name: Upload SARIF to code scanning
         if: steps.dc.outputs.completed == 'true'
