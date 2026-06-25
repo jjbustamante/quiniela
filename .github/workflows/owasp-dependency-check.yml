@@ -58,7 +58,7 @@ jobs:
       # `v3` suffix to force a full refresh after an OWASP DC major upgrade
       # (`v3` = DC 12). Old run-id caches are evicted LRU under the 10 GB cap.
       - name: Restore NVD data cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: ~/.dependency-check/data
           key: dependency-check-nvd-v3-${{ runner.os }}-${{ github.run_id }}
@@ -118,7 +118,7 @@ jobs:
       # even if the dc step was cancelled/killed.
       - name: Save NVD data cache
         if: always()
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: ~/.dependency-check/data
           key: dependency-check-nvd-v3-${{ runner.os }}-${{ github.run_id }}
