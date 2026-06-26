@@ -1,5 +1,6 @@
 package io.quiniela.api.footballdata;
 
+import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -15,7 +16,16 @@ public class NoopResultsTaskQueue {
   @Bean
   @ConditionalOnMissingBean(ResultsTaskQueue.class)
   ResultsTaskQueue resultsTaskQueueNoop() {
-    return (matchId, when, dedupName) ->
+    return new ResultsTaskQueue() {
+      @Override
+      public void enqueue(long matchId, Instant when, String dedupName) {
         log.info("[noop queue] would enqueue match {} at {} (name={})", matchId, when, dedupName);
+      }
+
+      @Override
+      public void enqueueFixturesRefresh(Instant when, String dedupName) {
+        log.info("[noop queue] would enqueue fixtures refresh at {} (name={})", when, dedupName);
+      }
+    };
   }
 }
