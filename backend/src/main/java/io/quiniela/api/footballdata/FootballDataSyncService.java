@@ -6,6 +6,7 @@ import io.quiniela.api.match.Round;
 import io.quiniela.api.match.RoundRepository;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -235,5 +236,24 @@ public class FootballDataSyncService {
       case "FINAL" -> "FINAL";
       default -> null;
     };
+  }
+
+  /**
+   * Interval-aligned full-refresh slots over the tail window, all strictly after {@code now}. Slots
+   * align to epoch-based interval boundaries (for 30 min in UTC that is :00/:30), so concurrent
+   * finals enqueue the SAME slot names and Cloud Tasks dedups them to one refresh per slot. Empty
+   * when interval or window is non-positive.
+   */
+  static List<Instant> tailSlots(Instant now, int intervalMinutes, int windowHours) {
+    List<Instant> slots = new ArrayList<>();
+    if (intervalMinutes <= 0 || windowHours <= 0) return slots;
+    long intervalSec = intervalMinutes * 60L;
+    long deadline = now.getEpochSecond() + windowHours * 3600L;
+    long slot = ((now.getEpochSecond() / intervalSec) + 1) * intervalSec;
+    while (slot <= deadline) {
+      slots.add(Instant.ofEpochSecond(slot));
+      slot += intervalSec;
+    }
+    return slots;
   }
 }
