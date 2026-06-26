@@ -45,4 +45,16 @@ class InternalSyncControllerIT extends AbstractIntegrationTest {
                 .header("X-Sync-Token", "test-token"))
         .andExpect(status().isOk());
   }
+
+  @Test
+  void fixturesWithoutTokenRejected() throws Exception {
+    mockMvc.perform(post("/internal/sync/fixtures")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void fixturesWithTokenReturns200() throws Exception {
+    mockMvc
+        .perform(post("/internal/sync/fixtures").header("X-Sync-Token", "test-token"))
+        .andExpect(status().isOk());
+  }
 }
