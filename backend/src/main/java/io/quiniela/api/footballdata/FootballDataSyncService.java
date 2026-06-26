@@ -126,7 +126,8 @@ public class FootballDataSyncService {
     Boolean nowPlayed =
         jdbc.queryForObject("SELECT played FROM match WHERE id = ?", Boolean.class, matchId);
     if (Boolean.TRUE.equals(nowPlayed)) {
-      return new SyncResult(true, n, 0, null); // got it; no re-enqueue
+      scheduleTailRefresh();
+      return new SyncResult(true, n, 0, null); // got it; no result re-enqueue
     }
     int enq = maybeReEnqueue(matchId, ((java.sql.Timestamp) row.get("kickoff_at")).toInstant());
     return new SyncResult(true, n, enq, null);
@@ -141,6 +142,21 @@ public class FootballDataSyncService {
     }
     queue.enqueue(matchId, next, "match-" + matchId + "-" + next.getEpochSecond());
     return 1;
+  }
+
+  /**
+   * After a match finalizes, enqueue a short series of full-competition refreshes so the next
+   * round's pairings/advancements (which football-data.org publishes shortly after) surface within
+   * one tail interval instead of waiting for the daily cron. Deduped by slot so multiple matches
+   * finishing together collapse to one refresh per slot.
+   */
+  private void scheduleTailRefresh() {
+    List<Instant> slots =
+        tailSlots(Instant.now(), props.tailRefreshIntervalMinutes(), props.tailWindowHours());
+    for (Instant slot : slots) {
+      queue.enqueueFixturesRefresh(slot, "fixtures-" + slot.getEpochSecond());
+    }
+    log.info("scheduleTailRefresh: enqueued {} fixtures refreshes", slots.size());
   }
 
   /** UPSERT every match in the payload. Already-played rows are frozen (no UPDATE, no trigger). */
