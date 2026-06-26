@@ -86,8 +86,8 @@ class FootballDataLoaderTest {
   void tailSlotsSkipsCurrentBoundaryAndHandlesZeroWindow() {
     Instant onBoundary = Instant.parse("2026-06-28T14:30:00Z");
     assertThat(FootballDataSyncService.tailSlots(onBoundary, 30, 1))
-        .first()
-        .isEqualTo(Instant.parse("2026-06-28T15:00:00Z")); // never schedules "now"
+        .containsExactly(
+            Instant.parse("2026-06-28T15:00:00Z"), Instant.parse("2026-06-28T15:30:00Z"));
     assertThat(FootballDataSyncService.tailSlots(onBoundary, 30, 0)).isEmpty();
   }
 }

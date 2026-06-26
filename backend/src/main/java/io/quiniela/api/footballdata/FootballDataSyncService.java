@@ -265,6 +265,8 @@ public class FootballDataSyncService {
     if (intervalMinutes <= 0 || windowHours <= 0) return slots;
     long intervalSec = intervalMinutes * 60L;
     long deadline = now.getEpochSecond() + windowHours * 3600L;
+    // +1 keeps every slot strictly future, so a later final never re-targets an already-fired
+    // (tombstoned) slot name — only still-pending future slots, which Cloud Tasks dedups.
     long slot = ((now.getEpochSecond() / intervalSec) + 1) * intervalSec;
     while (slot <= deadline) {
       slots.add(Instant.ofEpochSecond(slot));
