@@ -47,7 +47,13 @@ jobs:
         run: |
           set -euo pipefail
           # Mirror the three CI workflows' pull_request path filters EXACTLY.
-          FILES="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          # Use a THREE-DOT diff (base...head) so we compare against the
+          # merge-base, matching GitHub's own path-filter semantics. A two-dot
+          # diff would also report files master changed since this branch
+          # diverged, falsely flagging areas the PR never touched (e.g. a
+          # frontend change merged to master) and then waiting forever for an
+          # area CI run GitHub never triggers.
+          FILES="$(git diff --name-only "$BASE_SHA...$HEAD_SHA")"
           echo "Changed files:"; echo "$FILES"
           backend=false; frontend=false; iac=false
           while IFS= read -r f; do
