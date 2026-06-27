@@ -28,6 +28,8 @@ class FootballDataSyncServiceIT extends AbstractIntegrationTest {
 
   // Mutable holder so each test sets the matches the stubbed client returns.
   static volatile CompetitionMatchesResponse stubbed = new CompetitionMatchesResponse(List.of());
+  // Self-resetting failure flag: set to true to make the next getMatches call throw once.
+  static volatile boolean failNextGet = false;
 
   @TestConfiguration
   static class Stubs {
@@ -37,6 +39,10 @@ class FootballDataSyncServiceIT extends AbstractIntegrationTest {
       return new FootballDataClient("http://unused", "x") {
         @Override
         public CompetitionMatchesResponse getMatches(String code) {
+          if (failNextGet) {
+            failNextGet = false;
+            throw new RuntimeException("simulated api error");
+          }
           return stubbed;
         }
       };
@@ -179,5 +185,55 @@ class FootballDataSyncServiceIT extends AbstractIntegrationTest {
     assertThat(jdbc.queryForObject("SELECT score_t1 FROM match WHERE id = 6203", Integer.class))
         .isEqualTo(1);
     assertThat(queue.calls).isEmpty();
+  }
+
+  @Test
+  void syncMatchSchedulesTailRefreshOnFinal() {
+    queue.calls.clear();
+    queue.fixturesCalls.clear();
+    jdbc.update(
+        "INSERT INTO match (id, tournament_id, round_id, group_code, team_1_id, team_2_id, played, kickoff_at) "
+            + "VALUES (6210, 1, ?, 'A', 6001, 6002, FALSE, now() - interval '2 hours')",
+        groupRound());
+    stubbed = new CompetitionMatchesResponse(List.of(match(6210, "FINISHED", 1, 0)));
+
+    sync.syncMatch(6210L);
+
+    assertThat(queue.calls).isEmpty(); // no per-match result re-enqueue
+    assertThat(queue.fixturesCalls)
+        .isNotEmpty()
+        .allSatisfy(c -> assertThat(c.dedupName()).startsWith("fixtures-"));
+  }
+
+  @Test
+  void syncMatchDoesNotScheduleTailWhenStillUnplayed() {
+    queue.calls.clear();
+    queue.fixturesCalls.clear();
+    jdbc.update(
+        "INSERT INTO match (id, tournament_id, round_id, group_code, team_1_id, team_2_id, played, kickoff_at) "
+            + "VALUES (6211, 1, ?, 'A', 6001, 6002, FALSE, now() - interval '2 hours')",
+        groupRound());
+    stubbed = new CompetitionMatchesResponse(List.of(match(6211, "IN_PLAY", null, null)));
+
+    sync.syncMatch(6211L);
+
+    assertThat(queue.fixturesCalls).isEmpty(); // still unplayed → no tail
+  }
+
+  @Test
+  void syncMatchDoesNotScheduleTailOnApiError() {
+    queue.calls.clear();
+    queue.fixturesCalls.clear();
+    jdbc.update(
+        "INSERT INTO match (id, tournament_id, round_id, group_code, team_1_id, team_2_id, played, kickoff_at) "
+            + "VALUES (6212, 1, ?, 'A', 6001, 6002, FALSE, now() - interval '2 hours')",
+        groupRound());
+    failNextGet = true;
+
+    sync.syncMatch(6212L);
+
+    assertThat(queue.fixturesCalls).isEmpty(); // api error → no tail scheduled
+    assertThat(queue.calls).isNotEmpty(); // api error path re-enqueues the per-match result check
+    failNextGet = false; // defensive reset in case of partial runs
   }
 }

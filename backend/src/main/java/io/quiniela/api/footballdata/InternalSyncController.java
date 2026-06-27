@@ -30,4 +30,9 @@ public class InternalSyncController {
   public ResponseEntity<SyncResult> results(@RequestParam long matchId) {
     return ResponseEntity.ok(service.syncMatch(matchId));
   }
+
+  @PostMapping("/fixtures")
+  public ResponseEntity<SyncResult> fixtures() {
+    return ResponseEntity.ok(service.syncFull());
+  }
 }

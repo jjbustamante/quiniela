@@ -2,6 +2,7 @@ package io.quiniela.api.footballdata;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 class FootballDataLoaderTest {
@@ -65,5 +66,28 @@ class FootballDataLoaderTest {
             drawScore);
 
     org.junit.jupiter.api.Assertions.assertNull(FootballDataSyncService.advancingTeamId(m));
+  }
+
+  @Test
+  void tailSlotsAlignsToIntervalBoundariesWithinWindow() {
+    // 14:05Z, 30-min interval, 3h window → 14:30,15:00,...,17:00 (6 slots)
+    Instant now = Instant.parse("2026-06-28T14:05:00Z");
+    assertThat(FootballDataSyncService.tailSlots(now, 30, 3))
+        .containsExactly(
+            Instant.parse("2026-06-28T14:30:00Z"),
+            Instant.parse("2026-06-28T15:00:00Z"),
+            Instant.parse("2026-06-28T15:30:00Z"),
+            Instant.parse("2026-06-28T16:00:00Z"),
+            Instant.parse("2026-06-28T16:30:00Z"),
+            Instant.parse("2026-06-28T17:00:00Z"));
+  }
+
+  @Test
+  void tailSlotsSkipsCurrentBoundaryAndHandlesZeroWindow() {
+    Instant onBoundary = Instant.parse("2026-06-28T14:30:00Z");
+    assertThat(FootballDataSyncService.tailSlots(onBoundary, 30, 1))
+        .containsExactly(
+            Instant.parse("2026-06-28T15:00:00Z"), Instant.parse("2026-06-28T15:30:00Z"));
+    assertThat(FootballDataSyncService.tailSlots(onBoundary, 30, 0)).isEmpty();
   }
 }

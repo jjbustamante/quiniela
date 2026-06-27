@@ -9,12 +9,16 @@ public record SyncProperties(
     Integer firstPollOffsetMinutes,
     Integer pollWindowHours,
     Integer retryIntervalMinutes,
+    Integer tailRefreshIntervalMinutes,
+    Integer tailWindowHours,
     Tasks tasks) {
 
   public SyncProperties {
     if (firstPollOffsetMinutes == null) firstPollOffsetMinutes = 0;
     if (pollWindowHours == null) pollWindowHours = 5;
     if (retryIntervalMinutes == null) retryIntervalMinutes = 5;
+    if (tailRefreshIntervalMinutes == null) tailRefreshIntervalMinutes = 30;
+    if (tailWindowHours == null) tailWindowHours = 3;
     if (tasks == null) tasks = new Tasks(null, null, null);
   }
 

@@ -13,4 +13,10 @@ public interface ResultsTaskQueue {
    * @param dedupName stable task name; Cloud Tasks dedups by name so re-planning is idempotent.
    */
   void enqueue(long matchId, Instant when, String dedupName);
+
+  /**
+   * Schedule a POST to /internal/sync/fixtures at {@code when} — a full structural refresh that
+   * runs regardless of any match's played state. Cloud Tasks dedups by {@code dedupName}.
+   */
+  void enqueueFixturesRefresh(Instant when, String dedupName);
 }

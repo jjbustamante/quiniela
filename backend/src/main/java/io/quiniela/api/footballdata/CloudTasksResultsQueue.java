@@ -55,4 +55,31 @@ public class CloudTasksResultsQueue implements ResultsTaskQueue {
       log.warn("failed to enqueue result check for match {}", matchId, e);
     }
   }
+
+  @Override
+  public void enqueueFixturesRefresh(Instant when, String dedupName) {
+    String queue = props.tasks().queue();
+    String url = props.tasks().targetBase() + "/internal/sync/fixtures";
+    HttpRequest req =
+        HttpRequest.newBuilder()
+            .setUrl(url)
+            .setHttpMethod(HttpMethod.POST)
+            .putHeaders("X-Sync-Token", props.token() == null ? "" : props.token())
+            .setBody(ByteString.EMPTY)
+            .build();
+    Task task =
+        Task.newBuilder()
+            .setName(queue + "/tasks/" + dedupName)
+            .setHttpRequest(req)
+            .setScheduleTime(Timestamp.newBuilder().setSeconds(when.getEpochSecond()).build())
+            .build();
+    try (CloudTasksClient client = CloudTasksClient.create()) {
+      client.createTask(queue, task);
+      log.info("enqueued fixtures refresh at {} (name={})", when, dedupName);
+    } catch (com.google.api.gax.rpc.AlreadyExistsException e) {
+      log.debug("fixtures task {} already enqueued; skipping (dedup)", dedupName);
+    } catch (Exception e) {
+      log.warn("failed to enqueue fixtures refresh (name={})", dedupName, e);
+    }
+  }
 }

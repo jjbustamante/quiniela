@@ -6,6 +6,7 @@ import io.quiniela.api.match.Round;
 import io.quiniela.api.match.RoundRepository;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -125,7 +126,8 @@ public class FootballDataSyncService {
     Boolean nowPlayed =
         jdbc.queryForObject("SELECT played FROM match WHERE id = ?", Boolean.class, matchId);
     if (Boolean.TRUE.equals(nowPlayed)) {
-      return new SyncResult(true, n, 0, null); // got it; no re-enqueue
+      scheduleTailRefresh();
+      return new SyncResult(true, n, 0, null); // got it; no result re-enqueue
     }
     int enq = maybeReEnqueue(matchId, ((java.sql.Timestamp) row.get("kickoff_at")).toInstant());
     return new SyncResult(true, n, enq, null);
@@ -140,6 +142,21 @@ public class FootballDataSyncService {
     }
     queue.enqueue(matchId, next, "match-" + matchId + "-" + next.getEpochSecond());
     return 1;
+  }
+
+  /**
+   * After a match finalizes, enqueue a short series of full-competition refreshes so the next
+   * round's pairings/advancements (which football-data.org publishes shortly after) surface within
+   * one tail interval instead of waiting for the daily cron. Deduped by slot so multiple matches
+   * finishing together collapse to one refresh per slot.
+   */
+  private void scheduleTailRefresh() {
+    List<Instant> slots =
+        tailSlots(Instant.now(), props.tailRefreshIntervalMinutes(), props.tailWindowHours());
+    for (Instant slot : slots) {
+      queue.enqueueFixturesRefresh(slot, "fixtures-" + slot.getEpochSecond());
+    }
+    log.info("scheduleTailRefresh: enqueued {} fixtures refreshes", slots.size());
   }
 
   /** UPSERT every match in the payload. Already-played rows are frozen (no UPDATE, no trigger). */
@@ -235,5 +252,26 @@ public class FootballDataSyncService {
       case "FINAL" -> "FINAL";
       default -> null;
     };
+  }
+
+  /**
+   * Interval-aligned full-refresh slots over the tail window, all strictly after {@code now}. Slots
+   * align to epoch-based interval boundaries (for 30 min in UTC that is :00/:30), so concurrent
+   * finals enqueue the SAME slot names and Cloud Tasks dedups them to one refresh per slot. Empty
+   * when interval or window is non-positive.
+   */
+  static List<Instant> tailSlots(Instant now, int intervalMinutes, int windowHours) {
+    List<Instant> slots = new ArrayList<>();
+    if (intervalMinutes <= 0 || windowHours <= 0) return slots;
+    long intervalSec = intervalMinutes * 60L;
+    long deadline = now.getEpochSecond() + windowHours * 3600L;
+    // +1 keeps every slot strictly future, so a later final never re-targets an already-fired
+    // (tombstoned) slot name — only still-pending future slots, which Cloud Tasks dedups.
+    long slot = ((now.getEpochSecond() / intervalSec) + 1) * intervalSec;
+    while (slot <= deadline) {
+      slots.add(Instant.ofEpochSecond(slot));
+      slot += intervalSec;
+    }
+    return slots;
   }
 }

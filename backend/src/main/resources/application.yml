@@ -92,6 +92,8 @@ app:
     first-poll-offset-minutes: ${APP_SYNC_FIRST_POLL_OFFSET_MINUTES:0}
     poll-window-hours: ${APP_SYNC_POLL_WINDOW_HOURS:5}
     retry-interval-minutes: ${APP_SYNC_RETRY_INTERVAL_MINUTES:5}
+    tail-refresh-interval-minutes: ${APP_SYNC_TAIL_REFRESH_INTERVAL_MINUTES:30}
+    tail-window-hours: ${APP_SYNC_TAIL_WINDOW_HOURS:3}
     tasks:
       enabled: ${APP_SYNC_TASKS_ENABLED:false}
       queue: ${APP_SYNC_TASKS_QUEUE:}               # projects/<p>/locations/<l>/queues/results-sync
