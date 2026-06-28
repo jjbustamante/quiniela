@@ -59,4 +59,18 @@ class MultiOracleIT extends AbstractIntegrationTest {
     assertThat(repo.findByOracleAndMatchIdAndKind("paul", KO_MATCH, PaulPrediction.KIND_CANDIDATE))
         .hasSize(2);
   }
+
+  @Test
+  void synthesizePromotesSingleModelCandidateToOfficial() {
+    predictionService.generateOpen();
+    ensembleService.synthesizeOpen();
+    var ottoOfficial =
+        repo.findByOracleAndMatchIdAndModelAndKind(
+            "otto", KO_MATCH, "ensemble", PaulPrediction.KIND_OFFICIAL);
+    assertThat(ottoOfficial).isPresent();
+    // FakePaulOracleConfig default result is 2-1, so the promoted official copies that.
+    assertThat(ottoOfficial.get().getScoreT1()).isEqualTo(2);
+    assertThat(ottoOfficial.get().getScoreT2()).isEqualTo(1);
+    assertThat(ottoOfficial.get().getOracle()).isEqualTo("otto");
+  }
 }

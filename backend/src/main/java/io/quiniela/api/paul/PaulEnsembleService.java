@@ -50,65 +50,91 @@ public class PaulEnsembleService {
         matches
             .findByTournamentIdAndTeam1IdIsNotNullAndTeam2IdIsNotNullAndKickoffAtAfterOrderByKickoffAtAsc(
                 TOURNAMENT_ID, Instant.now());
-    progress.start(open.size());
+    List<Oracle> oracles = props.allOracles();
+    progress.start(open.size() * oracles.size());
     int created = 0;
-    for (Match m : open) {
-      Boolean did = tx.execute(s -> synthesizeForMatch(m.getId()));
-      if (Boolean.TRUE.equals(did)) created++;
-      progress.tick();
+    for (Oracle bot : oracles) {
+      for (Match m : open) {
+        Boolean did = tx.execute(s -> synthesizeForMatch(bot, m.getId()));
+        if (Boolean.TRUE.equals(did)) created++;
+        progress.tick();
+      }
     }
     return created;
   }
 
-  boolean synthesizeForMatch(Long matchId) {
+  boolean synthesizeForMatch(Oracle bot, Long matchId) {
     List<PaulPrediction> candidates =
-        predictions.findByMatchIdAndKind(matchId, PaulPrediction.KIND_CANDIDATE);
+        predictions.findByOracleAndMatchIdAndKind(
+            bot.key(), matchId, PaulPrediction.KIND_CANDIDATE);
     if (candidates.isEmpty()) return false;
 
     Match m = matches.findById(matchId).orElseThrow();
     Round r = rounds.findById(m.getRoundId()).orElseThrow();
     boolean knockout = !"GROUP".equals(r.getCode());
 
-    PaulProperties.ModelSpec es = props.ensembleSpec();
     PaulPrediction official;
-    try {
-      PaulPredictionResult res =
-          oracle.predict(
-              systemPrompt(), candidatePrompt(candidates, m, knockout), es.provider(), es.model());
-      int s1 = Math.max(0, res.scoreT1());
-      int s2 = Math.max(0, res.scoreT2());
-      Long pwid = (knockout && s1 == s2) ? officialAdvancing(res.advancing(), m, candidates) : null;
+    if (!bot.isEnsemble()) {
+      // Single-model oracle: promote its one candidate verbatim (no judge call).
+      PaulPrediction c = candidates.get(0);
       official =
           official(
+              bot.key(),
+              c.getProvider(),
               matchId,
-              s1,
-              s2,
-              clamp(res.confidence()),
-              res.reasoning(),
-              PaulPrediction.SOURCE_AI,
-              pwid);
-    } catch (RuntimeException e) {
-      PaulPrediction pick = candidates.get(0);
-      Long pwid =
-          (knockout && pick.getScoreT1().equals(pick.getScoreT2()))
-              ? pick.getPredictedWinnerId()
-              : null;
-      official =
-          official(
-              matchId,
-              pick.getScoreT1(),
-              pick.getScoreT2(),
-              null,
-              "Paul consultó a sus otros yo y se quedó con su instinto.",
-              PaulPrediction.SOURCE_FALLBACK,
-              pwid);
+              c.getScoreT1(),
+              c.getScoreT2(),
+              c.getConfidence(),
+              c.getReasoning(),
+              c.getSource(),
+              c.getPredictedWinnerId());
+    } else {
+      PaulProperties.ModelSpec es = bot.ensembleSpec();
+      try {
+        PaulPredictionResult res =
+            oracle.predict(
+                systemPrompt(),
+                candidatePrompt(candidates, m, knockout),
+                es.provider(),
+                es.model());
+        int s1 = Math.max(0, res.scoreT1());
+        int s2 = Math.max(0, res.scoreT2());
+        Long pwid =
+            (knockout && s1 == s2) ? officialAdvancing(res.advancing(), m, candidates) : null;
+        official =
+            official(
+                bot.key(),
+                es.provider(),
+                matchId,
+                s1,
+                s2,
+                clamp(res.confidence()),
+                res.reasoning(),
+                PaulPrediction.SOURCE_AI,
+                pwid);
+      } catch (RuntimeException e) {
+        PaulPrediction pick = candidates.get(0);
+        Long pwid =
+            (knockout && pick.getScoreT1().equals(pick.getScoreT2()))
+                ? pick.getPredictedWinnerId()
+                : null;
+        official =
+            official(
+                bot.key(),
+                es.provider(),
+                matchId,
+                pick.getScoreT1(),
+                pick.getScoreT2(),
+                null,
+                "Paul consultó a sus otros yo y se quedó con su instinto.",
+                PaulPrediction.SOURCE_FALLBACK,
+                pwid);
+      }
     }
 
-    // Replace any existing official for this match. flush() only when a delete
-    // happened, so the insert doesn't collide with the old row on the UNIQUE
-    // (match_id, model, kind) constraint within this transaction.
     predictions
-        .findByMatchIdAndModelAndKind(matchId, ENSEMBLE_MODEL_LABEL, PaulPrediction.KIND_OFFICIAL)
+        .findByOracleAndMatchIdAndModelAndKind(
+            bot.key(), matchId, ENSEMBLE_MODEL_LABEL, PaulPrediction.KIND_OFFICIAL)
         .ifPresent(
             existing -> {
               predictions.delete(existing);
@@ -132,11 +158,19 @@ public class PaulEnsembleService {
   }
 
   private PaulPrediction official(
-      Long matchId, int s1, int s2, BigDecimal conf, String reasoning, String source, Long pwid) {
+      String oracleKey,
+      String provider,
+      Long matchId,
+      int s1,
+      int s2,
+      BigDecimal conf,
+      String reasoning,
+      String source,
+      Long pwid) {
     return new PaulPrediction(
-        "paul",
+        oracleKey,
         matchId,
-        props.ensembleSpec().provider(),
+        provider,
         ENSEMBLE_MODEL_LABEL,
         PaulPrediction.KIND_OFFICIAL,
         s1,

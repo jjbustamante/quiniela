@@ -17,6 +17,7 @@ class PaulEnsembleServiceIT extends AbstractIntegrationTest {
   @Autowired PaulPredictionService predictionService;
   @Autowired PaulEnsembleService ensembleService;
   @Autowired PaulPredictionRepository repo;
+  @Autowired PaulProperties props;
   @Autowired JdbcTemplate jdbc;
 
   @AfterEach
@@ -71,7 +72,7 @@ class PaulEnsembleServiceIT extends AbstractIntegrationTest {
     FakePaulOracleConfig.forcedResult.set(
         new PaulPredictionResult(1, 1, 0.6, "empate, avanza local", "LOCAL"));
 
-    boolean did = ensembleService.synthesizeForMatch(KO_MATCH);
+    boolean did = ensembleService.synthesizeForMatch(props.allOracles().get(0), KO_MATCH);
 
     assertThat(did).isTrue();
     var official =
