@@ -58,7 +58,8 @@ public class OpenAiCompatVertexOracle implements PaulOracle {
     String jsonRules =
         "\n\nResponde SOLO con un objeto JSON (sin texto extra, sin markdown) con exactamente estas "
             + "claves: {\"scoreT1\": entero >= 0, \"scoreT2\": entero >= 0, "
-            + "\"confidence\": número entre 0 y 1, \"reasoning\": texto en español}.";
+            + "\"confidence\": número entre 0 y 1, \"reasoning\": texto en español, "
+            + "\"advancing\": \"LOCAL\" | \"VISITANTE\" | null (solo eliminación directa)}.";
     Map<String, Object> body =
         Map.of(
             "model",

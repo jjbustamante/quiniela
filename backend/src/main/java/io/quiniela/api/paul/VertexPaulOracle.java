@@ -36,7 +36,8 @@ public class VertexPaulOracle implements PaulOracle {
             + userPrompt
             + "\n\nResponde SOLO con un objeto JSON con exactamente estas claves: "
             + "{\"scoreT1\": entero >= 0, \"scoreT2\": entero >= 0, "
-            + "\"confidence\": número entre 0 y 1, \"reasoning\": texto en español}.";
+            + "\"confidence\": número entre 0 y 1, \"reasoning\": texto en español, "
+            + "\"advancing\": \"LOCAL\" | \"VISITANTE\" | null (solo eliminación directa)}.";
     // maxOutputTokens must cover the model's INTERNAL reasoning + the JSON answer.
     // gemini-3-* are thinking models: with the default (small) budget they spend it
     // all on reasoning, hit finishReason=MAX_TOKENS, and return empty/truncated text
