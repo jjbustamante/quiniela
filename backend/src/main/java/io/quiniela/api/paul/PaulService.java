@@ -28,6 +28,7 @@ public class PaulService {
   private final PaulPredictionRepository predictions;
   private final UserRepository users;
   private final BracketService bracket;
+  private final PaulProperties props;
 
   public PaulService(
       MatchRepository matches,
@@ -35,13 +36,15 @@ public class PaulService {
       BetRepository bets,
       PaulPredictionRepository predictions,
       UserRepository users,
-      BracketService bracket) {
+      BracketService bracket,
+      PaulProperties props) {
     this.matches = matches;
     this.quinielas = quinielas;
     this.bets = bets;
     this.predictions = predictions;
     this.users = users;
     this.bracket = bracket;
+    this.props = props;
   }
 
   public record Suggestion(
@@ -56,7 +59,7 @@ public class PaulService {
   public Suggestion suggestForMatch(Long matchId) {
     matches.findById(matchId).orElseThrow();
     List<PaulPrediction> candidates =
-        predictions.findByMatchIdAndKind(matchId, PaulPrediction.KIND_CANDIDATE);
+        predictions.findByOracleAndMatchIdAndKind("paul", matchId, PaulPrediction.KIND_CANDIDATE);
     if (!candidates.isEmpty()) {
       PaulPrediction pick = candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
       return new Suggestion(
@@ -109,36 +112,41 @@ public class PaulService {
   public record RevealResult(int betsCreated) {}
 
   /**
-   * Paul "decides to play": create his quiniela (idempotent) and snapshot every OFFICIAL prediction
-   * as one of his bets. Skips matches he already has a bet for, so repeated calls are no-ops.
+   * Each oracle "decides to play": create its quiniela (idempotent) and snapshot every OFFICIAL
+   * prediction for that oracle as one of its bets. Skips matches already bet, so repeated calls are
+   * no-ops.
    *
    * <p>Scope assumption (v1): only group-stage matches have OFFICIAL predictions, so this snapshots
    * the group bracket. If knockout OFFICIAL predictions are added later, this would also snapshot
-   * those — gate by stage here before generating knockout officials so Paul never bets on still-TBD
-   * knockout fixtures.
+   * those — gate by stage here before generating knockout officials so oracles never bet on
+   * still-TBD knockout fixtures.
    */
   @Transactional
   public RevealResult reveal() {
-    User paul =
-        users
-            .findByGoogleSub("paul-bot-oracle")
-            .orElseThrow(() -> new IllegalStateException("Paul bot user not seeded"));
-    Quiniela q =
-        quinielas
-            .findByPoolIdAndUserId(DEFAULT_POOL_ID, paul.getId())
-            .orElseGet(() -> quinielas.save(new Quiniela(DEFAULT_POOL_ID, paul.getId())));
-
-    Set<Long> already = new HashSet<>();
-    bets.findByQuinielaId(q.getId()).forEach(b -> already.add(b.getMatchId()));
-
     int created = 0;
-    for (PaulPrediction official : predictions.findByKind(PaulPrediction.KIND_OFFICIAL)) {
-      if (already.contains(official.getMatchId())) continue;
-      Bet bet =
-          new Bet(q.getId(), official.getMatchId(), official.getScoreT1(), official.getScoreT2());
-      bet.setPredictedWinnerId(official.getPredictedWinnerId());
-      bets.save(bet);
-      created++;
+    for (Oracle bot : props.allOracles()) {
+      User u =
+          users
+              .findByGoogleSub(bot.googleSub())
+              .orElseThrow(
+                  () -> new IllegalStateException("Bot user not seeded: " + bot.googleSub()));
+      Quiniela q =
+          quinielas
+              .findByPoolIdAndUserId(DEFAULT_POOL_ID, u.getId())
+              .orElseGet(() -> quinielas.save(new Quiniela(DEFAULT_POOL_ID, u.getId())));
+
+      Set<Long> already = new HashSet<>();
+      bets.findByQuinielaId(q.getId()).forEach(b -> already.add(b.getMatchId()));
+
+      for (PaulPrediction official :
+          predictions.findByOracleAndKind(bot.key(), PaulPrediction.KIND_OFFICIAL)) {
+        if (already.contains(official.getMatchId())) continue;
+        Bet bet =
+            new Bet(q.getId(), official.getMatchId(), official.getScoreT1(), official.getScoreT2());
+        bet.setPredictedWinnerId(official.getPredictedWinnerId());
+        bets.save(bet);
+        created++;
+      }
     }
     return new RevealResult(created);
   }

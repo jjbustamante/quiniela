@@ -70,21 +70,24 @@ public class PaulPredictionService {
         .findByTournamentIdOrderBySequenceAsc(TOURNAMENT_ID)
         .forEach(r -> roundById.put(r.getId(), r));
 
-    List<PaulProperties.ModelSpec> roster = props.roster();
-    progress.start(open.size() * roster.size());
+    List<Oracle> oracles = props.allOracles();
+    int total = open.size() * oracles.stream().mapToInt(o -> o.roster().size()).sum();
+    progress.start(total);
     int created = 0;
-    for (Match m : open) {
-      Round r = roundById.get(m.getRoundId());
-      for (PaulProperties.ModelSpec spec : roster) {
-        tx.executeWithoutResult(s -> upsertCandidate(m, r, spec));
-        created++;
-        progress.tick();
+    for (Oracle bot : oracles) {
+      for (Match m : open) {
+        Round r = roundById.get(m.getRoundId());
+        for (PaulProperties.ModelSpec spec : bot.roster()) {
+          tx.executeWithoutResult(s -> upsertCandidate(bot.key(), m, r, spec));
+          created++;
+          progress.tick();
+        }
       }
     }
     return created;
   }
 
-  private void upsertCandidate(Match m, Round r, PaulProperties.ModelSpec spec) {
+  private void upsertCandidate(String oracleKey, Match m, Round r, PaulProperties.ModelSpec spec) {
     String model = spec.model();
     Team t1 = m.getTeam1Id() == null ? null : teams.findById(m.getTeam1Id()).orElse(null);
     Team t2 = m.getTeam2Id() == null ? null : teams.findById(m.getTeam2Id()).orElse(null);
@@ -109,6 +112,7 @@ public class PaulPredictionService {
       Long pwid = (knockout && s1 == s2) ? advancingTeamId(res.advancing(), m, t1, t2) : null;
       p =
           new PaulPrediction(
+              oracleKey,
               m.getId(),
               spec.provider(),
               model,
@@ -125,6 +129,7 @@ public class PaulPredictionService {
       Long pwid = (knockout && s[0] == s[1]) ? advancingTeamId(null, m, t1, t2) : null;
       p =
           new PaulPrediction(
+              oracleKey,
               m.getId(),
               spec.provider(),
               model,
@@ -139,7 +144,8 @@ public class PaulPredictionService {
     }
 
     predictions
-        .findByMatchIdAndModelAndKind(m.getId(), model, PaulPrediction.KIND_CANDIDATE)
+        .findByOracleAndMatchIdAndModelAndKind(
+            oracleKey, m.getId(), model, PaulPrediction.KIND_CANDIDATE)
         .ifPresent(
             existing -> {
               predictions.delete(existing);

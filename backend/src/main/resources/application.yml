@@ -86,6 +86,19 @@ app:
     models: ${APP_PAUL_MODELS:gemini-2.5-pro,gemini-2.5-flash}
     # Model used for the ensemble-judge synthesis of Paul's OFFICIAL bet.
     ensemble-model: ${APP_PAUL_ENSEMBLE_MODEL:gemini-2.5-pro}
+    # Extra single-model oracle bots (compete for fun, never money — is_bot users).
+    # Each entry has no ensemble-model => single model, no judge (its lone candidate
+    # is promoted to the official pick). DeepSeek/Llama route via the Vertex
+    # OpenAI-compatible endpoint (RoutingPaulOracle), same as gpt-oss/qwen.
+    oracles:
+      - key: otto
+        google-sub: otto-bot-oracle
+        display-name: "Otto la Nutria 🦦"
+        models: ["${APP_PAUL_OTTO_MODEL:openai:deepseek-ai/deepseek-v3.2-maas}"]
+      - key: chitara
+        google-sub: chitara-bot-oracle
+        display-name: "Chitara la Leoparda 🐆"
+        models: ["${APP_PAUL_CHITARA_MODEL:openai:qwen/qwen3-coder-480b-a35b-instruct-maas}"]
 
   sync:
     token: ${APP_SYNC_TOKEN:}                       # shared secret; empty => /internal/** returns 401

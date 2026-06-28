@@ -302,7 +302,8 @@
     "trendDown": "▼",
     "trendFlat": "—",
     "prizeFor": "Premio",
-    "liveBanner": "Hay partidos en vivo — los puntajes pueden cambiar."
+    "liveBanner": "Hay partidos en vivo — los puntajes pueden cambiar.",
+    "botsAnnouncement": "🐙 Paul notó que dos competidores se quedaron en blanco y llamó a sus amigos Otto la Nutria 🦦 y Chitara la Leoparda 🐆 para tomar sus dos puestos."
   },
   "scorecard": {
     "backToTable": "Tabla",

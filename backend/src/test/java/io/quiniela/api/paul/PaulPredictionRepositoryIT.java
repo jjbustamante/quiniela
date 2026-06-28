@@ -15,6 +15,7 @@ class PaulPredictionRepositoryIT extends AbstractIntegrationTest {
   void persistsAndReadsPredictedWinnerId() {
     PaulPrediction p =
         new PaulPrediction(
+            "paul",
             1L,
             "vertex",
             "gemini-2.5-pro",
@@ -36,6 +37,7 @@ class PaulPredictionRepositoryIT extends AbstractIntegrationTest {
     // match id 1 exists from V007 fixtures (first group match).
     var p =
         new PaulPrediction(
+            "paul",
             1L,
             "google",
             "gemini-2.5-flash",
@@ -54,5 +56,46 @@ class PaulPredictionRepositoryIT extends AbstractIntegrationTest {
     assertThat(candidates.get(0).getModel()).isEqualTo("gemini-2.5-flash");
     assertThat(candidates.get(0).getScoreT1()).isEqualTo(2);
     assertThat(repo.findByMatchIdAndKind(1L, PaulPrediction.KIND_OFFICIAL)).isEmpty();
+  }
+
+  @Test
+  void persistsAndFiltersByOracle() {
+    repo.saveAndFlush(
+        new PaulPrediction(
+            "paul",
+            1L,
+            "google",
+            "gemini-2.5-pro",
+            PaulPrediction.KIND_OFFICIAL,
+            1,
+            0,
+            null,
+            "p",
+            "es",
+            PaulPrediction.SOURCE_AI,
+            null));
+    repo.saveAndFlush(
+        new PaulPrediction(
+            "otto",
+            1L,
+            "deepseek",
+            "deepseek-ai/deepseek-v3.1",
+            PaulPrediction.KIND_OFFICIAL,
+            2,
+            1,
+            null,
+            "o",
+            "es",
+            PaulPrediction.SOURCE_AI,
+            null));
+
+    assertThat(repo.findByOracleAndKind("otto", PaulPrediction.KIND_OFFICIAL)).hasSize(1);
+    assertThat(repo.findByOracleAndMatchIdAndKind("paul", 1L, PaulPrediction.KIND_OFFICIAL))
+        .singleElement()
+        .satisfies(p -> assertThat(p.getOracle()).isEqualTo("paul"));
+    assertThat(
+            repo.findByOracleAndMatchIdAndModelAndKind(
+                "otto", 1L, "deepseek-ai/deepseek-v3.1", PaulPrediction.KIND_OFFICIAL))
+        .isPresent();
   }
 }
