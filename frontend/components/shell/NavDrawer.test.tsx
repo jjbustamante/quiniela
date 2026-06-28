@@ -16,6 +16,7 @@ const messages = {
     results: "Resultados",
     config: "Configuración",
     whatsappGroup: "Grupo WhatsApp",
+    paulAdmin: "Pulpo Paul",
   },
 };
 
@@ -40,6 +41,7 @@ describe("NavDrawer", () => {
     expect(screen.getByRole("link", { name: /pagos/i })).toHaveAttribute("href", "/admin/payments");
     expect(screen.getByRole("link", { name: /resultados/i })).toHaveAttribute("href", "/admin/results");
     expect(screen.getByRole("link", { name: /configuración/i })).toHaveAttribute("href", "/admin/config");
+    expect(screen.getByRole("link", { name: /pulpo paul/i })).toHaveAttribute("href", "/admin/paul");
     expect(screen.getByRole("button", { name: /cerrar sesión/i })).toBeInTheDocument();
     // The admin doesn't invite players, so the per-player WhatsApp roster is
     // not theirs to manage — they set the link in /admin/config instead.

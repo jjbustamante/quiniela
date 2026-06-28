@@ -157,7 +157,8 @@
     "testMode": "Test mode",
     "scoring": "Scoring",
     "config": "Configuration",
-    "whatsappGroup": "WhatsApp Group"
+    "whatsappGroup": "WhatsApp Group",
+    "paulAdmin": "Pulpo Paul"
   },
   "captainWhatsapp": {
     "title": "WHATSAPP GROUP",
@@ -377,5 +378,22 @@
     "cleanTitle": "Clean test data",
     "clean": "Clean",
     "confirmClean": "Delete all test predictions, results and payments?"
+  },
+  "paulAdmin": {
+    "title": "Pulpo Paul",
+    "intro": "Generate Paul's predictions for the open round, then reveal them. Run in order after each round resolves: 1) Generate candidates, 2) Synthesize officials, 3) Reveal.",
+    "generate": "1. Generate candidates",
+    "synthesize": "2. Synthesize officials",
+    "reveal": "3. Reveal",
+    "statusLabel": "Status",
+    "alreadyRunning": "A Paul job is already running.",
+    "error": "Something went wrong. Try again.",
+    "revealed": "{count, plural, =0 {No new bets to reveal} one {1 bet revealed} other {# bets revealed}}",
+    "state": {
+      "IDLE": "Idle",
+      "RUNNING": "Running",
+      "DONE": "Done",
+      "FAILED": "Failed"
+    }
   }
 }
