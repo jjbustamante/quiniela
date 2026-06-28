@@ -157,7 +157,8 @@
     "testMode": "Modo prueba",
     "scoring": "Puntajes",
     "config": "Configuración",
-    "whatsappGroup": "Grupo WhatsApp"
+    "whatsappGroup": "Grupo WhatsApp",
+    "paulAdmin": "Pulpo Paul"
   },
   "captainWhatsapp": {
     "title": "GRUPO DE WHATSAPP",
@@ -377,5 +378,22 @@
     "cleanTitle": "Limpiar datos de prueba",
     "clean": "Limpiar",
     "confirmClean": "¿Borrar todos los pronósticos, resultados y pagos de prueba?"
+  },
+  "paulAdmin": {
+    "title": "Pulpo Paul",
+    "intro": "Genera las predicciones de Paul para la ronda abierta y luego revélalas. Ejecuta en orden tras resolverse cada ronda: 1) Generar candidatos, 2) Sintetizar oficiales, 3) Revelar.",
+    "generate": "1. Generar candidatos",
+    "synthesize": "2. Sintetizar oficiales",
+    "reveal": "3. Revelar",
+    "statusLabel": "Estado",
+    "alreadyRunning": "Ya hay un trabajo de Paul en ejecución.",
+    "error": "Algo salió mal. Inténtalo de nuevo.",
+    "revealed": "{count, plural, =0 {No había apuestas nuevas que revelar} one {1 apuesta revelada} other {# apuestas reveladas}}",
+    "state": {
+      "IDLE": "Inactivo",
+      "RUNNING": "En ejecución",
+      "DONE": "Completado",
+      "FAILED": "Falló"
+    }
   }
 }

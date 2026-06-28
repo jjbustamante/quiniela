@@ -95,6 +95,9 @@ export function NavDrawer({
                 <Link href="/admin/test" className={linkClass} onClick={close}>
                   {t("testMode")}
                 </Link>
+                <Link href="/admin/paul" className={linkClass} onClick={close}>
+                  {t("paulAdmin")}
+                </Link>
               </>
             )}
             <Link href="/scoring" className={linkClass} onClick={close}>
