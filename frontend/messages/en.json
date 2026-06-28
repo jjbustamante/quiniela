@@ -302,7 +302,8 @@
     "trendDown": "▼",
     "trendFlat": "—",
     "prizeFor": "Prize",
-    "liveBanner": "Some matches are live — points may change."
+    "liveBanner": "Some matches are live — points may change.",
+    "botsAnnouncement": "🐙 Paul noticed two players never showed up, so he called his friends Otto the Otter 🦦 and Chitara the Leopard 🐆 to take their two spots."
   },
   "scorecard": {
     "backToTable": "Table",

@@ -59,7 +59,7 @@ export default async function RankingPage() {
           <section className="mx-3 mt-3 flex flex-col gap-1.5">
             {ranking.entries.some((e) => e.isBot) && (
               <div className="border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-paper)] px-4 py-2 text-sm font-semibold text-[var(--color-text-primary)]">
-                🐙 ¡Pulpo Paul decidió jugar! Compite por la gloria, no por el premio.
+                {t("botsAnnouncement")}
               </div>
             )}
             <div className="flex items-stretch border-b-[1.5px] border-[var(--color-line-ink)] px-1 py-1">
