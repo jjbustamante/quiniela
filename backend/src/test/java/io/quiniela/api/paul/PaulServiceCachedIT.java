@@ -28,6 +28,7 @@ class PaulServiceCachedIT extends AbstractIntegrationTest {
   void suggestUsesCachedCandidateWhenPresent() {
     predictions.save(
         new PaulPrediction(
+            "paul",
             1L,
             "google",
             "gemini-2.5-flash",
@@ -51,6 +52,7 @@ class PaulServiceCachedIT extends AbstractIntegrationTest {
     var u = users.save(new User("g-cache", "c@example.com", "C", null, UserRole.PLAYER));
     predictions.save(
         new PaulPrediction(
+            "paul",
             1L,
             "google",
             "gemini-2.5-flash",
@@ -80,6 +82,7 @@ class PaulServiceCachedIT extends AbstractIntegrationTest {
         koMatch);
     predictions.save(
         new PaulPrediction(
+            "paul",
             koMatch,
             "google",
             "gemini-2.5-pro",
@@ -126,6 +129,7 @@ class PaulServiceCachedIT extends AbstractIntegrationTest {
         koMatch);
     predictions.save(
         new PaulPrediction(
+            "paul",
             koMatch,
             "google",
             "gemini-2.5-pro",

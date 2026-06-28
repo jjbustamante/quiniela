@@ -109,6 +109,7 @@ public class PaulPredictionService {
       Long pwid = (knockout && s1 == s2) ? advancingTeamId(res.advancing(), m, t1, t2) : null;
       p =
           new PaulPrediction(
+              "paul",
               m.getId(),
               spec.provider(),
               model,
@@ -125,6 +126,7 @@ public class PaulPredictionService {
       Long pwid = (knockout && s[0] == s[1]) ? advancingTeamId(null, m, t1, t2) : null;
       p =
           new PaulPrediction(
+              "paul",
               m.getId(),
               spec.provider(),
               model,

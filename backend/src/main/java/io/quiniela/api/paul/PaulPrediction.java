@@ -23,6 +23,9 @@ public class PaulPrediction {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(nullable = false, length = 32)
+  private String oracle;
+
   @Column(name = "match_id", nullable = false)
   private Long matchId;
 
@@ -60,6 +63,7 @@ public class PaulPrediction {
   protected PaulPrediction() {}
 
   public PaulPrediction(
+      String oracle,
       Long matchId,
       String provider,
       String model,
@@ -71,6 +75,7 @@ public class PaulPrediction {
       String reasoningLang,
       String source,
       Long predictedWinnerId) {
+    this.oracle = oracle;
     this.matchId = matchId;
     this.provider = provider;
     this.model = model;
@@ -93,6 +98,10 @@ public class PaulPrediction {
 
   public Long getId() {
     return id;
+  }
+
+  public String getOracle() {
+    return oracle;
   }
 
   public Long getMatchId() {

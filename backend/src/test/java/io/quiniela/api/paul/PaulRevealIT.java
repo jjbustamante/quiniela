@@ -24,6 +24,7 @@ class PaulRevealIT extends AbstractIntegrationTest {
   private void seedOfficial(long matchId, int s1, int s2) {
     predictions.save(
         new PaulPrediction(
+            "paul",
             matchId,
             "google",
             "ensemble",
@@ -74,6 +75,7 @@ class PaulRevealIT extends AbstractIntegrationTest {
         koMatch);
     predictions.save(
         new PaulPrediction(
+            "paul",
             koMatch,
             "google",
             "ensemble",

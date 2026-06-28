@@ -55,6 +55,7 @@ class PaulEnsembleServiceIT extends AbstractIntegrationTest {
     for (String model : new String[] {"gemini-2.5-pro", "gemini-2.5-flash"}) {
       repo.save(
           new PaulPrediction(
+              "paul",
               KO_MATCH,
               "google",
               model,

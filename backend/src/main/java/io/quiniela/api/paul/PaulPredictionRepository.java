@@ -11,4 +11,11 @@ public interface PaulPredictionRepository extends JpaRepository<PaulPrediction, 
   List<PaulPrediction> findByKind(String kind);
 
   Optional<PaulPrediction> findByMatchIdAndModelAndKind(Long matchId, String model, String kind);
+
+  List<PaulPrediction> findByOracleAndKind(String oracle, String kind);
+
+  List<PaulPrediction> findByOracleAndMatchIdAndKind(String oracle, Long matchId, String kind);
+
+  Optional<PaulPrediction> findByOracleAndMatchIdAndModelAndKind(
+      String oracle, Long matchId, String model, String kind);
 }

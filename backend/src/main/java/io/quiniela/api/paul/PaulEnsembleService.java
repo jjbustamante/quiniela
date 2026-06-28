@@ -134,6 +134,7 @@ public class PaulEnsembleService {
   private PaulPrediction official(
       Long matchId, int s1, int s2, BigDecimal conf, String reasoning, String source, Long pwid) {
     return new PaulPrediction(
+        "paul",
         matchId,
         props.ensembleSpec().provider(),
         ENSEMBLE_MODEL_LABEL,
