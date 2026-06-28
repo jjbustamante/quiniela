@@ -72,6 +72,52 @@ class PaulServiceCachedIT extends AbstractIntegrationTest {
   }
 
   @org.junit.jupiter.api.Test
+  void fillAllIncludesOpenKnockoutRoundWithPredictedWinner() {
+    long koMatch = 9031L;
+    jdbc.update(
+        "INSERT INTO match (id, tournament_id, round_id, team_1_id, team_2_id, played, kickoff_at)"
+            + " VALUES (?, 1, 2, 1, 2, FALSE, now() + interval '2 days')",
+        koMatch);
+    predictions.save(
+        new PaulPrediction(
+            koMatch,
+            "google",
+            "gemini-2.5-pro",
+            PaulPrediction.KIND_CANDIDATE,
+            1,
+            1,
+            null,
+            "empate, avanza local",
+            "es",
+            PaulPrediction.SOURCE_AI,
+            1L));
+    Long userId =
+        jdbc.queryForObject(
+            "INSERT INTO users (google_sub, email, display_name, role) "
+                + "VALUES ('filler-user', 'filler@test', 'Filler', 'player') RETURNING id",
+            Long.class);
+    try {
+      paul.fillAllForUser(userId);
+      Long pwid =
+          jdbc.queryForObject(
+              "SELECT b.predicted_winner_id FROM bet b JOIN quiniela q ON q.id = b.quiniela_id"
+                  + " WHERE q.user_id = ? AND b.match_id = ?",
+              Long.class,
+              userId,
+              koMatch);
+      assertThat(pwid).isEqualTo(1L);
+    } finally {
+      jdbc.update(
+          "DELETE FROM bet WHERE quiniela_id IN (SELECT id FROM quiniela WHERE user_id = ?)",
+          userId);
+      jdbc.update("DELETE FROM quiniela WHERE user_id = ?", userId);
+      jdbc.update("DELETE FROM users WHERE id = ?", userId);
+      jdbc.update("DELETE FROM paul_prediction WHERE match_id = ?", koMatch);
+      jdbc.update("DELETE FROM match WHERE id = ?", koMatch);
+    }
+  }
+
+  @org.junit.jupiter.api.Test
   void suggestForKnockoutMatchReturnsPredictedWinner() {
     long koMatch = 9021L;
     jdbc.update(
