@@ -1,5 +1,6 @@
 package io.quiniela.api.match;
 
+import java.time.Instant;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,4 +12,8 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
   List<Match> findByTournamentIdAndRoundIdOrderByKickoffAtAsc(Long tournamentId, Long roundId);
 
   int countByTournamentIdAndRoundId(Long tournamentId, Long roundId);
+
+  List<Match>
+      findByTournamentIdAndTeam1IdIsNotNullAndTeam2IdIsNotNullAndKickoffAtAfterOrderByKickoffAtAsc(
+          Long tournamentId, Instant cutoff);
 }

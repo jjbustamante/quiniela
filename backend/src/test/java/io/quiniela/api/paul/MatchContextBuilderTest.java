@@ -16,7 +16,8 @@ class MatchContextBuilderTest {
         .contains("Costa Rica")
         .contains("Grupo A")
         .contains("16")
-        .contains("29");
+        .contains("29")
+        .doesNotContain("avanza");
   }
 
   @Test
@@ -24,5 +25,16 @@ class MatchContextBuilderTest {
     String prompt =
         builder.userPrompt("GROUP", "K", "Países K1", "TBD_K1", null, "Países K2", "TBD_K2", null);
     assertThat(prompt).contains("Países K1").doesNotContain("ranking FIFA:");
+  }
+
+  @Test
+  void knockoutPromptNamesStageAndAsksForAdvancingTeam() {
+    String prompt = builder.userPrompt("R32", null, "Brasil", "BRA", 5, "Corea", "KOR", 23);
+    assertThat(prompt)
+        .contains("dieciseisavos de final")
+        .doesNotContain("Grupo")
+        .contains("LOCAL")
+        .contains("VISITANTE")
+        .contains("advancing");
   }
 }

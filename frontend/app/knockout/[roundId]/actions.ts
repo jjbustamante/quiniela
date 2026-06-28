@@ -28,7 +28,7 @@ export async function acceptPaulSuggestionAction(
 ): Promise<AcceptOutcome> {
   try {
     const s = await suggestForMatch(matchId);
-    await saveBet(matchId, s.scoreT1, s.scoreT2);
+    await saveBet(matchId, s.scoreT1, s.scoreT2, s.predictedWinnerId);
     revalidatePath(`/knockout/${roundCode}`);
     return { ok: true, scoreT1: s.scoreT1, scoreT2: s.scoreT2, reasoning: s.reasoning };
   } catch (e) {

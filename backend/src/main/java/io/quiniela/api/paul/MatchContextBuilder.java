@@ -19,7 +19,7 @@ public class MatchContextBuilder {
   }
 
   public String userPrompt(
-      String stageCode,
+      String roundCode,
       String groupCode,
       String team1Name,
       String team1Code,
@@ -27,11 +27,10 @@ public class MatchContextBuilder {
       String team2Name,
       String team2Code,
       Integer team2Ranking) {
+    boolean knockout = !"GROUP".equals(roundCode);
     StringBuilder sb = new StringBuilder();
-    sb.append("Fase: ")
-        .append("GROUP".equals(stageCode) ? "fase de grupos" : stageCode)
-        .append('\n');
-    if (groupCode != null) sb.append("Grupo ").append(groupCode).append('\n');
+    sb.append("Fase: ").append(stageLabel(roundCode)).append('\n');
+    if (!knockout && groupCode != null) sb.append("Grupo ").append(groupCode).append('\n');
     sb.append("Local: ").append(team1Name).append(" (").append(team1Code).append(")");
     if (team1Ranking != null) sb.append(" — ranking FIFA: ").append(team1Ranking);
     sb.append('\n');
@@ -39,6 +38,25 @@ public class MatchContextBuilder {
     if (team2Ranking != null) sb.append(" — ranking FIFA: ").append(team2Ranking);
     sb.append('\n');
     sb.append("Predice el marcador (goles del local y del visitante).");
+    if (knockout) {
+      sb.append(
+          "\nEs eliminación directa: alguien debe avanzar. Si predices empate en tiempo"
+              + " reglamentario, indica en \"advancing\" qué equipo avanza por penales:"
+              + " \"LOCAL\" o \"VISITANTE\".");
+    }
     return sb.toString();
+  }
+
+  private static String stageLabel(String roundCode) {
+    return switch (roundCode) {
+      case "GROUP" -> "fase de grupos";
+      case "R32" -> "dieciseisavos de final";
+      case "R16" -> "octavos de final";
+      case "QF" -> "cuartos de final";
+      case "SF" -> "semifinal";
+      case "THIRD_PLACE" -> "partido por el tercer puesto";
+      case "FINAL" -> "final";
+      default -> roundCode;
+    };
   }
 }

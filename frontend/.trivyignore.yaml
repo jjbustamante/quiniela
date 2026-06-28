@@ -122,3 +122,40 @@ vulnerabilities:
   - id: CVE-2026-42504
     statement: "Go stdlib MIME-header decode DoS — heroku/builder:26 launcher/lifecycle Go binaries, not app code; not exercised at runtime. Fixed in Go 1.26.4; waits on builder refresh."
     expired_at: 2026-07-23
+
+  # ─── pnpm package manager (packageManager pin in package.json) ─────────
+  # Flagged against the `packageManager: pnpm@10.27.0` pin. pnpm is our
+  # BUILD-time package manager (corepack / pnpm-action-setup runs `pnpm
+  # install` in CI and in the Node buildpack); the deployed runtime image
+  # starts Next via `node node_modules/.bin/next start` and never invokes
+  # pnpm. Every CVE below is an install-time issue (malicious patch files,
+  # lockfile/manifest manipulation, configDependencies) that requires pnpm
+  # to process attacker-controlled package inputs — not reachable in the
+  # running container. Most are fixed in pnpm 10.34.x; CVE-2026-55697 only
+  # in 11.x. Re-triage at expiry: bump the pnpm pin (10.34.4 clears all but
+  # 55697; a 11.x bump clears every one) and drop these.
+
+  - id: CVE-2026-50015
+    statement: "pnpm arbitrary file write/delete via malicious patch file (path traversal) — build-time package manager, not invoked in the next-start runtime. Fixed in pnpm 10.34.0/11.4.0."
+    expired_at: 2026-07-28
+  - id: CVE-2026-50016
+    statement: "pnpm transitive-dependency alias path traversal (project path override via symlink) — install-time only, not in runtime image. Fixed in pnpm 10.34.0/11.4.0."
+    expired_at: 2026-07-28
+  - id: CVE-2026-55487
+    statement: "pnpm manifest identity spoof satisfies allowBuilds and runs attacker lifecycle — install-time only. Fixed in pnpm 10.34.2/11.5.3."
+    expired_at: 2026-07-28
+  - id: CVE-2026-55697
+    statement: "pnpm repository-controlled configDependencies can select a pacquet native install engine — install-time only, not reachable at runtime. Fixed in pnpm 11.5.3 (no 10.x fix; needs a major bump)."
+    expired_at: 2026-07-28
+  - id: CVE-2026-55698
+    statement: "pnpm project env lockfile can short-circuit package-manager resolution — install-time only. Fixed in pnpm 10.34.2/11.5.3."
+    expired_at: 2026-07-28
+  - id: GHSA-72r4-9c5j-mj57
+    statement: "pnpm patch-remove could delete project-selected files outside the patches directory — install-time only. Fixed in pnpm 10.34.4/11.7.0."
+    expired_at: 2026-07-28
+  - id: GHSA-fr4h-3cph-29xv
+    statement: "pnpm hoisted install imports lockfile alias outside node_modules — install-time only. Fixed in pnpm 10.34.4/11.7.0."
+    expired_at: 2026-07-28
+  - id: GHSA-qrv3-253h-g69c
+    statement: "pnpm path traversal in configDependencies env lockfile (symlink outside node_modules/.pnpm-config) — install-time only. Fixed in pnpm 10.34.4/11.8.0."
+    expired_at: 2026-07-28

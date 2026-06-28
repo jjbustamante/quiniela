@@ -36,11 +36,11 @@ public class PaulJobService {
   }
 
   public PaulJobStatus startGenerate() {
-    return start("generate", predictionService::generateAllGroup);
+    return start("generate", predictionService::generateOpen);
   }
 
   public PaulJobStatus startSynthesize() {
-    return start("synthesize", ensembleService::synthesizeAllGroup);
+    return start("synthesize", ensembleService::synthesizeOpen);
   }
 
   public PaulJobStatus current() {
