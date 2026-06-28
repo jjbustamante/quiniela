@@ -73,4 +73,20 @@ class MultiOracleIT extends AbstractIntegrationTest {
     assertThat(ottoOfficial.get().getScoreT2()).isEqualTo(1);
     assertThat(ottoOfficial.get().getOracle()).isEqualTo("otto");
   }
+
+  @Test
+  void revealCreatesBetsForEachOracleQuiniela() {
+    predictionService.generateOpen();
+    ensembleService.synthesizeOpen();
+    paulService.reveal();
+
+    Integer ottoBets =
+        jdbc.queryForObject(
+            "SELECT count(*) FROM bet b JOIN quiniela q ON q.id=b.quiniela_id "
+                + "JOIN users u ON u.id=q.user_id "
+                + "WHERE u.google_sub='otto-bot-oracle' AND b.match_id=?",
+            Integer.class,
+            KO_MATCH);
+    assertThat(ottoBets).isEqualTo(1);
+  }
 }
