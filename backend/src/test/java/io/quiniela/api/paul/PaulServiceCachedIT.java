@@ -13,6 +13,7 @@ import io.quiniela.api.user.UserRole;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 class PaulServiceCachedIT extends AbstractIntegrationTest {
 
@@ -21,6 +22,7 @@ class PaulServiceCachedIT extends AbstractIntegrationTest {
   @Autowired QuinielaRepository quinielas;
   @Autowired BetRepository bets;
   @Autowired UserRepository users;
+  @Autowired JdbcTemplate jdbc;
 
   @Test
   void suggestUsesCachedCandidateWhenPresent() {
@@ -67,5 +69,35 @@ class PaulServiceCachedIT extends AbstractIntegrationTest {
     Bet bet = bets.findByQuinielaIdAndMatchId(q.getId(), 1L).orElseThrow();
     assertThat(bet.getScoreT1()).isEqualTo(3);
     assertThat(bet.getScoreT2()).isZero();
+  }
+
+  @org.junit.jupiter.api.Test
+  void suggestForKnockoutMatchReturnsPredictedWinner() {
+    long koMatch = 9021L;
+    jdbc.update(
+        "INSERT INTO match (id, tournament_id, round_id, team_1_id, team_2_id, played, kickoff_at)"
+            + " VALUES (?, 1, 2, 1, 2, FALSE, now() + interval '2 days')",
+        koMatch);
+    predictions.save(
+        new PaulPrediction(
+            koMatch,
+            "google",
+            "gemini-2.5-pro",
+            PaulPrediction.KIND_CANDIDATE,
+            1,
+            1,
+            null,
+            "empate, avanza local",
+            "es",
+            PaulPrediction.SOURCE_AI,
+            1L));
+    try {
+      PaulService.Suggestion s = paul.suggestForMatch(koMatch);
+      assertThat(s.scoreT1()).isEqualTo(1);
+      assertThat(s.predictedWinnerId()).isEqualTo(1L);
+    } finally {
+      jdbc.update("DELETE FROM paul_prediction WHERE match_id = ?", koMatch);
+      jdbc.update("DELETE FROM match WHERE id = ?", koMatch);
+    }
   }
 }
