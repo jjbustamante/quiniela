@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.quiniela.api.support.AbstractIntegrationTest;
 import io.quiniela.api.team.TeamRepository;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -33,5 +34,17 @@ class MatchRepositoryIT extends AbstractIntegrationTest {
     assertThat(spain.getName()).isEqualTo("España");
     assertThat(spain.getFlagEmoji()).isEqualTo("🇪🇸");
     assertThat(spain.getGroupCode()).isEqualTo("F");
+  }
+
+  @Test
+  void openMatchesIncludeFutureGroupAndExcludeTeamlessKnockout() {
+    var open =
+        matches
+            .findByTournamentIdAndTeam1IdIsNotNullAndTeam2IdIsNotNullAndKickoffAtAfterOrderByKickoffAtAsc(
+                1L, Instant.now());
+    // 72 group matches are reanchored into the future (V021) and have teams.
+    // Knockout seed matches have NULL teams, so they are excluded.
+    assertThat(open).hasSize(72);
+    assertThat(open).allMatch(m -> m.getTeam1Id() != null && m.getTeam2Id() != null);
   }
 }
