@@ -13,6 +13,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 class PaulPredictionServiceIT extends AbstractIntegrationTest {
 
   private static final long KO_MATCH = 9001L;
+  private static final long KO_RANK_MATCH = 9200L;
+  private static final long RANK_TEAM_1 = 9101L;
+  private static final long RANK_TEAM_2 = 9102L;
 
   @Autowired PaulPredictionService service;
   @Autowired PaulPredictionRepository repo;
@@ -24,6 +27,9 @@ class PaulPredictionServiceIT extends AbstractIntegrationTest {
     FakePaulOracleConfig.forcedResult.set(null);
     jdbc.update("DELETE FROM paul_prediction WHERE match_id = ?", KO_MATCH);
     jdbc.update("DELETE FROM match WHERE id = ?", KO_MATCH);
+    jdbc.update("DELETE FROM paul_prediction WHERE match_id = ?", KO_RANK_MATCH);
+    jdbc.update("DELETE FROM match WHERE id = ?", KO_RANK_MATCH);
+    jdbc.update("DELETE FROM team WHERE id IN (?, ?)", RANK_TEAM_1, RANK_TEAM_2);
   }
 
   private void insertR32Match() {
@@ -97,5 +103,33 @@ class PaulPredictionServiceIT extends AbstractIntegrationTest {
     // Seeded test teams have NULL fifa_ranking → deterministic fallback = team1 (id 1).
     assertThat(ko)
         .allMatch(p -> p.getPredictedWinnerId() != null && p.getPredictedWinnerId() == 1L);
+  }
+
+  @Test
+  void knockoutDrawWithoutAdvancingSelectsBetterFifaRankedTeam() {
+    // RANK_TEAM_1 is the worse-ranked team (higher FIFA number = lower rank).
+    // RANK_TEAM_2 is the better-ranked team (lower FIFA number = higher rank).
+    // With team1 = worse rank and team2 = better rank, the ranking branch must return team2Id.
+    jdbc.update(
+        "INSERT INTO team (id, tournament_id, code, name, group_code, flag_emoji, fifa_ranking)"
+            + " VALUES (?, 1, 'T91', 'Test Ranked 1', NULL, NULL, 50)",
+        RANK_TEAM_1);
+    jdbc.update(
+        "INSERT INTO team (id, tournament_id, code, name, group_code, flag_emoji, fifa_ranking)"
+            + " VALUES (?, 1, 'T92', 'Test Ranked 2', NULL, NULL, 10)",
+        RANK_TEAM_2);
+    jdbc.update(
+        "INSERT INTO match (id, tournament_id, round_id, team_1_id, team_2_id, played, kickoff_at)"
+            + " VALUES (?, 1, 2, ?, ?, FALSE, now() + interval '2 days')",
+        KO_RANK_MATCH,
+        RANK_TEAM_1,
+        RANK_TEAM_2);
+    FakePaulOracleConfig.forcedResult.set(
+        new PaulPredictionResult(0, 0, 0.5, "empate sin pick", null));
+    service.generateOpen();
+    var ko = repo.findByMatchIdAndKind(KO_RANK_MATCH, PaulPrediction.KIND_CANDIDATE);
+    // fifa_ranking=10 (RANK_TEAM_2) < fifa_ranking=50 (RANK_TEAM_1) → team2 advances.
+    assertThat(ko).hasSize(2);
+    assertThat(ko).allSatisfy(p -> assertThat(p.getPredictedWinnerId()).isEqualTo(RANK_TEAM_2));
   }
 }
