@@ -134,8 +134,10 @@ public class PaulService {
     int created = 0;
     for (PaulPrediction official : predictions.findByKind(PaulPrediction.KIND_OFFICIAL)) {
       if (already.contains(official.getMatchId())) continue;
-      bets.save(
-          new Bet(q.getId(), official.getMatchId(), official.getScoreT1(), official.getScoreT2()));
+      Bet bet =
+          new Bet(q.getId(), official.getMatchId(), official.getScoreT1(), official.getScoreT2());
+      bet.setPredictedWinnerId(official.getPredictedWinnerId());
+      bets.save(bet);
       created++;
     }
     return new RevealResult(created);

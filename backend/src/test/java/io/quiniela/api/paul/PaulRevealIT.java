@@ -10,6 +10,7 @@ import io.quiniela.api.user.UserRepository;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 class PaulRevealIT extends AbstractIntegrationTest {
 
@@ -18,6 +19,7 @@ class PaulRevealIT extends AbstractIntegrationTest {
   @Autowired QuinielaRepository quinielas;
   @Autowired BetRepository bets;
   @Autowired UserRepository users;
+  @Autowired JdbcTemplate jdbc;
 
   private void seedOfficial(long matchId, int s1, int s2) {
     predictions.save(
@@ -61,5 +63,46 @@ class PaulRevealIT extends AbstractIntegrationTest {
     var paulUser = users.findByGoogleSub("paul-bot-oracle").orElseThrow();
     Quiniela pq = quinielas.findByPoolIdAndUserId(1L, paulUser.getId()).orElseThrow();
     assertThat(bets.findByQuinielaId(pq.getId())).hasSize(1);
+  }
+
+  @Test
+  void revealSnapshotsKnockoutOfficialWinner() {
+    long koMatch = 9041L;
+    jdbc.update(
+        "INSERT INTO match (id, tournament_id, round_id, team_1_id, team_2_id, played, kickoff_at)"
+            + " VALUES (?, 1, 2, 1, 2, FALSE, now() + interval '2 days')",
+        koMatch);
+    predictions.save(
+        new PaulPrediction(
+            koMatch,
+            "google",
+            "ensemble",
+            PaulPrediction.KIND_OFFICIAL,
+            1,
+            1,
+            null,
+            "empate, avanza local",
+            "es",
+            PaulPrediction.SOURCE_AI,
+            1L));
+    try {
+      paul.reveal();
+      Long pwid =
+          jdbc.queryForObject(
+              "SELECT b.predicted_winner_id FROM bet b"
+                  + " JOIN quiniela q ON q.id = b.quiniela_id"
+                  + " JOIN users u ON u.id = q.user_id"
+                  + " WHERE u.google_sub = 'paul-bot-oracle' AND b.match_id = ?",
+              Long.class,
+              koMatch);
+      assertThat(pwid).isEqualTo(1L);
+    } finally {
+      jdbc.update(
+          "DELETE FROM bet WHERE quiniela_id IN"
+              + " (SELECT q.id FROM quiniela q JOIN users u ON u.id = q.user_id"
+              + " WHERE u.google_sub = 'paul-bot-oracle')");
+      jdbc.update("DELETE FROM paul_prediction WHERE match_id = ?", koMatch);
+      jdbc.update("DELETE FROM match WHERE id = ?", koMatch);
+    }
   }
 }
