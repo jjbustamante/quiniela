@@ -4,6 +4,7 @@ export type PaulSuggestion = {
   scoreT1: number;
   scoreT2: number;
   reasoning: string;
+  predictedWinnerId: number | null;
 };
 
 export type PaulFillResult = { created: number };
