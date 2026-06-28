@@ -51,6 +51,9 @@ public class PaulPrediction {
   @Column(nullable = false, length = 16)
   private String source = SOURCE_AI;
 
+  @Column(name = "predicted_winner_id")
+  private Long predictedWinnerId;
+
   @Column(name = "generated_at", nullable = false, updatable = false)
   private Instant generatedAt;
 
@@ -66,7 +69,8 @@ public class PaulPrediction {
       BigDecimal confidence,
       String reasoning,
       String reasoningLang,
-      String source) {
+      String source,
+      Long predictedWinnerId) {
     this.matchId = matchId;
     this.provider = provider;
     this.model = model;
@@ -77,6 +81,7 @@ public class PaulPrediction {
     this.reasoning = reasoning;
     this.reasoningLang = reasoningLang;
     this.source = source;
+    this.predictedWinnerId = predictedWinnerId;
   }
 
   @PrePersist
@@ -128,5 +133,9 @@ public class PaulPrediction {
 
   public String getSource() {
     return source;
+  }
+
+  public Long getPredictedWinnerId() {
+    return predictedWinnerId;
   }
 }

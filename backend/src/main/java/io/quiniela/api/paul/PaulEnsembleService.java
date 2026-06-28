@@ -120,7 +120,8 @@ public class PaulEnsembleService {
         conf,
         reasoning,
         "es",
-        source);
+        source,
+        null);
   }
 
   private String systemPrompt() {

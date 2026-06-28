@@ -12,6 +12,26 @@ class PaulPredictionRepositoryIT extends AbstractIntegrationTest {
   @Autowired PaulPredictionRepository repo;
 
   @Test
+  void persistsAndReadsPredictedWinnerId() {
+    PaulPrediction p =
+        new PaulPrediction(
+            1L,
+            "vertex",
+            "gemini-2.5-pro",
+            PaulPrediction.KIND_OFFICIAL,
+            1,
+            1,
+            null,
+            "empate, avanza local",
+            "es",
+            PaulPrediction.SOURCE_AI,
+            1L);
+    repo.saveAndFlush(p);
+    PaulPrediction read = repo.findById(p.getId()).orElseThrow();
+    assertThat(read.getPredictedWinnerId()).isEqualTo(1L);
+  }
+
+  @Test
   void savesAndQueriesByMatchAndKind() {
     // match id 1 exists from V007 fixtures (first group match).
     var p =
@@ -25,7 +45,8 @@ class PaulPredictionRepositoryIT extends AbstractIntegrationTest {
             new BigDecimal("0.70"),
             "Paul lo ve claro.",
             "es",
-            PaulPrediction.SOURCE_AI);
+            PaulPrediction.SOURCE_AI,
+            null);
     repo.save(p);
 
     var candidates = repo.findByMatchIdAndKind(1L, PaulPrediction.KIND_CANDIDATE);

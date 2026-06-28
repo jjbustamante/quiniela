@@ -35,7 +35,8 @@ class PaulServiceCachedIT extends AbstractIntegrationTest {
             new BigDecimal("0.80"),
             "Goleada cantada.",
             "es",
-            PaulPrediction.SOURCE_AI));
+            PaulPrediction.SOURCE_AI,
+            null));
 
     var s = paul.suggestForMatch(1L);
     assertThat(s.scoreT1()).isEqualTo(3);
@@ -57,7 +58,8 @@ class PaulServiceCachedIT extends AbstractIntegrationTest {
             new BigDecimal("0.80"),
             "Goleada cantada.",
             "es",
-            PaulPrediction.SOURCE_AI));
+            PaulPrediction.SOURCE_AI,
+            null));
 
     paul.fillAllForUser(u.getId());
 

@@ -31,7 +31,8 @@ class PaulRevealIT extends AbstractIntegrationTest {
             new BigDecimal("0.75"),
             "Oficial.",
             "es",
-            PaulPrediction.SOURCE_AI));
+            PaulPrediction.SOURCE_AI,
+            null));
   }
 
   @Test

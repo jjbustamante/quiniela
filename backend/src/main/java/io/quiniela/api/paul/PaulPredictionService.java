@@ -104,7 +104,8 @@ public class PaulPredictionService {
               clampConfidence(r.confidence()),
               r.reasoning(),
               "es",
-              PaulPrediction.SOURCE_AI);
+              PaulPrediction.SOURCE_AI,
+              null);
     } catch (RuntimeException e) {
       int[] s = deterministicStub(m.getId());
       p =
@@ -118,7 +119,8 @@ public class PaulPredictionService {
               null,
               "Paul prefirió no arriesgar esta vez.",
               "es",
-              PaulPrediction.SOURCE_FALLBACK);
+              PaulPrediction.SOURCE_FALLBACK,
+              null);
     }
 
     // Replace any existing candidate for (match, model, CANDIDATE) to keep regeneration idempotent.
