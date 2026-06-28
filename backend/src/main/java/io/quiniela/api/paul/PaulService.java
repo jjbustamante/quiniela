@@ -59,7 +59,7 @@ public class PaulService {
   public Suggestion suggestForMatch(Long matchId) {
     matches.findById(matchId).orElseThrow();
     List<PaulPrediction> candidates =
-        predictions.findByMatchIdAndKind(matchId, PaulPrediction.KIND_CANDIDATE);
+        predictions.findByOracleAndMatchIdAndKind("paul", matchId, PaulPrediction.KIND_CANDIDATE);
     if (!candidates.isEmpty()) {
       PaulPrediction pick = candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
       return new Suggestion(

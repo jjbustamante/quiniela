@@ -132,6 +132,9 @@ public class PaulEnsembleService {
       }
     }
 
+    // Flush the delete before saving the replacement: both ops share the same transaction, so
+    // without an explicit flush the INSERT would race the pending DELETE on the UNIQUE
+    // (oracle, match_id, model, kind) constraint and cause a constraint-violation error.
     predictions
         .findByOracleAndMatchIdAndModelAndKind(
             bot.key(), matchId, ENSEMBLE_MODEL_LABEL, PaulPrediction.KIND_OFFICIAL)

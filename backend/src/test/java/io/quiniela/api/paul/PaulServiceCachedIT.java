@@ -121,6 +121,52 @@ class PaulServiceCachedIT extends AbstractIntegrationTest {
   }
 
   @org.junit.jupiter.api.Test
+  void suggestForMatchNeverReturnsNonPaulOracleCandidate() {
+    long koMatch = 9501L;
+    jdbc.update(
+        "INSERT INTO match (id, tournament_id, round_id, team_1_id, team_2_id, played, kickoff_at)"
+            + " VALUES (?, 1, 2, 1, 2, FALSE, now() + interval '2 days')",
+        koMatch);
+    try {
+      predictions.save(
+          new PaulPrediction(
+              "paul",
+              koMatch,
+              "google",
+              "gemini-2.5-pro",
+              PaulPrediction.KIND_CANDIDATE,
+              3,
+              0,
+              null,
+              "paul pick",
+              "es",
+              PaulPrediction.SOURCE_AI,
+              null));
+      predictions.save(
+          new PaulPrediction(
+              "otto",
+              koMatch,
+              "deepseek",
+              "deepseek-ai/deepseek-v3.1",
+              PaulPrediction.KIND_CANDIDATE,
+              1,
+              1,
+              null,
+              "otto pick",
+              "es",
+              PaulPrediction.SOURCE_AI,
+              1L));
+
+      PaulService.Suggestion s = paul.suggestForMatch(koMatch);
+      assertThat(s.scoreT1()).isEqualTo(3);
+      assertThat(s.scoreT2()).isZero();
+    } finally {
+      jdbc.update("DELETE FROM paul_prediction WHERE match_id = ?", koMatch);
+      jdbc.update("DELETE FROM match WHERE id = ?", koMatch);
+    }
+  }
+
+  @org.junit.jupiter.api.Test
   void suggestForKnockoutMatchReturnsPredictedWinner() {
     long koMatch = 9021L;
     jdbc.update(
