@@ -7,33 +7,49 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @Import(FakePaulOracleConfig.class)
 class PaulPredictionServiceIT extends AbstractIntegrationTest {
 
+  private static final long KO_MATCH = 9001L;
+
   @Autowired PaulPredictionService service;
   @Autowired PaulPredictionRepository repo;
+  @Autowired JdbcTemplate jdbc;
 
   @AfterEach
   void reset() {
     FakePaulOracleConfig.failModel.set(null);
+    FakePaulOracleConfig.forcedResult.set(null);
+    jdbc.update("DELETE FROM paul_prediction WHERE match_id = ?", KO_MATCH);
+    jdbc.update("DELETE FROM match WHERE id = ?", KO_MATCH);
+  }
+
+  private void insertR32Match() {
+    // round 2 = R32; teams 1 (MEX) and 2 (CRC); future kickoff so it is "open".
+    jdbc.update(
+        "INSERT INTO match (id, tournament_id, round_id, team_1_id, team_2_id, played, kickoff_at)"
+            + " VALUES (?, 1, 2, 1, 2, FALSE, now() + interval '2 days')",
+        KO_MATCH);
   }
 
   @Test
   void generatesOneCandidatePerModelPerGroupMatch() {
-    int created = service.generateAllGroup();
-    // 72 group matches × 2 configured models = 144 candidate rows.
+    int created = service.generateOpen();
+    // 72 open group matches × 2 configured models = 144 candidate rows.
     assertThat(created).isEqualTo(144);
     assertThat(repo.findByKind(PaulPrediction.KIND_CANDIDATE)).hasSize(144);
     var forMatch1 = repo.findByMatchIdAndKind(1L, PaulPrediction.KIND_CANDIDATE);
     assertThat(forMatch1).hasSize(2);
     assertThat(forMatch1).allMatch(p -> p.getSource().equals(PaulPrediction.SOURCE_AI));
+    assertThat(forMatch1).allMatch(p -> p.getPredictedWinnerId() == null); // group → null
   }
 
   @Test
   void fallsBackToDeterministicStubWhenAModelFails() {
     FakePaulOracleConfig.failModel.set("gemini-2.5-pro");
-    service.generateAllGroup();
+    service.generateOpen();
     var forMatch1 = repo.findByMatchIdAndKind(1L, PaulPrediction.KIND_CANDIDATE);
     assertThat(forMatch1).hasSize(2);
     assertThat(forMatch1).anyMatch(p -> p.getSource().equals(PaulPrediction.SOURCE_FALLBACK));
@@ -42,9 +58,44 @@ class PaulPredictionServiceIT extends AbstractIntegrationTest {
 
   @Test
   void regenerationReplacesExistingCandidates() {
-    service.generateAllGroup();
-    int second = service.generateAllGroup();
+    service.generateOpen();
+    int second = service.generateOpen();
     assertThat(second).isEqualTo(144);
     assertThat(repo.findByMatchIdAndKind(1L, PaulPrediction.KIND_CANDIDATE)).hasSize(2);
+  }
+
+  @Test
+  void knockoutDrawSetsPredictedWinnerFromAdvancing() {
+    insertR32Match();
+    FakePaulOracleConfig.forcedResult.set(
+        new PaulPredictionResult(1, 1, 0.5, "empate, avanza local", "LOCAL"));
+    service.generateOpen();
+    var ko = repo.findByMatchIdAndKind(KO_MATCH, PaulPrediction.KIND_CANDIDATE);
+    assertThat(ko).hasSize(2);
+    assertThat(ko).allMatch(p -> p.getScoreT1() == 1 && p.getScoreT2() == 1);
+    assertThat(ko)
+        .allMatch(p -> p.getPredictedWinnerId() != null && p.getPredictedWinnerId() == 1L);
+  }
+
+  @Test
+  void knockoutDecisiveLeavesPredictedWinnerNull() {
+    insertR32Match();
+    FakePaulOracleConfig.forcedResult.set(
+        new PaulPredictionResult(2, 1, 0.7, "gana el local", "LOCAL"));
+    service.generateOpen();
+    var ko = repo.findByMatchIdAndKind(KO_MATCH, PaulPrediction.KIND_CANDIDATE);
+    assertThat(ko).allMatch(p -> p.getPredictedWinnerId() == null); // decisive → null
+  }
+
+  @Test
+  void knockoutDrawWithoutAdvancingFallsBackToTeam1() {
+    insertR32Match();
+    FakePaulOracleConfig.forcedResult.set(
+        new PaulPredictionResult(0, 0, 0.5, "empate sin pick", null));
+    service.generateOpen();
+    var ko = repo.findByMatchIdAndKind(KO_MATCH, PaulPrediction.KIND_CANDIDATE);
+    // Seeded test teams have NULL fifa_ranking → deterministic fallback = team1 (id 1).
+    assertThat(ko)
+        .allMatch(p -> p.getPredictedWinnerId() != null && p.getPredictedWinnerId() == 1L);
   }
 }

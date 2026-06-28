@@ -16,7 +16,7 @@ class PaulEnsembleServiceIT extends AbstractIntegrationTest {
 
   @Test
   void synthesizesOneOfficialPerMatchWithCandidates() {
-    predictionService.generateAllGroup(); // 144 candidates over 72 matches
+    predictionService.generateOpen(); // 144 candidates over 72 matches
     int officials = ensembleService.synthesizeAllGroup();
     assertThat(officials).isEqualTo(72);
 

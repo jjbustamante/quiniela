@@ -36,7 +36,7 @@ public class PaulJobService {
   }
 
   public PaulJobStatus startGenerate() {
-    return start("generate", predictionService::generateAllGroup);
+    return start("generate", predictionService::generateOpen);
   }
 
   public PaulJobStatus startSynthesize() {
