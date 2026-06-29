@@ -30,8 +30,8 @@
         <postgresql.version>42.7.11</postgresql.version>
 
         <!-- Explicit dep + transitive overrides -->
-        <postgres-socket-factory.version>1.28.4</postgres-socket-factory.version>
-        <grpc.version>1.82.0</grpc.version>
+        <postgres-socket-factory.version>1.28.6</postgres-socket-factory.version>
+        <grpc.version>1.82.1</grpc.version>
         <protobuf.version>4.35.1</protobuf.version>
         <google-api-client.version>2.9.0</google-api-client.version>
         <jjwt.version>0.13.0</jjwt.version>
@@ -51,7 +51,7 @@
              module isn't published on the 2.0.x line, so we call the SDK directly
              behind the PaulOracle seam. Pinned to the version the spring-ai
              google-genai starter already resolves transitively. -->
-        <google-genai.version>1.59.0</google-genai.version>
+        <google-genai.version>1.60.0</google-genai.version>
         <!-- Match flyway-core managed by spring-boot-starter-parent. Maven plugin
              scope doesn't inherit dependency-management so we pin explicitly. -->
         <flyway.version>11.20.3</flyway.version>
