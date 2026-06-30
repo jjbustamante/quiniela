@@ -139,6 +139,62 @@ class FootballDataLoaderIT {
     assertThat(matchGroupCode).isEqualTo("A");
   }
 
+  /**
+   * Grounds the penalty-shootout handling in a REAL football-data.org response captured verbatim
+   * (src/test/resources/footballdata/wc-matches-penalty-and-group.json: the actual Germany–Paraguay
+   * R32 + a Mexico–South Africa group game). The fixture is the source of truth for the API
+   * contract — the bug that scored penalty goals existed because the old hand-written stub used an
+   * unrealistic fullTime shape that the API never returns.
+   */
+  @Test
+  void storesRealCapturedPenaltyMatchAtOnPitchScoreNotShootout() throws Exception {
+    var jdbc = new JdbcTemplate(dataSource);
+    // Seed the four teams the captured response references (FK targets for match rows).
+    jdbc.update(
+        "INSERT INTO team (id, tournament_id, code, name) VALUES "
+            + "(759,1,'GER','Germany'),(761,1,'PAR','Paraguay'),"
+            + "(769,1,'MEX','Mexico'),(774,1,'RSA','South Africa') ON CONFLICT (id) DO NOTHING");
+
+    String realResponse =
+        new String(
+            getClass()
+                .getResourceAsStream("/footballdata/wc-matches-penalty-and-group.json")
+                .readAllBytes(),
+            java.nio.charset.StandardCharsets.UTF_8);
+    stubFor(
+        get(urlEqualTo("/v4/competitions/WC/standings"))
+            .willReturn(
+                aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withBody("{\"standings\":[]}")));
+    stubFor(
+        get(urlEqualTo("/v4/competitions/WC/teams"))
+            .willReturn(
+                aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withBody("{\"teams\":[]}")));
+    stubFor(
+        get(urlEqualTo("/v4/competitions/WC/matches"))
+            .willReturn(
+                aResponse().withHeader("Content-Type", "application/json").withBody(realResponse)));
+
+    loader.load();
+
+    // Germany 1-1 Paraguay after 120', decided on penalties. The API's fullTime is the
+    // shootout-inflated 5-6; the stored score MUST be the on-pitch 120' result, 1-1.
+    assertThat(jdbc.queryForObject("SELECT score_t1 FROM match WHERE id = 537415", Integer.class))
+        .isEqualTo(1);
+    assertThat(jdbc.queryForObject("SELECT score_t2 FROM match WHERE id = 537415", Integer.class))
+        .isEqualTo(1);
+    assertThat(jdbc.queryForObject("SELECT played FROM match WHERE id = 537415", Boolean.class))
+        .isTrue();
+    // Regular group match: fullTime is the real score, stored as-is.
+    assertThat(jdbc.queryForObject("SELECT score_t1 FROM match WHERE id = 537327", Integer.class))
+        .isEqualTo(2);
+    assertThat(jdbc.queryForObject("SELECT score_t2 FROM match WHERE id = 537327", Integer.class))
+        .isEqualTo(0);
+  }
+
   @Test
   void resyncUpdatesResultAndStoresPenaltyAdvancingTeam() {
     stubFor(
@@ -178,7 +234,9 @@ class FootballDataLoaderIT {
     assertThat(jdbc.queryForObject("SELECT played FROM match WHERE id = 9001", Boolean.class))
         .isFalse();
 
-    // Second sync: same match, now a 1-1 penalty win for the away team (1002).
+    // Second sync: same match, now a 1-1 (after 120') penalty win for the away team (1002).
+    // football-data.org folds the shootout into fullTime (6-7 here); the real score lives in
+    // regularTime + extraTime, and must be stored as 1-1, NOT the shootout-inflated fullTime.
     wm.resetAll();
     WireMock.configureFor("localhost", wm.port());
     stubFor(
@@ -204,7 +262,9 @@ class FootballDataLoaderIT {
                             + "\"homeTeam\":{\"id\":1001,\"name\":\"Uno\"},"
                             + "\"awayTeam\":{\"id\":1002,\"name\":\"Dos\"},"
                             + "\"score\":{\"winner\":\"AWAY_TEAM\",\"duration\":\"PENALTY_SHOOTOUT\","
-                            + "\"fullTime\":{\"home\":1,\"away\":1},"
+                            + "\"fullTime\":{\"home\":6,\"away\":7},"
+                            + "\"regularTime\":{\"home\":1,\"away\":1},"
+                            + "\"extraTime\":{\"home\":0,\"away\":0},"
                             + "\"penalties\":{\"home\":3,\"away\":5}}}]}")));
 
     // teams table is non-empty now, so call load() directly to force the matches re-sync.

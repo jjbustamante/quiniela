@@ -355,7 +355,8 @@
     "errorSaving": "Error al guardar",
     "kickoffShort": "{date} · {time}",
     "scorePlaceholderT1": "T1",
-    "scorePlaceholderT2": "T2"
+    "scorePlaceholderT2": "T2",
+    "advancedLabel": "¿Quién avanzó?"
   },
   "testMode": {
     "banner": "MODO PRUEBA · los datos no son reales"

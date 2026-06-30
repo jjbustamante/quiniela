@@ -355,7 +355,8 @@
     "errorSaving": "Save failed",
     "kickoffShort": "{date} · {time}",
     "scorePlaceholderT1": "T1",
-    "scorePlaceholderT2": "T2"
+    "scorePlaceholderT2": "T2",
+    "advancedLabel": "Who advanced?"
   },
   "testMode": {
     "banner": "TEST MODE · data is not real"

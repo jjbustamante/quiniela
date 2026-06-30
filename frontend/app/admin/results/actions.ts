@@ -7,6 +7,7 @@ export async function saveResultAction(
   matchId: number,
   scoreT1: number,
   scoreT2: number,
+  advancingTeamId?: number | null,
 ) {
   if (!Number.isInteger(scoreT1) || !Number.isInteger(scoreT2)) {
     throw new Error("Scores must be integers");
@@ -14,7 +15,7 @@ export async function saveResultAction(
   if (scoreT1 < 0 || scoreT2 < 0) {
     throw new Error("Scores must be non-negative");
   }
-  const result = await recordMatchResult(matchId, scoreT1, scoreT2);
+  const result = await recordMatchResult(matchId, scoreT1, scoreT2, advancingTeamId);
   // Re-render the page so the saved row reflects the trigger's effect.
   revalidatePath("/admin/results");
   return result;

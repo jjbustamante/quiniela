@@ -179,10 +179,11 @@ public class FootballDataSyncService {
       Long team1Id = m.homeTeam() != null ? m.homeTeam().id() : null;
       Long team2Id = m.awayTeam() != null ? m.awayTeam().id() : null;
       Instant kickoff = m.utcDate() != null ? Instant.parse(m.utcDate()) : Instant.now();
-      Integer scoreT1 =
-          m.score() != null && m.score().fullTime() != null ? m.score().fullTime().home() : null;
-      Integer scoreT2 =
-          m.score() != null && m.score().fullTime() != null ? m.score().fullTime().away() : null;
+      // resultScore() returns the 120' on-pitch score, stripping any penalty-shootout goals that
+      // football-data.org folds into fullTime for knockouts decided on penalties.
+      var result = m.score() != null ? m.score().resultScore() : null;
+      Integer scoreT1 = result != null ? result.home() : null;
+      Integer scoreT2 = result != null ? result.away() : null;
       boolean played = "FINISHED".equals(m.status());
       Long advancedTeamId = advancingTeamId(m);
 

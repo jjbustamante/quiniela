@@ -20,13 +20,48 @@ public class FootballDataClient {
 
   public record CompetitionStandingsResponse(List<StandingsGroup> standings) {}
 
-  public record MatchScoreFull(Integer home, Integer away) {}
+  public record MatchScoreFull(Integer home, Integer away) {
+
+    /** Goal-by-goal sum, treating null operands/components as zero (null + null = null). */
+    static MatchScoreFull sum(MatchScoreFull a, MatchScoreFull b) {
+      if (a == null && b == null) return null;
+      int home =
+          (a != null && a.home != null ? a.home : 0) + (b != null && b.home != null ? b.home : 0);
+      int away =
+          (a != null && a.away != null ? a.away : 0) + (b != null && b.away != null ? b.away : 0);
+      return new MatchScoreFull(home, away);
+    }
+  }
 
   // winner ∈ {HOME_TEAM, AWAY_TEAM, DRAW}; duration ∈ {REGULAR, EXTRA_TIME, PENALTY_SHOOTOUT}.
-  // fullTime excludes shootout goals; penalties holds the shootout score (null when not
-  // applicable).
+  // IMPORTANT: when a knockout is decided on penalties (duration == PENALTY_SHOOTOUT),
+  // football-data.org folds the shootout into `fullTime` (e.g. a 1-1 game won 5-3 on penalties is
+  // reported as fullTime 6-4). The on-pitch 120' score lives in `regularTime` + `extraTime`, and
+  // `penalties` holds the shootout tally. Use resultScore() to get the score that counts.
   public record MatchScore(
-      String winner, String duration, MatchScoreFull fullTime, MatchScoreFull penalties) {}
+      String winner,
+      String duration,
+      MatchScoreFull fullTime,
+      MatchScoreFull regularTime,
+      MatchScoreFull extraTime,
+      MatchScoreFull penalties) {
+
+    /**
+     * The on-pitch result that counts for scoring: the score after 120 minutes, EXCLUDING any
+     * penalty shootout.
+     *
+     * <p>For a shootout (duration == PENALTY_SHOOTOUT) football-data.org folds the shootout tally
+     * into {@code fullTime}, so the real score is reconstructed from {@code regularTime +
+     * extraTime}. For every other duration (REGULAR group games, EXTRA_TIME knockouts) {@code
+     * fullTime} already excludes a shootout and is returned as-is.
+     */
+    public MatchScoreFull resultScore() {
+      if ("PENALTY_SHOOTOUT".equals(duration) && regularTime != null) {
+        return MatchScoreFull.sum(regularTime, extraTime);
+      }
+      return fullTime;
+    }
+  }
 
   public record MatchTeam(Long id, String name) {}
 

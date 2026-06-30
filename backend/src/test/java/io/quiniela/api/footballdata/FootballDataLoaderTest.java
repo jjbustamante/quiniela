@@ -37,8 +37,10 @@ class FootballDataLoaderTest {
         new FootballDataClient.MatchScore(
             "AWAY_TEAM",
             "PENALTY_SHOOTOUT",
-            new FootballDataClient.MatchScoreFull(1, 1),
-            new FootballDataClient.MatchScoreFull(3, 5));
+            new FootballDataClient.MatchScoreFull(4, 6), // fullTime folds in the shootout
+            new FootballDataClient.MatchScoreFull(1, 1), // regularTime
+            new FootballDataClient.MatchScoreFull(0, 0), // extraTime
+            new FootballDataClient.MatchScoreFull(3, 5)); // penalties
     var m =
         new FootballDataClient.MatchApi(
             7001L, "2026-07-01T18:00:00Z", "FINISHED", "LAST_32", null, home, away, drawScore);
@@ -48,12 +50,61 @@ class FootballDataLoaderTest {
   }
 
   @org.junit.jupiter.api.Test
+  void resultScoreUsesFullTimeForRegularGroupResult() {
+    // Group phase: football-data.org returns the on-pitch score in fullTime and leaves
+    // regularTime/extraTime/penalties null. The counted score must be fullTime as-is.
+    var score =
+        new FootballDataClient.MatchScore(
+            "HOME_TEAM", "REGULAR", new FootballDataClient.MatchScoreFull(2, 0), null, null, null);
+
+    var result = score.resultScore();
+    org.junit.jupiter.api.Assertions.assertEquals(2, result.home());
+    org.junit.jupiter.api.Assertions.assertEquals(0, result.away());
+  }
+
+  @org.junit.jupiter.api.Test
+  void resultScoreStripsPenaltyShootoutFromFullTime() {
+    // Knockout decided on penalties: fullTime folds in the shootout (here 5-6), but the result
+    // that counts for the quiniela is the 120' score = regularTime + extraTime = 1-1.
+    var score =
+        new FootballDataClient.MatchScore(
+            "AWAY_TEAM",
+            "PENALTY_SHOOTOUT",
+            new FootballDataClient.MatchScoreFull(5, 6), // fullTime (includes shootout)
+            new FootballDataClient.MatchScoreFull(1, 1), // regularTime
+            new FootballDataClient.MatchScoreFull(0, 0), // extraTime
+            new FootballDataClient.MatchScoreFull(5, 5)); // penalties
+
+    var result = score.resultScore();
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.home());
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.away());
+  }
+
+  @org.junit.jupiter.api.Test
+  void resultScoreAddsExtraTimeGoalsWhenDecidedInExtraTime() {
+    // Knockout decided in extra time (no shootout): the counted score is the after-ET score,
+    // i.e. regularTime (1-1) + extraTime (1-0) = 2-1.
+    var score =
+        new FootballDataClient.MatchScore(
+            "HOME_TEAM",
+            "EXTRA_TIME",
+            new FootballDataClient.MatchScoreFull(2, 1), // fullTime (no shootout to strip)
+            new FootballDataClient.MatchScoreFull(1, 1), // regularTime
+            new FootballDataClient.MatchScoreFull(1, 0), // extraTime
+            null);
+
+    var result = score.resultScore();
+    org.junit.jupiter.api.Assertions.assertEquals(2, result.home());
+    org.junit.jupiter.api.Assertions.assertEquals(1, result.away());
+  }
+
+  @org.junit.jupiter.api.Test
   void advancingTeamIdIsNullForGroupDraw() {
     var home = new FootballDataClient.MatchTeam(1001L, "Home");
     var away = new FootballDataClient.MatchTeam(1002L, "Away");
     var drawScore =
         new FootballDataClient.MatchScore(
-            "DRAW", "REGULAR", new FootballDataClient.MatchScoreFull(1, 1), null);
+            "DRAW", "REGULAR", new FootballDataClient.MatchScoreFull(1, 1), null, null, null);
     var m =
         new FootballDataClient.MatchApi(
             8001L,
