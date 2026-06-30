@@ -90,6 +90,8 @@ class FootballDataSyncServiceIT extends AbstractIntegrationTest {
             h == null ? null : (h > a ? "HOME_TEAM" : "AWAY_TEAM"),
             "REGULAR",
             new MatchScoreFull(h, a),
+            null,
+            null,
             null));
   }
 

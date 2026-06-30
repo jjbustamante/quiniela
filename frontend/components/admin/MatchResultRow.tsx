@@ -25,16 +25,27 @@ export function MatchResultRow({ match, timeZone }: { match: AdminMatchRow; time
   // the server component and passes a now-played match in as new props
   // — that would flip "first save" rows into "Modified" by mistake.
   const [initiallyPlayed] = useState<boolean>(match.played);
+  // Who advanced. Only meaningful for a knockout that ends level (penalties/ET draw);
+  // for any decisive score the backend derives the winner from the score and ignores this.
+  const [advancingTeamId, setAdvancingTeamId] = useState<number | null>(
+    match.advancedTeamId,
+  );
   const [savedThisSession, setSavedThisSession] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const kickoff = formatDeadline(match.kickoffAt, timeZone);
-  const canSave =
+  const scoresValid =
     scoreT1.trim() !== "" &&
     scoreT2.trim() !== "" &&
     /^\d{1,2}$/.test(scoreT1) &&
     /^\d{1,2}$/.test(scoreT2);
+  // A knockout that ends level can't have its winner derived from the score, so the
+  // admin must say who advanced. Group draws have no advancement; decisive scores derive it.
+  const isKnockout = match.roundCode !== "GROUP";
+  const isDraw = scoresValid && Number(scoreT1) === Number(scoreT2);
+  const needsAdvancingTeam = isKnockout && isDraw;
+  const canSave = scoresValid && (!needsAdvancingTeam || advancingTeamId != null);
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -45,6 +56,7 @@ export function MatchResultRow({ match, timeZone }: { match: AdminMatchRow; time
           match.matchId,
           Number(scoreT1),
           Number(scoreT2),
+          needsAdvancingTeam ? advancingTeamId : null,
         );
         setScoreT1(String(result.scoreT1));
         setScoreT2(String(result.scoreT2));
@@ -129,6 +141,31 @@ export function MatchResultRow({ match, timeZone }: { match: AdminMatchRow; time
           {pending ? t("saving") : t("save")}
         </button>
       </div>
+
+      {needsAdvancingTeam && (
+        <div className="col-span-2 flex flex-wrap items-center gap-2">
+          <span className="chrome-label chrome-label-muted">{t("advancedLabel")}</span>
+          {[match.team1, match.team2].map((team) =>
+            team == null ? null : (
+              <button
+                key={team.id}
+                type="button"
+                aria-label={`${team.name ?? team.code ?? team.id} advanced`}
+                aria-pressed={advancingTeamId === team.id}
+                onClick={() => setAdvancingTeamId(team.id)}
+                className={`flex items-center gap-1 border-[1.5px] border-[var(--color-line-ink)] px-2 py-0.5 font-display text-xs font-bold uppercase tracking-wide ${
+                  advancingTeamId === team.id
+                    ? "bg-[var(--color-bg-ink)] text-[var(--color-text-inverse)]"
+                    : "bg-[var(--color-bg-paper)]"
+                }`}
+              >
+                <span>{team.flag ?? "🏳"}</span>
+                <span className="truncate">{team.name ?? team.code ?? "—"}</span>
+              </button>
+            ),
+          )}
+        </div>
+      )}
 
       {error && (
         <div className="col-span-2 text-xs text-[var(--color-accent-red)]">{error}</div>

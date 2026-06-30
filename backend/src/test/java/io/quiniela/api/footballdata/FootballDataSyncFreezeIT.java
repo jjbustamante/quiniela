@@ -48,7 +48,7 @@ class FootballDataSyncFreezeIT extends AbstractIntegrationTest {
             "Group A",
             new MatchTeam(7001L, "Team A"),
             new MatchTeam(7002L, "Team B"),
-            new MatchScore("HOME_TEAM", "REGULAR", new MatchScoreFull(5, 0), null));
+            new MatchScore("HOME_TEAM", "REGULAR", new MatchScoreFull(5, 0), null, null, null));
 
     sync.upsertMatches(new CompetitionMatchesResponse(List.of(changed)));
 
@@ -82,7 +82,7 @@ class FootballDataSyncFreezeIT extends AbstractIntegrationTest {
             "Group A",
             new MatchTeam(7003L, "Team C"),
             new MatchTeam(7004L, "Team D"),
-            new MatchScore("HOME_TEAM", "REGULAR", new MatchScoreFull(3, 0), null));
+            new MatchScore("HOME_TEAM", "REGULAR", new MatchScoreFull(3, 0), null, null, null));
 
     sync.upsertMatches(new CompetitionMatchesResponse(List.of(finished)));
 

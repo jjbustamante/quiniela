@@ -19,6 +19,7 @@ export type AdminMatchRow = {
   scoreT1: number | null;
   scoreT2: number | null;
   winnerId: number | null;
+  advancedTeamId: number | null;
   played: boolean;
 };
 
@@ -38,9 +39,10 @@ export async function recordMatchResult(
   matchId: number,
   scoreT1: number,
   scoreT2: number,
+  advancingTeamId?: number | null,
 ): Promise<AdminMatchResult> {
   return api<AdminMatchResult>(`/api/admin/matches/${matchId}/result`, {
     method: "PUT",
-    body: JSON.stringify({ scoreT1, scoreT2 }),
+    body: JSON.stringify({ scoreT1, scoreT2, advancingTeamId: advancingTeamId ?? null }),
   });
 }

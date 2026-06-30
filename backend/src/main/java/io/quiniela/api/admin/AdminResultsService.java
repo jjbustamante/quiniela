@@ -69,6 +69,7 @@ public class AdminResultsService {
       Integer scoreT1,
       Integer scoreT2,
       Long winnerId,
+      Long advancedTeamId,
       boolean played) {}
 
   @Transactional(readOnly = true)
@@ -106,6 +107,7 @@ public class AdminResultsService {
         m.getScoreT1(),
         m.getScoreT2(),
         m.getWinnerId(),
+        m.getAdvancedTeamId(),
         Boolean.TRUE.equals(m.getPlayed()));
   }
 
