@@ -164,6 +164,36 @@ public class CompareService {
         TOURNAMENT_ID);
   }
 
+  /** Each round's own earliest kickoff — the moment its picks become safe to reveal. */
+  private static Map<String, Instant> firstKickoffByRound(List<MatchMeta> allMatches) {
+    Map<String, Instant> out = new HashMap<>();
+    for (MatchMeta m : allMatches) {
+      Instant k = Instant.parse(m.kickoffAt());
+      out.merge(m.roundCode(), k, (a, b) -> a.isBefore(b) ? a : b);
+    }
+    return out;
+  }
+
+  /**
+   * A played match can no longer be bet on, so its picks are safe to reveal regardless of
+   * deadlines. Otherwise GROUP reveals at the shared group-stage deadline; every knockout round
+   * reveals at ITS OWN first kickoff, not a single tournament-wide knockout deadline — each round
+   * gets its own small fill-before-kickoff window (see
+   * docs/superpowers/specs/2026-07-03-per-round-knockout-deadline-design.md).
+   */
+  private static boolean isRevealed(
+      MatchMeta m,
+      Instant now,
+      LockClock.TournamentDeadlines deadlines,
+      Map<String, Instant> firstKickoffByRound) {
+    if (m.played()) return true;
+    if ("GROUP".equals(m.roundCode())) {
+      return LockClock.isGroupRevealable(now, deadlines);
+    }
+    Instant firstKickoff = firstKickoffByRound.get(m.roundCode());
+    return firstKickoff != null && now.isAfter(firstKickoff);
+  }
+
   private Map<Long, int[]> fetchBetsForUser(Long userId) {
     Map<Long, int[]> out = new HashMap<>();
     jdbc.query(
@@ -227,12 +257,11 @@ public class CompareService {
         myPoints,
         POOL_ID);
 
+    List<MatchMeta> allMatches = fetchMatchMeta();
+    Map<String, Instant> firstKickoffByRound = firstKickoffByRound(allMatches);
     List<MatchConsensus> out = new ArrayList<>();
-    for (MatchMeta m : fetchMatchMeta()) {
-      // A played match can no longer be bet on, so its picks are safe to reveal even
-      // before the (single, shared) knockout deadline — this is what lets simulated/
-      // played knockout rounds show up in Compare instead of staying group-only.
-      boolean revealed = m.played() || LockClock.isMatchRevealable(now, deadlines, m.roundCode());
+    for (MatchMeta m : allMatches) {
+      boolean revealed = isRevealed(m, now, deadlines, firstKickoffByRound);
       int[] mine = myBets.get(m.id());
       Integer myT1 = mine == null ? null : mine[0];
       Integer myT2 = mine == null ? null : mine[1];
@@ -372,8 +401,8 @@ public class CompareService {
     }
 
     var deadlines = lockClock.fetchTournamentDeadlines(TOURNAMENT_ID);
-    boolean revealed =
-        meta.played() || LockClock.isMatchRevealable(Instant.now(), deadlines, meta.roundCode());
+    Map<String, Instant> firstKickoffByRound = firstKickoffByRound(fetchMatchMeta());
+    boolean revealed = isRevealed(meta, Instant.now(), deadlines, firstKickoffByRound);
     if (!revealed) {
       throw new org.springframework.web.server.ResponseStatusException(
           org.springframework.http.HttpStatus.FORBIDDEN, "Match not revealed");
@@ -459,12 +488,11 @@ public class CompareService {
     int differ = 0;
     int myPoints = 0;
     int rivalPoints = 0;
+    List<MatchMeta> allMatches = fetchMatchMeta();
+    Map<String, Instant> firstKickoffByRound = firstKickoffByRound(allMatches);
     List<H2HMatch> matches = new ArrayList<>();
-    for (MatchMeta m : fetchMatchMeta()) {
-      // A played match can no longer be bet on, so its picks are safe to reveal even
-      // before the (single, shared) knockout deadline — this is what lets simulated/
-      // played knockout rounds show up in Compare instead of staying group-only.
-      boolean revealed = m.played() || LockClock.isMatchRevealable(now, deadlines, m.roundCode());
+    for (MatchMeta m : allMatches) {
+      boolean revealed = isRevealed(m, now, deadlines, firstKickoffByRound);
       int[] mine = myBets.get(m.id());
       int[] theirs = rivalBets.get(m.id());
       Integer myT1 = mine == null ? null : mine[0];

@@ -43,10 +43,11 @@ class BracketLockUiIT extends AbstractIntegrationTest {
             + " group_stage_deadline = TIMESTAMPTZ '2026-06-11 17:00 UTC',"
             + " knockout_deadline    = TIMESTAMPTZ '2026-06-28 17:00 UTC'"
             + " WHERE id = 1");
-    // Remove any team seeded into R32 by lock tests.
+    // Remove any team seeded into R32 by lock tests, and restore R32 kickoffs to the
+    // future so a round-locked test doesn't leak a closed window into later tests.
     jdbc.update(
-        "UPDATE match SET team_1_id = NULL WHERE round_id = "
-            + "(SELECT id FROM round WHERE tournament_id = 1 AND code = 'R32' LIMIT 1)");
+        "UPDATE match SET team_1_id = NULL, kickoff_at = NOW() + INTERVAL '30 days' "
+            + "WHERE round_id = (SELECT id FROM round WHERE tournament_id = 1 AND code = 'R32' LIMIT 1)");
   }
 
   /**
@@ -102,13 +103,15 @@ class BracketLockUiIT extends AbstractIntegrationTest {
   }
 
   @Test
-  void bracketReportsKnockoutLockedAfterKnockoutDeadline() throws Exception {
+  void bracketReportsKnockoutRoundLockedAfterItsOwnFirstKickoff() throws Exception {
+    // The shared tournament.knockout_deadline is no longer what locks a knockout round —
+    // each round locks at its OWN first kickoff. Push R32's own matches into the past.
     jdbc.update(
-        "UPDATE tournament SET "
-            + " group_stage_deadline = NOW() - INTERVAL '10 days',"
-            + " knockout_deadline    = NOW() - INTERVAL '1 hour'"
-            + " WHERE id = 1");
+        "UPDATE tournament SET group_stage_deadline = NOW() - INTERVAL '10 days' WHERE id = 1");
     seedOneR32Team();
+    jdbc.update(
+        "UPDATE match SET kickoff_at = NOW() - INTERVAL '1 hour' WHERE round_id = "
+            + "(SELECT id FROM round WHERE tournament_id = 1 AND code = 'R32' LIMIT 1)");
 
     String token = issueTokenFor("lock-ui-knockouts-locked");
 
@@ -117,7 +120,38 @@ class BracketLockUiIT extends AbstractIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups[0].locked").value(true))
         .andExpect(jsonPath("$.knockouts[0].locked").value(true))
-        .andExpect(jsonPath("$.knockouts[0].unlocked").value(true));
+        .andExpect(jsonPath("$.knockouts[0].unlocked").value(true))
+        .andExpect(jsonPath("$.knockouts[0].deadline").isString());
+  }
+
+  @Test
+  void bracketReportsKnockoutRoundDeadlineAsItsOwnFirstKickoffNotTheSharedOne() throws Exception {
+    // R32's own first kickoff is what deadline reports — not the (now unused) shared
+    // tournament.knockout_deadline column, even when the two differ wildly.
+    jdbc.update(
+        "UPDATE tournament SET "
+            + " group_stage_deadline = NOW() - INTERVAL '10 days',"
+            + " knockout_deadline    = NOW() - INTERVAL '365 days'"
+            + " WHERE id = 1");
+    seedOneR32Team();
+    java.time.Instant future =
+        java.time.Instant.now()
+            .plus(java.time.Duration.ofDays(3))
+            .truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+    jdbc.update(
+        "UPDATE match SET kickoff_at = ? WHERE round_id = "
+            + "(SELECT id FROM round WHERE tournament_id = 1 AND code = 'R32' LIMIT 1) "
+            + "AND id = (SELECT id FROM match WHERE round_id = "
+            + "(SELECT id FROM round WHERE tournament_id = 1 AND code = 'R32' LIMIT 1) ORDER BY id LIMIT 1)",
+        java.sql.Timestamp.from(future));
+
+    String token = issueTokenFor("lock-ui-round-deadline");
+
+    mockMvc
+        .perform(get("/api/bracket/me").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.knockouts[0].locked").value(false))
+        .andExpect(jsonPath("$.knockouts[0].deadline").value(future.toString()));
   }
 
   private String issueTokenFor(String slug) {

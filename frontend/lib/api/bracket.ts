@@ -34,6 +34,8 @@ export type KnockoutRoundView = {
   total: number;
   unlocked: boolean;
   locked: boolean;
+  /** ISO timestamp of this round's own first kickoff — when its window closes. */
+  deadline?: string | null;
   matches: MatchView[];
 };
 

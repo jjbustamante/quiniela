@@ -79,7 +79,7 @@ export function computeHomeState(args: {
   if (groupOpen) {
     focus = { kind: "fillGroup", filled: groupFilled, total: groupTotal, full: groupTotal > 0 && groupFilled >= groupTotal, deadline: bracket.groupStageDeadline, href: "/groups" };
   } else if (openKnockout) {
-    focus = { kind: "fillKnockout", roundCode: openKnockout.code, roundName: openKnockout.name, filled: openKnockout.filled, total: openKnockout.total, full: openKnockout.total > 0 && openKnockout.filled >= openKnockout.total, deadline: bracket.knockoutDeadline, href: `/knockout/${openKnockout.code}` };
+    focus = { kind: "fillKnockout", roundCode: openKnockout.code, roundName: openKnockout.name, filled: openKnockout.filled, total: openKnockout.total, full: openKnockout.total > 0 && openKnockout.filled >= openKnockout.total, deadline: openKnockout.deadline ?? null, href: `/knockout/${openKnockout.code}` };
   } else if (allPlayed) {
     const payoutCents = me && me.rank <= summary.prizeSplit.length ? summary.prizeSplit[me.rank - 1].payoutCents : null;
     focus = { kind: "champion", rank: me?.rank ?? null, points: me?.points ?? null, payoutCents };

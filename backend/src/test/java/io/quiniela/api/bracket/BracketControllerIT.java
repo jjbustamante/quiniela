@@ -169,4 +169,108 @@ class BracketControllerIT extends AbstractIntegrationTest {
       jdbc.update("UPDATE match SET kickoff_at = NOW() + INTERVAL '30 days' WHERE id = 2");
     }
   }
+
+  /**
+   * R16 fixture ids in the test seed (V007__seed_test_fixtures.sql) are 89-96 (round_id = 3). Every
+   * knockout match starts with team_1_id/team_2_id NULL, matching production before
+   * football-data.org sync assigns teams.
+   */
+  @Test
+  void saveBetRejectsForKnockoutRoundWithNoTeamAssignedYet() throws Exception {
+    org.springframework.jdbc.core.JdbcTemplate jdbc =
+        new org.springframework.jdbc.core.JdbcTemplate(dataSource);
+    try {
+      // No team assigned to any R16 match; round's own first kickoff is still in the future.
+      jdbc.update(
+          "UPDATE match SET team_1_id = NULL, team_2_id = NULL, "
+              + "kickoff_at = NOW() + INTERVAL '2 days' WHERE round_id = 3");
+
+      var u = new User("g-br6", "br6@example.com", "BR6", null, UserRole.CAPTAIN);
+      u.setInvitePath("br6-abc");
+      u = users.save(u);
+      String token = jwt.issue(u);
+
+      mockMvc
+          .perform(
+              org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                      "/api/bracket/bet")
+                  .header("Authorization", "Bearer " + token)
+                  .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                  .content("{\"matchId\":89,\"scoreT1\":1,\"scoreT2\":0}"))
+          .andExpect(status().isLocked());
+    } finally {
+      jdbc.update(
+          "UPDATE match SET team_1_id = NULL, team_2_id = NULL, "
+              + "kickoff_at = NOW() + INTERVAL '30 days' WHERE round_id = 3");
+    }
+  }
+
+  @Test
+  void saveBetSucceedsForKnockoutRoundOnceATeamIsKnownAndBeforeItsFirstKickoff() throws Exception {
+    org.springframework.jdbc.core.JdbcTemplate jdbc =
+        new org.springframework.jdbc.core.JdbcTemplate(dataSource);
+    try {
+      // Whole round still ahead of its own first kickoff; one match has a team assigned
+      // (mirrors production: football-data.org has resolved this R16 slot's pairing).
+      jdbc.update("UPDATE match SET kickoff_at = NOW() + INTERVAL '2 days' WHERE round_id = 3");
+      jdbc.update(
+          "UPDATE match SET team_1_id = (SELECT id FROM team ORDER BY id LIMIT 1) WHERE id = 89");
+
+      var u = new User("g-br7", "br7@example.com", "BR7", null, UserRole.CAPTAIN);
+      u.setInvitePath("br7-abc");
+      u = users.save(u);
+      String token = jwt.issue(u);
+
+      mockMvc
+          .perform(
+              org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                      "/api/bracket/bet")
+                  .header("Authorization", "Bearer " + token)
+                  .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                  .content("{\"matchId\":89,\"scoreT1\":1,\"scoreT2\":0}"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.matchId").value(89));
+    } finally {
+      jdbc.update(
+          "UPDATE match SET team_1_id = NULL, team_2_id = NULL, "
+              + "kickoff_at = NOW() + INTERVAL '30 days' WHERE round_id = 3");
+    }
+  }
+
+  @Test
+  void saveBetRejectsForKnockoutRoundAfterItsFirstKickoffEvenForAnotherStillFutureMatch()
+      throws Exception {
+    org.springframework.jdbc.core.JdbcTemplate jdbc =
+        new org.springframework.jdbc.core.JdbcTemplate(dataSource);
+    try {
+      // Match 89 is the round's own first kickoff and has already started; match 90 is a
+      // DIFFERENT match in the same round, still in the future by itself. The round-wide
+      // window should already be closed for the whole round, not just match 89.
+      jdbc.update(
+          "UPDATE match SET kickoff_at = NOW() + INTERVAL '5 days' WHERE round_id = 3 "
+              + "AND id NOT IN (89, 90)");
+      jdbc.update(
+          "UPDATE match SET team_1_id = (SELECT id FROM team ORDER BY id LIMIT 1), "
+              + "kickoff_at = NOW() - INTERVAL '1 hour' WHERE id = 89");
+      jdbc.update("UPDATE match SET kickoff_at = NOW() + INTERVAL '2 hours' WHERE id = 90");
+
+      var u = new User("g-br8", "br8@example.com", "BR8", null, UserRole.CAPTAIN);
+      u.setInvitePath("br8-abc");
+      u = users.save(u);
+      String token = jwt.issue(u);
+
+      mockMvc
+          .perform(
+              org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                      "/api/bracket/bet")
+                  .header("Authorization", "Bearer " + token)
+                  .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                  .content("{\"matchId\":90,\"scoreT1\":1,\"scoreT2\":0}"))
+          .andExpect(status().isLocked());
+    } finally {
+      jdbc.update(
+          "UPDATE match SET team_1_id = NULL, team_2_id = NULL, "
+              + "kickoff_at = NOW() + INTERVAL '30 days' WHERE round_id = 3");
+    }
+  }
 }

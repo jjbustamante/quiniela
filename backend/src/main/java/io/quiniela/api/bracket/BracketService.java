@@ -74,6 +74,7 @@ public class BracketService {
       int total,
       boolean unlocked,
       boolean locked,
+      String deadline,
       List<MatchView> matches) {}
 
   public record BracketView(
@@ -102,8 +103,6 @@ public class BracketService {
     java.time.Instant now = java.time.Instant.now();
     boolean groupLocked =
         deadlines.groupStageDeadline() != null && now.isAfter(deadlines.groupStageDeadline());
-    boolean knockoutLocked =
-        deadlines.knockoutDeadline() != null && now.isAfter(deadlines.knockoutDeadline());
 
     List<GroupView> groups = new ArrayList<>();
     for (String code : List.of("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L")) {
@@ -121,12 +120,23 @@ public class BracketService {
           matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(DEFAULT_TOURNAMENT_ID, r.getId());
       // A round is only unlocked (bettable) once the group stage closes AND its
       // matches have teams assigned — earlier rounds fill teams as prior rounds resolve.
-      boolean roundUnlocked = groupLocked && ms.stream().anyMatch(m -> m.getTeam1Id() != null);
+      boolean roundUnlocked = groupLocked && anyTeamKnown(ms);
+      // The round's own window closes at ITS first kickoff, not a single tournament-wide
+      // knockout deadline — each round gets its own small fill-before-kickoff window.
+      java.util.Optional<java.time.Instant> roundFirstKickoff = firstKickoff(ms);
+      boolean roundLocked = roundFirstKickoff.map(now::isAfter).orElse(false);
       List<MatchView> mvs = ms.stream().map(m -> toView(m, teamById, betByMatch)).toList();
       int filled = (int) mvs.stream().filter(v -> v.betScoreT1() != null).count();
       ko.add(
           new KnockoutRoundView(
-              r.getCode(), r.getName(), filled, ms.size(), roundUnlocked, knockoutLocked, mvs));
+              r.getCode(),
+              r.getName(),
+              filled,
+              ms.size(),
+              roundUnlocked,
+              roundLocked,
+              roundFirstKickoff.map(java.time.Instant::toString).orElse(null),
+              mvs));
     }
 
     int totalMatches = (int) matches.count();
@@ -163,6 +173,19 @@ public class BracketService {
         Boolean.TRUE.equals(m.getPlayed()));
   }
 
+  /** True once any match in the round has at least one team assigned. */
+  private static boolean anyTeamKnown(List<Match> roundMatches) {
+    return roundMatches.stream().anyMatch(m -> m.getTeam1Id() != null || m.getTeam2Id() != null);
+  }
+
+  /** The round's own earliest kickoff, i.e. the moment its betting window closes. */
+  private static java.util.Optional<java.time.Instant> firstKickoff(List<Match> roundMatches) {
+    return roundMatches.stream()
+        .map(Match::getKickoffAt)
+        .filter(java.util.Objects::nonNull)
+        .min(java.util.Comparator.naturalOrder());
+  }
+
   public static class BracketLockedException extends RuntimeException {
     public BracketLockedException(String msg) {
       super(msg);
@@ -189,12 +212,25 @@ public class BracketService {
             .orElseThrow(() -> new IllegalArgumentException("Unknown match"));
 
     io.quiniela.api.match.Round round = rounds.findById(match.getRoundId()).orElseThrow();
-    var t = lockClock.fetchTournamentDeadlines(match.getTournamentId());
     java.time.Instant now = java.time.Instant.now();
     boolean isGroup = "GROUP".equals(round.getCode());
-    java.time.Instant deadline = isGroup ? t.groupStageDeadline() : t.knockoutDeadline();
-    if (deadline != null && now.isAfter(deadline)) {
-      throw new BracketLockedException("Bets locked for this round");
+    if (isGroup) {
+      var t = lockClock.fetchTournamentDeadlines(match.getTournamentId());
+      java.time.Instant deadline = t.groupStageDeadline();
+      if (deadline != null && now.isAfter(deadline)) {
+        throw new BracketLockedException("Bets locked for this round");
+      }
+    } else {
+      List<Match> roundMatches =
+          matches.findByTournamentIdAndRoundIdOrderByKickoffAtAsc(
+              match.getTournamentId(), round.getId());
+      if (!anyTeamKnown(roundMatches)) {
+        throw new BracketLockedException("Bets locked for this round");
+      }
+      java.util.Optional<java.time.Instant> firstKickoff = firstKickoff(roundMatches);
+      if (firstKickoff.isPresent() && now.isAfter(firstKickoff.get())) {
+        throw new BracketLockedException("Bets locked for this round");
+      }
     }
     if (match.getKickoffAt() != null && now.isAfter(match.getKickoffAt())) {
       throw new BracketLockedException("Este partido ya comenzó");

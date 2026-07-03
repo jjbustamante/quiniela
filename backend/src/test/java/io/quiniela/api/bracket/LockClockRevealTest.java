@@ -14,25 +14,12 @@ class LockClockRevealTest {
 
   @Test
   void groupRevealableOnlyAfterGroupDeadline() {
-    assertThat(LockClock.isMatchRevealable(NOW, new TournamentDeadlines(PAST, FUTURE), "GROUP"))
-        .isTrue();
-    assertThat(LockClock.isMatchRevealable(NOW, new TournamentDeadlines(FUTURE, FUTURE), "GROUP"))
-        .isFalse();
+    assertThat(LockClock.isGroupRevealable(NOW, new TournamentDeadlines(PAST, FUTURE))).isTrue();
+    assertThat(LockClock.isGroupRevealable(NOW, new TournamentDeadlines(FUTURE, FUTURE))).isFalse();
   }
 
   @Test
-  void knockoutRevealableOnlyAfterKnockoutDeadline() {
-    assertThat(LockClock.isMatchRevealable(NOW, new TournamentDeadlines(PAST, PAST), "R32"))
-        .isTrue();
-    assertThat(LockClock.isMatchRevealable(NOW, new TournamentDeadlines(PAST, FUTURE), "R32"))
-        .isFalse();
-  }
-
-  @Test
-  void nullDeadlineIsNeverRevealable() {
-    assertThat(LockClock.isMatchRevealable(NOW, new TournamentDeadlines(null, null), "GROUP"))
-        .isFalse();
-    assertThat(LockClock.isMatchRevealable(NOW, new TournamentDeadlines(null, null), "FINAL"))
-        .isFalse();
+  void nullGroupDeadlineIsNeverRevealable() {
+    assertThat(LockClock.isGroupRevealable(NOW, new TournamentDeadlines(null, null))).isFalse();
   }
 }
