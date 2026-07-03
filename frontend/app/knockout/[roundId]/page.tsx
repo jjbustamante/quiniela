@@ -55,10 +55,10 @@ export default async function KnockoutPage({
           </div>
         ) : (
           <>
-            {round.locked && bracket.knockoutDeadline && (
+            {round.locked && round.deadline && (
               <section className="mx-3 mt-4 border-[1.5px] border-[var(--color-line-ink)] bg-[var(--color-bg-ink)] px-3 py-2 text-[var(--color-text-inverse)]">
                 <div className="chrome-label text-[var(--color-accent-gold)]">
-                  {tGroup("lockedBadge", { when: deadlineShort(bracket.knockoutDeadline, me.timezone) })}
+                  {tGroup("lockedBadge", { when: deadlineShort(round.deadline, me.timezone) })}
                 </div>
                 <div className="mt-0.5 text-xs text-white/70">{tGroup("lockedHelp")}</div>
               </section>

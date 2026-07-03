@@ -45,6 +45,11 @@ class CompareGroupConsensusIT extends AbstractIntegrationTest {
     jdbc.update(
         "UPDATE match SET score_t1 = NULL, score_t2 = NULL, played = FALSE,"
             + " advanced_team_id = NULL WHERE id = 73");
+    // Restore R32's own kickoffs to the future so a round-reveal test doesn't leak a
+    // revealed window into later tests.
+    jdbc.update(
+        "UPDATE match SET kickoff_at = NOW() + INTERVAL '30 days' WHERE round_id = "
+            + "(SELECT id FROM round WHERE tournament_id = 1 AND code = 'R32' LIMIT 1)");
   }
 
   private String userWithBetOnMatch1(String slug, int t1, int t2) {
@@ -79,6 +84,46 @@ class CompareGroupConsensusIT extends AbstractIntegrationTest {
     jdbc.update("UPDATE match SET score_t1 = 1, score_t2 = 0, played = TRUE WHERE id = 73");
     String me = userWithBetOnMatch("ko-played-me", 73L, 2, 1);
     userWithBetOnMatch("ko-played-r1", 73L, 2, 1);
+
+    mockMvc
+        .perform(get("/api/compare/group").header("Authorization", "Bearer " + me))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 73)].revealed").value(org.hamcrest.Matchers.hasItem(true)))
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 73)].totalPicks").value(org.hamcrest.Matchers.hasItem(2)));
+  }
+
+  @Test
+  void hidesUnplayedKnockoutMatchBeforeItsRoundsFirstKickoff() throws Exception {
+    // The (now largely unused) shared knockout_deadline is already in the past, but the
+    // R32 round's OWN first kickoff has not happened yet — picks must stay hidden.
+    jdbc.update(
+        "UPDATE tournament SET group_stage_deadline = NOW() - INTERVAL '1 hour',"
+            + " knockout_deadline = NOW() - INTERVAL '1 hour' WHERE id = 1");
+    jdbc.update(
+        "UPDATE match SET kickoff_at = NOW() + INTERVAL '2 days' WHERE round_id = "
+            + "(SELECT id FROM round WHERE tournament_id = 1 AND code = 'R32' LIMIT 1)");
+    String me = userWithBetOnMatch("ko-hidden-me", 73L, 2, 1);
+    userWithBetOnMatch("ko-hidden-r1", 73L, 2, 1);
+
+    mockMvc
+        .perform(get("/api/compare/group").header("Authorization", "Bearer " + me))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$..[?(@.matchId == 73)].revealed")
+                .value(org.hamcrest.Matchers.hasItem(false)));
+  }
+
+  @Test
+  void revealsUnplayedKnockoutMatchAfterItsRoundsFirstKickoff() throws Exception {
+    jdbc.update(
+        "UPDATE tournament SET group_stage_deadline = NOW() - INTERVAL '1 hour' WHERE id = 1");
+    jdbc.update(
+        "UPDATE match SET kickoff_at = NOW() - INTERVAL '1 hour' WHERE round_id = "
+            + "(SELECT id FROM round WHERE tournament_id = 1 AND code = 'R32' LIMIT 1)");
+    String me = userWithBetOnMatch("ko-reveal-me", 73L, 2, 1);
+    userWithBetOnMatch("ko-reveal-r1", 73L, 2, 1);
 
     mockMvc
         .perform(get("/api/compare/group").header("Authorization", "Bearer " + me))
