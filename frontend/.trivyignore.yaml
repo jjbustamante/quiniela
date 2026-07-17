@@ -7,7 +7,15 @@
 # Re-evaluate on or before each expiration. If heroku/builder:26 has
 # shipped a refresh by then, the CVE may have disappeared upstream.
 #
-# Last re-triaged 2026-06-25 against the live frontend image scan: the
+# 2026-07-17: every entry below now expires 2026-07-31 — not a re-triage.
+# The World Cup final is 2026-07-19 and this environment is decommissioned
+# at the end of the month, so 07-31 is the app's terminal date rather than
+# a considered "revisit by" date. Nothing here was re-assessed on its
+# merits; the suppressions are simply being carried to the finish line. If
+# this app somehow outlives July, these all need a real re-triage — treat
+# the uniform date as a smell, not a baseline.
+#
+# Last real re-triage 2026-06-25 against the live frontend image scan: the
 # rsync/openssl Ubuntu-base CVEs and two Go ReverseProxy/html-template
 # CVEs dropped out of the scan (builder fixed upstream) and were removed;
 # the golang.org/x/net set below is new and was added.
@@ -26,7 +34,7 @@ vulnerabilities:
 
   - id: CVE-2026-12151
     statement: "undici DoS (unbounded memory) — vendored in next/dist/compiled/undici@6.25.0, not an app dep (not in pnpm graph). Node 24 uses native fetch so bundled undici is unreachable. Fixed in undici 6.27.0; waits on a Next.js bundle refresh."
-    expired_at: 2026-07-21
+    expired_at: 2026-07-31
 
   # ─── Buildpack tooling layer (heroku-buildpacks-nodejs internals) ──────
   # Reported against package.json copies of minimatch@9.0.5 / picomatch@4.0.3
@@ -37,35 +45,35 @@ vulnerabilities:
 
   - id: CVE-2026-26996
     statement: "minimatch DoS — in heroku/buildpacks-nodejs tooling, not our app deps."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-27903
     statement: "minimatch DoS — buildpack tooling."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-27904
     statement: "minimatch DoS — buildpack tooling."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-33671
     statement: "picomatch ReDoS — buildpack tooling."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
 
   - id: CVE-2026-23745
     statement: "node-tar arbitrary file overwrite — buildpack tooling (our app has no tar dep)."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-23950
     statement: "node-tar Unicode path collision — buildpack tooling."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-24842
     statement: "node-tar hardlink path traversal bypass — buildpack tooling."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-26960
     statement: "node-tar hardlink read/write — buildpack tooling."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-29786
     statement: "node-tar drive-relative linkpath traversal — buildpack tooling."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-31802
     statement: "tar drive-relative symlink traversal — buildpack tooling."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
 
   # ─── CNB lifecycle (/usr/bin/pebble) — bundled golang.org/x/net ────────
   # The pebble lifecycle binary statically links golang.org/x/net@v0.40.0.
@@ -76,22 +84,22 @@ vulnerabilities:
 
   - id: CVE-2026-25680
     statement: "golang.org/x/net HTML parse CPU-exhaustion DoS — bundled in /usr/bin/pebble (CNB lifecycle, build-time only). Fixed in x/net 0.55.0; waits on builder refresh."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-25681
     statement: "golang.org/x/net HTML Render DoS — pebble lifecycle binary, build-time only."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-27136
     statement: "golang.org/x/net HTML Render DoS — pebble lifecycle binary, build-time only."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-39821
     statement: "golang.org/x/net/idna privilege escalation via incorrect Punycode label processing — pebble lifecycle binary, build-time only. Fixed in x/net 0.55.0."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-42502
     statement: "golang.org/x/net HTML Render DoS — pebble lifecycle binary, build-time only."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-42506
     statement: "golang.org/x/net HTML Render DoS — pebble lifecycle binary, build-time only."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
 
   # ─── CNB lifecycle (/usr/bin/pebble) — Go stdlib ───────────────────────
   # Built into the heroku/builder:26 lifecycle binary (Go 1.26.2). Build-time
@@ -100,28 +108,28 @@ vulnerabilities:
 
   - id: CVE-2026-27145
     statement: "Go stdlib crypto/x509 VerifyHostname matching — pebble lifecycle binary, build-time only. Fixed in Go 1.26.4."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-33811
     statement: "Go stdlib LookupCNAME — in /usr/bin/pebble (CNB lifecycle binary). Not invoked at runtime; waits on builder refresh."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-33814
     statement: "Go HTTP/2 SETTINGS infinite loop (net/http2 + golang.org/x/net) — pebble lifecycle binary."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-39820
     statement: "Go stdlib ParseAddress — pebble lifecycle binary."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-39823
     statement: "Go stdlib URL parsing — pebble lifecycle binary. Waits on builder refresh."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-39836
     statement: "Go stdlib Dial NUL byte panic — pebble lifecycle binary."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-42499
     statement: "Go stdlib consumePhrase DoS — pebble lifecycle binary."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
   - id: CVE-2026-42504
     statement: "Go stdlib MIME-header decode DoS — heroku/builder:26 launcher/lifecycle Go binaries, not app code; not exercised at runtime. Fixed in Go 1.26.4; waits on builder refresh."
-    expired_at: 2026-07-23
+    expired_at: 2026-07-31
 
   # ─── pnpm package manager (packageManager pin in package.json) ─────────
   # Flagged against the `packageManager: pnpm@10.27.0` pin. pnpm is our
@@ -137,25 +145,25 @@ vulnerabilities:
 
   - id: CVE-2026-50015
     statement: "pnpm arbitrary file write/delete via malicious patch file (path traversal) — build-time package manager, not invoked in the next-start runtime. Fixed in pnpm 10.34.0/11.4.0."
-    expired_at: 2026-07-28
+    expired_at: 2026-07-31
   - id: CVE-2026-50016
     statement: "pnpm transitive-dependency alias path traversal (project path override via symlink) — install-time only, not in runtime image. Fixed in pnpm 10.34.0/11.4.0."
-    expired_at: 2026-07-28
+    expired_at: 2026-07-31
   - id: CVE-2026-55487
     statement: "pnpm manifest identity spoof satisfies allowBuilds and runs attacker lifecycle — install-time only. Fixed in pnpm 10.34.2/11.5.3."
-    expired_at: 2026-07-28
+    expired_at: 2026-07-31
   - id: CVE-2026-55697
     statement: "pnpm repository-controlled configDependencies can select a pacquet native install engine — install-time only, not reachable at runtime. Fixed in pnpm 11.5.3 (no 10.x fix; needs a major bump)."
-    expired_at: 2026-07-28
+    expired_at: 2026-07-31
   - id: CVE-2026-55698
     statement: "pnpm project env lockfile can short-circuit package-manager resolution — install-time only. Fixed in pnpm 10.34.2/11.5.3."
-    expired_at: 2026-07-28
+    expired_at: 2026-07-31
   - id: GHSA-72r4-9c5j-mj57
     statement: "pnpm patch-remove could delete project-selected files outside the patches directory — install-time only. Fixed in pnpm 10.34.4/11.7.0."
-    expired_at: 2026-07-28
+    expired_at: 2026-07-31
   - id: GHSA-fr4h-3cph-29xv
     statement: "pnpm hoisted install imports lockfile alias outside node_modules — install-time only. Fixed in pnpm 10.34.4/11.7.0."
-    expired_at: 2026-07-28
+    expired_at: 2026-07-31
   - id: GHSA-qrv3-253h-g69c
     statement: "pnpm path traversal in configDependencies env lockfile (symlink outside node_modules/.pnpm-config) — install-time only. Fixed in pnpm 10.34.4/11.8.0."
-    expired_at: 2026-07-28
+    expired_at: 2026-07-31
