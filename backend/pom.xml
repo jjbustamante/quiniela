@@ -27,11 +27,11 @@
              haven't yet landed in a SB release. Bump in sync with each SB
              4.0.x release; remove the override when SB catches up. -->
         <tomcat.version>11.0.22</tomcat.version>
-        <postgresql.version>42.7.12</postgresql.version>
+        <postgresql.version>42.7.13</postgresql.version>
 
         <!-- Explicit dep + transitive overrides -->
         <postgres-socket-factory.version>1.28.6</postgres-socket-factory.version>
-        <grpc.version>1.82.1</grpc.version>
+        <grpc.version>1.82.2</grpc.version>
         <protobuf.version>4.35.1</protobuf.version>
         <google-api-client.version>2.9.0</google-api-client.version>
         <jjwt.version>0.13.0</jjwt.version>
@@ -51,12 +51,12 @@
              module isn't published on the 2.0.x line, so we call the SDK directly
              behind the PaulOracle seam. Pinned to the version the spring-ai
              google-genai starter already resolves transitively. -->
-        <google-genai.version>1.60.0</google-genai.version>
+        <google-genai.version>1.62.0</google-genai.version>
         <!-- Match flyway-core managed by spring-boot-starter-parent. Maven plugin
              scope doesn't inherit dependency-management so we pin explicitly. -->
         <flyway.version>11.20.3</flyway.version>
 
-        <google-cloud-tasks.version>2.93.0</google-cloud-tasks.version>
+        <google-cloud-tasks.version>2.94.0</google-cloud-tasks.version>
         <!-- google-cloud-tasks 2.93.0 pulls gax 2.81.0, which needs
              google-auth-library 1.48.0 (the version with
              com.google.auth.mtls.CertificateSourceUnavailableException).
@@ -64,7 +64,7 @@
              dependency, so without this BOM Maven resolves 1.30.0 →
              NoClassDefFoundError at CloudTasksClient.create() (gax
              EndpointContext class-init). The BOM below forces 1.48.0. -->
-        <google-auth-library.version>1.48.0</google-auth-library.version>
+        <google-auth-library.version>1.49.0</google-auth-library.version>
 
         <!-- Flyway Maven plugin defaults — point at local docker-compose Postgres.
              Override per-invocation: `./mvnw flyway:info -Dflyway.url=...`.
