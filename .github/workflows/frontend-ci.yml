@@ -222,9 +222,24 @@ jobs:
           trivy convert --format sarif --output trivy.sarif trivy.json
 
           # Gate on findings. --ignore-unfixed already filtered to fixed-available.
-          COUNT=$(jq '[.Results[]?.Vulnerabilities? // []] | flatten | length' trivy.json)
-          if [ "$COUNT" -gt 0 ]; then
-            echo "::error::Trivy found $COUNT Critical/High unfixed-in-this-image CVE(s). See table above + GH Security tab."
+          #
+          # Go binaries in this image are builder-provided, never ours: the CNB
+          # lifecycle launcher and the base image's pebble. This repo ships no
+          # Go code, so a `gobinary` finding can only clear when the builder is
+          # rebuilt against a patched Go — gating on it blocks every PR on an
+          # upstream release cadence and drove a treadmill of expiring
+          # suppressions. They still reach the GH Security tab via the SARIF
+          # upload below. Anything we actually own (jar, node-pkg, OS packages)
+          # still fails the build.
+          BLOCKING=$(jq '[.Results[]? | select(.Type != "gobinary") | .Vulnerabilities[]?] | length' trivy.json)
+          UPSTREAM=$(jq '[.Results[]? | select(.Type == "gobinary") | .Vulnerabilities[]?] | length' trivy.json)
+
+          if [ "$UPSTREAM" -gt 0 ]; then
+            echo "::notice::Trivy: $UPSTREAM Critical/High CVE(s) in builder-provided Go binaries — not app code, not gating. See GH Security tab."
+          fi
+
+          if [ "$BLOCKING" -gt 0 ]; then
+            echo "::error::Trivy found $BLOCKING Critical/High app-owned CVE(s). See table above + GH Security tab."
             exit 1
           fi
 
