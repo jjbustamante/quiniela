@@ -24,21 +24,33 @@ $320 / $60 / $20, tied 3rd split evenly → $10 each.
 
 1. **No shared "who actually won" view.** The existing `"champion"` `FocusState` on `/home` is
    personal only — it tells *you* your own rank/points/payout, never names the actual winners.
-2. **Payout bug.** `computeHomeState`'s champion branch looks up
-   `summary.prizeSplit[me.rank - 1]` using `me.rank` from the raw leaderboard (`ranking.entries`),
-   which **includes bots**. Since Paul now occupies rank 1, this miscomputes real payouts:
-   - José Manuel (true rank 1, 80%) would see rank-2 math (15%).
-   - Arturo (true rank 2, 15%) would see rank-3 math (5%).
-   - Yeison/Ricardo (true tied rank 3, 5% split) would see **no payout at all** (raw rank 4 is
-     past `prizeSplit.length`).
+2. **Payout bug, and it's not just `/home`.** Two independent places compute prize payouts from
+   the leaderboard's **raw rank**, which includes bots — since Paul now occupies rank 1, both are
+   wrong today, live, for the real winners:
+   - `computeHomeState`'s champion branch (`lib/home-phase.ts`) looks up
+     `summary.prizeSplit[me.rank - 1]` using `me.rank`. José Manuel (true rank 1, 80%) would see
+     rank-2 math (15%); Arturo (true rank 2, 15%) would see rank-3 math (5%); Yeison/Ricardo (true
+     tied rank 3) would see **no payout at all** (raw rank 4 is past `prizeSplit.length`).
+   - `buildPayoutLabels` (`lib/ranking-payouts.ts`), which renders the "🥇 $320"-style badges on
+     the **`/ranking` page today**, has the identical bug: it keys its output by raw rank and the
+     caller (`app/ranking/page.tsx:84`) looks it up via `payoutByRank.get(e.rank)`. Right now in
+     prod this puts **"🥇 $320" on Pulpo Paul's row** — right next to his own "FUERA DE PREMIO"
+     (not prize-eligible) badge — while José Manuel's row shows silver money instead of gold, and
+     the tie is mislabeled too. This is the more visible instance of the bug, since `/ranking` is
+     the page people actually check, not a hypothetical.
+
+Both bugs share one root cause (rank position ≠ prize position once a bot is on the board) and
+should share one fix, not two independent patches.
 
 ## Goal
 
-- Fix the payout computation to use a **prize-eligible rank** (bots excluded, ties handled),
-  split evenly across ties.
+- Fix payout computation everywhere it happens to use a **prize-eligible rank** (bots excluded,
+  ties handled) from a **single shared implementation** — both the existing `/ranking` badges and
+  the `/home` champion card.
 - Add a **`WinnersBanner`** shown to every player once the tournament is over: names the overall
   leaderboard topper (fun/bragging-rights framing) and the real prize-eligible podium, including
-  the 3rd-place tie.
+  the 3rd-place tie, with the payout split evenly and shown per person (a different, more
+  detailed UX than `/ranking`'s compact "medal only on a tie" badge — see below).
 
 ### Non-goals
 
@@ -54,46 +66,57 @@ $320 / $60 / $20, tied 3rd split evenly → $10 each.
 
 ## Design
 
-### 1. `lib/home-phase.ts` — derive prize-eligible standings once, reuse in two places
+### 1. `lib/ranking-payouts.ts` — one shared prize-rank primitive, and the `/ranking` fix
 
-Add a pure helper, called only when `allPlayed`:
+Add and export a pure grouping function — this becomes the single source of truth for "who is
+prize-eligible rank N":
 
 ```ts
-type PrizeWinner = { userId: number; displayName: string | null; points: number; isYou: boolean };
-type PrizeRankGroup = { rank: number; payoutCentsEach: number; winners: PrizeWinner[] };
+export type PrizeRankGroup = { rank: number; entries: RankingEntry[] };
 
-function computePrizeStandings(
-  entries: RankingEntry[],       // already sorted points DESC, display_name ASC (server-side)
-  prizeSplit: PublicSummary["prizeSplit"],
-): PrizeRankGroup[]
+export function computePrizeRanks(entries: RankingEntry[], prizeRankCount: number): PrizeRankGroup[]
 ```
 
-Logic: filter `!isBot`, walk the already-sorted list assigning a fresh competition rank
-(ties share a rank — same semantics as SQL `RANK()`, just recomputed over the bot-filtered
-subset), stop once the rank exceeds `prizeSplit.length` (3). Group entries by rank. Payout per
-group = `prizeSplit[rank-1].payoutCents / group.winners.length` (integer division; a stray cent
-on an uneven split is fine for a friends pool).
+Logic: filter `!isBot`, walk the already-sorted (`points DESC`, server-guaranteed) list assigning
+a fresh competition rank — ties share a rank, same semantics as SQL `RANK()`, just recomputed
+over the bot-filtered subset — and stop once the rank exceeds `prizeRankCount`.
 
-### 2. `HomeState` gains `winners`
+Rewrite `buildPayoutLabels` to call `computePrizeRanks` instead of trusting each entry's raw
+`rank`/grouping by it. This also fixes a second, existing bug in its output *contract*: the
+current `Map<rank, label>` is looked up by the caller via `payoutByRank.get(e.rank)` (`app/
+ranking/page.tsx:84`) — raw rank again, so a bot sitting at raw rank 1 causes the prize-rank-1
+label to be attached to the bot's row instead of the real #1 human's. Change the map to be
+**keyed by `userId`** instead of rank — correct regardless of how bots shift the raw numbering —
+and update the one call site (`app/ranking/page.tsx:84`) from `payoutByRank.get(e.rank)` to
+`payoutByRank.get(e.userId)`. Visual behavior on `/ranking` is otherwise unchanged (medal-only
+badge on a tie, medal+amount when not tied) — only *which row* gets which label changes, and it's
+now correct.
+
+### 2. `lib/home-phase.ts` — reuse `computePrizeRanks`, add `winners`, fix the champion payout
+
+`HomeState` gains a `winners` field:
 
 ```ts
+export type PrizeWinner = { userId: number; displayName: string | null; points: number; isYou: boolean };
+export type PrizeTopGroup = { rank: number; payoutCentsEach: number; winners: PrizeWinner[] };
 export type Winners = {
   overall: { displayName: string | null; points: number; isBot: boolean };
-  prizeTop: PrizeRankGroup[];
+  prizeTop: PrizeTopGroup[];
 } | null; // null unless allPlayed
 ```
 
-`overall` = `ranking.entries[0]` (the actual #1, bot or not — that's the point). `prizeTop` =
-`computePrizeStandings(...)`, always computed (not gated on `me`) since this is shown to
-everyone, not just the viewer.
+Computed only when `allPlayed`, by calling the shared `computePrizeRanks(ranking.entries,
+summary.prizeSplit.length)` from `lib/ranking-payouts.ts` and mapping each group to a
+`PrizeTopGroup` (`payoutCentsEach = Math.floor(prizeSplit[rank-1].payoutCents / group.entries.length)`).
+`overall` = `ranking.entries[0]` (the actual #1, bot or not — that's the point), always computed,
+not gated on `me`, since this is shown to everyone.
 
 ### 3. Fix the `"champion"` `FocusState`
 
-Replace the raw-rank lookup with a search over the same `computePrizeStandings(...)` result:
-find the group containing `me` (by `userId`); if found, `payoutCents = group.payoutCentsEach`;
-if not found (not a top-3 prize finisher), `payoutCents = null` as today. `rank`/`points` on the
-focus state stay the existing overall values (that's "your standing", separate from "did you
-win money").
+Replace the raw-rank lookup with a search over `winners.prizeTop`: find the group containing `me`
+(via `isYou`); if found, `payoutCents = group.payoutCentsEach`; if not found (not a top-3 prize
+finisher), `payoutCents = null` as today. `rank`/`points` on the focus state stay the existing
+overall values (that's "your standing", separate from "did you win money").
 
 ### 4. New `components/lobby/WinnersBanner.tsx`
 
@@ -118,11 +141,16 @@ template.
 
 ## Testing
 
+Extend `lib/ranking-payouts.test.ts` (existing pattern) with the regression case the current 4
+tests don't cover: a bot at raw rank 1 with real points, humans below it — assert the label for
+the true prize-rank-1 human is the gold amount (keyed by that human's `userId`), not attached to
+the bot, and that `buildPayoutLabels`'s existing tie/no-scores-yet behavior is unchanged.
+
 Extend `lib/home-phase.test.ts` (existing pattern) with cases mirroring the real prod shape:
 bot at rank 1, clean 2nd, and a 3-way not just 2-way — plus the regression case: a prize-eligible
 user directly below a bot must NOT be pushed off the podium by the raw-rank-based
 `prizeSplit.length` cutoff. Also assert the fixed `champion` payout for a synthetic "tied 3rd"
 user splits evenly.
 
-`FocusCard.test.tsx` and a new `WinnersBanner.test.tsx` cover rendering (ties render both names,
-bot vs. human overall-topper copy).
+A new `WinnersBanner.test.tsx` covers rendering (ties render both names, bot vs. human
+overall-topper copy).
