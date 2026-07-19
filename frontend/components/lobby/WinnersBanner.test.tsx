@@ -60,3 +60,19 @@ it("renders both names and the per-person amount for a tied rank", () => {
   r(<WinnersBanner winners={winners} />);
   expect(screen.getByText(/🥉 Yeison & Ricardo — 613 pts · \$10 c\/u/)).toBeInTheDocument();
 });
+
+it("skips a prize rank beyond the medal map instead of rendering an unlabeled row", () => {
+  // prizeSplit is admin-configurable (PoolConfigPanel's "add rank" has no cap on
+  // tier count) — a 4th+ tier has no medal. Regression for rendering "undefined
+  // {name}" instead of quietly omitting the row.
+  const fourTierWinners: Winners = {
+    ...winners,
+    prizeTop: [
+      ...winners.prizeTop,
+      { rank: 4, payoutCentsEach: 500, winners: [{ userId: 5, displayName: "Eduardo", points: 600, isYou: false }] },
+    ],
+  };
+  r(<WinnersBanner winners={fourTierWinners} />);
+  expect(screen.queryByText(/Eduardo/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/undefined/)).not.toBeInTheDocument();
+});

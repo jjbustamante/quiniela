@@ -22,13 +22,17 @@ export function WinnersBanner({ winners }: { winners: Winners }) {
       </div>
       <ul className="mt-3 space-y-1.5">
         {winners.prizeTop.map((g) => {
+          const medal = MEDAL[g.rank];
+          // prizeSplit is admin-configurable (PoolConfigPanel's "add rank" has no cap) —
+          // a 4th+ tier would have no medal. Skip rather than render "undefined {name}".
+          if (!medal) return null;
           const names = g.winners.map((w) => w.displayName ?? "?").join(" & ");
           const amount = `$${(g.payoutCentsEach / 100).toFixed(0)}`;
           return (
             <li key={`prize-${g.rank}`} className="font-display text-sm font-bold text-[var(--color-text-primary)]">
               {g.winners.length > 1
-                ? t("winnersPodiumRowTied", { medal: MEDAL[g.rank], names, points: g.winners[0].points, amount })
-                : t("winnersPodiumRowSingle", { medal: MEDAL[g.rank], name: names, points: g.winners[0].points, amount })}
+                ? t("winnersPodiumRowTied", { medal, names, points: g.winners[0].points, amount })
+                : t("winnersPodiumRowSingle", { medal, name: names, points: g.winners[0].points, amount })}
             </li>
           );
         })}
