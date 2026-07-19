@@ -81,7 +81,7 @@ export default async function RankingPage() {
                   trendUp={t("trendUp")}
                   trendDown={t("trendDown")}
                   trendFlat={t("trendFlat")}
-                  payoutLabel={payoutByRank.get(e.rank)}
+                  payoutLabel={payoutByRank.get(e.userId)}
                 />
               </Link>
             ))}
