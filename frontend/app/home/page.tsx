@@ -9,6 +9,7 @@ import { computeHomeState } from "@/lib/home-phase";
 import { TopBar } from "@/components/shell/TopBar";
 import { BottomNav } from "@/components/shell/BottomNav";
 import { FocusCard } from "@/components/lobby/FocusCard";
+import { WinnersBanner } from "@/components/lobby/WinnersBanner";
 import { PhaseRail } from "@/components/lobby/PhaseRail";
 import { StandingStrip } from "@/components/lobby/StandingStrip";
 import { ResultsRecap } from "@/components/lobby/ResultsRecap";
@@ -40,6 +41,7 @@ export default async function HomePage() {
       <TopBar />
       <div className="mx-auto w-full max-w-md sm:max-w-2xl lg:max-w-4xl">
         <FocusCard focus={state.focus} timeZone={me.timezone} />
+        <WinnersBanner winners={state.winners} />
         <PhaseRail chips={state.chips} />
         <StandingStrip standing={state.standing} />
         <ResultsRecap recap={state.recap} timeZone={me.timezone} />
