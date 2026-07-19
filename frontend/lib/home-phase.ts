@@ -2,6 +2,7 @@ import type { BracketView } from "./api/bracket";
 import type { RankingView } from "./api/ranking";
 import type { MatchesView, MatchView } from "./api/matches";
 import type { PublicSummary } from "./api/summary";
+import { computePrizeRanks } from "./ranking-payouts";
 
 export type ChipState = "done" | "open" | "locked";
 export type PhaseChip = { code: string; state: ChipState; href: string };
@@ -13,6 +14,13 @@ export type FocusState =
   | { kind: "champion"; rank: number | null; points: number | null; payoutCents: number | null };
 
 export type Standing = { rank: number; points: number; hasScored: boolean } | null;
+
+export type PrizeWinner = { userId: number; displayName: string | null; points: number; isYou: boolean };
+export type PrizeTopGroup = { rank: number; payoutCentsEach: number; winners: PrizeWinner[] };
+export type Winners = {
+  overall: { displayName: string | null; points: number; isBot: boolean };
+  prizeTop: PrizeTopGroup[];
+} | null;
 
 export type RecapResult = {
   matchId: number;
@@ -30,7 +38,7 @@ export type Recap =
   | { kind: "results"; recent: RecapResult[]; next: RecapNext }
   | { kind: "preKickoff"; potCents: number; currency: string; panaCount: number; startDate: string };
 
-export type HomeState = { focus: FocusState; chips: PhaseChip[]; standing: Standing; recap: Recap };
+export type HomeState = { focus: FocusState; chips: PhaseChip[]; standing: Standing; recap: Recap; winners: Winners };
 
 function before(deadlineIso: string | null, nowMs: number): boolean {
   return deadlineIso == null || nowMs < Date.parse(deadlineIso);
@@ -74,6 +82,21 @@ export function computeHomeState(args: {
   const allMatches = [...matches.past, ...matches.today, ...matches.upcoming];
   const allPlayed = bracketComplete && allMatches.length > 0 && allMatches.every((m) => m.played);
 
+  const winners: Winners = allPlayed
+    ? {
+        overall: {
+          displayName: ranking.entries[0]?.displayName ?? null,
+          points: ranking.entries[0]?.points ?? 0,
+          isBot: ranking.entries[0]?.isBot ?? false,
+        },
+        prizeTop: computePrizeRanks(ranking.entries, summary.prizeSplit.length).map((g) => ({
+          rank: g.rank,
+          payoutCentsEach: Math.floor((summary.prizeSplit[g.rank - 1]?.payoutCents ?? 0) / g.entries.length),
+          winners: g.entries.map((e) => ({ userId: e.userId, displayName: e.displayName, points: e.points, isYou: e.isYou })),
+        })),
+      }
+    : null;
+
   // ── Focus (priority order) ────────────────────────────────────────────────
   let focus: FocusState;
   if (groupOpen) {
@@ -81,7 +104,8 @@ export function computeHomeState(args: {
   } else if (openKnockout) {
     focus = { kind: "fillKnockout", roundCode: openKnockout.code, roundName: openKnockout.name, filled: openKnockout.filled, total: openKnockout.total, full: openKnockout.total > 0 && openKnockout.filled >= openKnockout.total, deadline: openKnockout.deadline ?? null, href: `/knockout/${openKnockout.code}` };
   } else if (allPlayed) {
-    const payoutCents = me && me.rank <= summary.prizeSplit.length ? summary.prizeSplit[me.rank - 1].payoutCents : null;
+    const myPrizeGroup = winners?.prizeTop.find((g) => g.winners.some((w) => w.isYou));
+    const payoutCents = myPrizeGroup ? myPrizeGroup.payoutCentsEach : null;
     focus = { kind: "champion", rank: me?.rank ?? null, points: me?.points ?? null, payoutCents };
   } else {
     const inKnockout = bracket.knockouts.some((k) => k.unlocked);
@@ -122,5 +146,5 @@ export function computeHomeState(args: {
     recap = { kind: "results", recent, next };
   }
 
-  return { focus, chips, standing, recap };
+  return { focus, chips, standing, recap, winners };
 }

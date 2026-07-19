@@ -22,10 +22,12 @@ export default async function RankingPage() {
   const updatedLabel = deadlineShort(ranking.updatedAt, me.timezone);
   const count = ranking.entries.length;
 
-  // Medal + payout labels for the top-3 ranks. Suppressed entirely until
-  // someone has scored, and reduced to a bare medal on a tie (the split prize
-  // shouldn't render as the full amount next to each tied player).
-  const payoutByRank = buildPayoutLabels(
+  // Medal + payout labels for the top-3 prize-eligible players, keyed by userId
+  // (not rank — a bot can occupy a raw rank without being prize-eligible).
+  // Suppressed entirely until someone has scored, and reduced to a bare medal
+  // on a tie (the split prize shouldn't render as the full amount next to each
+  // tied player).
+  const payoutByUserId = buildPayoutLabels(
     ranking.entries,
     summary.prizeSplit,
     summary.pool.currency,
@@ -81,7 +83,7 @@ export default async function RankingPage() {
                   trendUp={t("trendUp")}
                   trendDown={t("trendDown")}
                   trendFlat={t("trendFlat")}
-                  payoutLabel={payoutByRank.get(e.rank)}
+                  payoutLabel={payoutByUserId.get(e.userId)}
                 />
               </Link>
             ))}

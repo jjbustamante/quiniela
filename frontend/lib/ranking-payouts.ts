@@ -4,8 +4,40 @@ import { formatPot } from "@/lib/tournament-format";
 
 const MEDALS: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
+export type PrizeRankGroup = { rank: number; entries: RankingEntry[] };
+
 /**
- * Build "🥇 $24"-style labels keyed by rank for the prize positions (1–3),
+ * Groups prize-eligible entries (bots excluded) into competition-rank
+ * positions 1..prizeRankCount. `entries` must already be sorted points DESC
+ * (the ranking API guarantees this) — ties share a rank, same semantics as
+ * SQL RANK(), recomputed over the bot-filtered subset so a bot occupying a
+ * leaderboard slot never shifts a human's prize rank.
+ */
+export function computePrizeRanks(entries: RankingEntry[], prizeRankCount: number): PrizeRankGroup[] {
+  const groups: PrizeRankGroup[] = [];
+  let rank = 0;
+  let lastPoints: number | null = null;
+  let seen = 0;
+  for (const e of entries) {
+    if (e.isBot) continue;
+    seen += 1;
+    if (e.points !== lastPoints) {
+      rank = seen;
+      lastPoints = e.points;
+    }
+    if (rank > prizeRankCount) break;
+    let group = groups.find((g) => g.rank === rank);
+    if (!group) {
+      group = { rank, entries: [] };
+      groups.push(group);
+    }
+    group.entries.push(e);
+  }
+  return groups;
+}
+
+/**
+ * Build "🥇 $24"-style labels keyed by userId for the prize positions (1–3),
  * applying two rules on top of the raw prize split:
  *
  *  - **No standings yet:** until at least one prize-eligible player has scored,
@@ -16,7 +48,8 @@ const MEDALS: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
  *    amount next to each would read as "everyone wins the whole thing".
  *
  * The bot (Pulpo Paul) is never prize-eligible, so it counts neither toward
- * "standings are real" nor toward a tie.
+ * "standings are real" nor toward a tie — and, via computePrizeRanks, never
+ * occupies a prize position itself even when it tops the raw leaderboard.
  */
 export function buildPayoutLabels(
   entries: RankingEntry[],
@@ -28,17 +61,14 @@ export function buildPayoutLabels(
   const standingsAreReal = entries.some((e) => !e.isBot && e.points > 0);
   if (!standingsAreReal) return labels;
 
-  const countByRank = new Map<number, number>();
-  for (const e of entries) {
-    if (e.isBot) continue;
-    countByRank.set(e.rank, (countByRank.get(e.rank) ?? 0) + 1);
-  }
-
-  for (const split of prizeSplit) {
-    const medal = MEDALS[split.rank];
-    if (!medal) continue;
-    const tied = (countByRank.get(split.rank) ?? 0) > 1;
-    labels.set(split.rank, tied ? medal : `${medal} ${formatPot(split.payoutCents, currency)}`);
+  const prizeRanks = computePrizeRanks(entries, prizeSplit.length);
+  for (const group of prizeRanks) {
+    const split = prizeSplit[group.rank - 1];
+    const medal = MEDALS[group.rank];
+    if (!split || !medal) continue;
+    const tied = group.entries.length > 1;
+    const label = tied ? medal : `${medal} ${formatPot(split.payoutCents, currency)}`;
+    for (const e of group.entries) labels.set(e.userId, label);
   }
 
   return labels;

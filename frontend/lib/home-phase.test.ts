@@ -159,7 +159,12 @@ it("a match that finished TODAY shows in results, not as the upcoming fixture", 
 
 it("CHAMPION when every match is played, with payout for a prize rank", () => {
   const b = bracket({ groups: [{ code: "A", filled: 6, total: 6, locked: true, matches: [] }], knockouts: [{ code: "FINAL", name: "Final", filled: 1, total: 1, unlocked: true, locked: true, matches: [] }] });
-  const r = ranking({ entries: [{ rank: 2, userId: 1, displayName: "Tú", points: 96, delta: null, isYou: true, isBot: false }] });
+  const r = ranking({
+    entries: [
+      { rank: 1, userId: 9, displayName: "María", points: 100, delta: null, isYou: false, isBot: false },
+      { rank: 2, userId: 1, displayName: "Tú", points: 96, delta: null, isYou: true, isBot: false },
+    ],
+  });
   const m = matches({ past: [{ id: 1, roundCode: "FINAL", groupCode: null, kickoffAt: "2026-07-19T17:00:00Z", team1: { code: "ARG", name: "Argentina", flag: "🇦🇷" }, team2: { code: "FRA", name: "Francia", flag: "🇫🇷" }, score: { t1: 1, t2: 0 }, played: true, live: false, yourPick: null, pointsEarned: null, breakdown: null, pickWinner: null, winner: null }] });
   const s = computeHomeState({ bracket: b, ranking: r, matches: m, summary: summary(), nowMs: Date.parse("2026-07-20T00:00:00Z") });
   expect(s.focus.kind).toBe("champion");
@@ -174,6 +179,64 @@ it("CHAMPION on finale day: the played FINAL still sits in today's bucket", () =
   const m = matches({ today: [{ id: 1, roundCode: "FINAL", groupCode: null, kickoffAt: "2026-07-19T17:00:00Z", team1: { code: "ARG", name: "Argentina", flag: "🇦🇷" }, team2: { code: "FRA", name: "Francia", flag: "🇫🇷" }, score: { t1: 1, t2: 0 }, played: true, live: false, yourPick: null, pointsEarned: null, breakdown: null, pickWinner: null, winner: null }] });
   const s = computeHomeState({ bracket: b, ranking: r, matches: m, summary: summary(), nowMs: Date.parse("2026-07-19T21:00:00Z") });
   expect(s.focus.kind).toBe("champion");
+});
+
+it("CHAMPION payout uses prize-eligible rank, not raw rank, when a bot tops the leaderboard", () => {
+  const b = bracket({ groups: [{ code: "A", filled: 6, total: 6, locked: true, matches: [] }], knockouts: [{ code: "FINAL", name: "Final", filled: 1, total: 1, unlocked: true, locked: true, matches: [] }] });
+  const r = ranking({
+    entries: [
+      { rank: 1, userId: 99, displayName: "Pulpo Paul 🐙", points: 200, delta: null, isYou: false, isBot: true },
+      { rank: 2, userId: 1, displayName: "Tú", points: 190, delta: null, isYou: true, isBot: false },
+    ],
+  });
+  const m = matches({ past: [{ id: 1, roundCode: "FINAL", groupCode: null, kickoffAt: "2026-07-19T17:00:00Z", team1: { code: "ARG", name: "Argentina", flag: "🇦🇷" }, team2: { code: "FRA", name: "Francia", flag: "🇫🇷" }, score: { t1: 1, t2: 0 }, played: true, live: false, yourPick: null, pointsEarned: null, breakdown: null, pickWinner: null, winner: null }] });
+  const s = computeHomeState({ bracket: b, ranking: r, matches: m, summary: summary(), nowMs: Date.parse("2026-07-20T00:00:00Z") });
+  expect(s.focus.kind).toBe("champion");
+  // rank 2 raw would give 15% (3900); prize-eligible rank (bot excluded) is 1 -> 80% (20800)
+  if (s.focus.kind === "champion") expect(s.focus.payoutCents).toBe(20800);
+});
+
+it("winners: overall leaderboard topper can be a bot; prize podium excludes bots and splits ties evenly", () => {
+  const b = bracket({ groups: [{ code: "A", filled: 6, total: 6, locked: true, matches: [] }], knockouts: [{ code: "FINAL", name: "Final", filled: 1, total: 1, unlocked: true, locked: true, matches: [] }] });
+  const r = ranking({
+    entries: [
+      { rank: 1, userId: 99, displayName: "Pulpo Paul 🐙", points: 200, delta: null, isYou: false, isBot: true },
+      { rank: 2, userId: 1, displayName: "José", points: 190, delta: null, isYou: false, isBot: false },
+      { rank: 3, userId: 2, displayName: "Arturo", points: 180, delta: null, isYou: false, isBot: false },
+      { rank: 4, userId: 3, displayName: "Yeison", points: 170, delta: null, isYou: false, isBot: false },
+      { rank: 4, userId: 4, displayName: "Ricardo", points: 170, delta: null, isYou: false, isBot: false },
+      { rank: 6, userId: 5, displayName: "Eduardo", points: 160, delta: null, isYou: false, isBot: false },
+    ],
+  });
+  const m = matches({ past: [{ id: 1, roundCode: "FINAL", groupCode: null, kickoffAt: "2026-07-19T17:00:00Z", team1: { code: "ARG", name: "Argentina", flag: "🇦🇷" }, team2: { code: "FRA", name: "Francia", flag: "🇫🇷" }, score: { t1: 1, t2: 0 }, played: true, live: false, yourPick: null, pointsEarned: null, breakdown: null, pickWinner: null, winner: null }] });
+  const s = computeHomeState({
+    bracket: b,
+    ranking: r,
+    matches: m,
+    summary: summary({ prizeSplit: [{ rank: 1, percentage: 80, payoutCents: 32000 }, { rank: 2, percentage: 15, payoutCents: 6000 }, { rank: 3, percentage: 5, payoutCents: 2000 }] }),
+    nowMs: Date.parse("2026-07-20T00:00:00Z"),
+  });
+  expect(s.winners).not.toBeNull();
+  if (s.winners) {
+    expect(s.winners.overall).toEqual({ displayName: "Pulpo Paul 🐙", points: 200, isBot: true });
+    expect(s.winners.prizeTop).toEqual([
+      { rank: 1, payoutCentsEach: 32000, winners: [{ userId: 1, displayName: "José", points: 190, isYou: false }] },
+      { rank: 2, payoutCentsEach: 6000, winners: [{ userId: 2, displayName: "Arturo", points: 180, isYou: false }] },
+      {
+        rank: 3,
+        payoutCentsEach: 1000,
+        winners: [
+          { userId: 3, displayName: "Yeison", points: 170, isYou: false },
+          { userId: 4, displayName: "Ricardo", points: 170, isYou: false },
+        ],
+      },
+    ]);
+  }
+});
+
+it("winners is null before the tournament is over", () => {
+  const s = computeHomeState({ bracket: bracket(), ranking: ranking(), matches: matches(), summary: summary(), nowMs: nowBefore });
+  expect(s.winners).toBeNull();
 });
 
 it("standing reports your rank and whether anyone has scored", () => {
