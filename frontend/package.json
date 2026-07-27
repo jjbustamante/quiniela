@@ -34,13 +34,13 @@
   "dependencies": {
     "next": "16.2.10",
     "next-auth": "5.0.0-beta.31",
-    "next-intl": "^4.13.2",
+    "next-intl": "^4.13.4",
     "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.62.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.3.0",
@@ -51,7 +51,7 @@
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/coverage-v8": "^3.2.0",
     "eslint": "^9",
-    "eslint-config-next": "16.2.10",
+    "eslint-config-next": "16.2.12",
     "jsdom": "^29.1.1",
     "msw": "^2.15.0",
     "tailwindcss": "^4",
